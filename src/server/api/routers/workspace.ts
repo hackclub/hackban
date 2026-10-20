@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { type db as Db } from "~/server/db";
+import { mergeUsers } from "~/server/import/apply";
 
 /** Versioned URL for a workspace's logo, or null to fall back to its initial. */
 export const logoUrl = (w: { id: string; logoKey: string | null }) =>
@@ -130,6 +131,44 @@ export const workspaceRouter = createTRPCRouter({
     }),
 
   /** Admins remove anyone; anyone can leave. Also drops their board memberships here. */
+  /**
+   * Link an imported Trello placeholder ("ghost") to a real account: their
+   * cards, comments, and board/workspace memberships move over. Trello never
+   * shares emails, so this can't happen automatically on login.
+   *
+   * Merging grants the target everything the ghost had, so the caller must be
+   * an admin of every workspace the ghost belongs to (or a site admin).
+   */
+  linkGhost: protectedProcedure
+    .input(z.object({ id: z.string(), ghostId: z.string(), userId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const callerId = ctx.session.user.id;
+      const ghost = await ctx.db.user.findUnique({
+        where: { id: input.ghostId },
+        include: { workspaces: { select: { workspaceId: true } } },
+      });
+      if (!ghost?.isGhost || !ghost.workspaces.some((w) => w.workspaceId === input.id)) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "That imported member isn't in this workspace." });
+      }
+      const target = await ctx.db.user.findUnique({ where: { id: input.userId } });
+      if (!target || target.isGhost) throw new TRPCError({ code: "BAD_REQUEST", message: "Pick someone who has logged in." });
+      if (target.trelloId && target.trelloId !== ghost.trelloId) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: `${target.name ?? "That account"} is already linked to a different Trello member.` });
+      }
+      if (!ctx.session.user.isAdmin) {
+        const adminOf = await ctx.db.workspaceMember.count({
+          where: { userId: callerId, role: "admin", workspaceId: { in: ghost.workspaces.map((w) => w.workspaceId) } },
+        });
+        if (adminOf < ghost.workspaces.length) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "This person was imported into other workspaces too; an admin of all of them (or a site admin) has to link them.",
+          });
+        }
+      }
+      await mergeUsers(ghost.id, target.id);
+    }),
+
   removeMember: protectedProcedure
     .input(z.object({ id: z.string(), userId: z.string() }))
     .mutation(async ({ ctx, input }) => {

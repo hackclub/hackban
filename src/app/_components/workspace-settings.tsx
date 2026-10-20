@@ -8,7 +8,7 @@ import { api, type RouterOutputs } from "~/trpc/react";
 import { CreateBoardPopover } from "./create-board";
 import { BoardTile } from "./home";
 import { PageTitle } from "./settings-shell";
-import { AutoTextarea, Avatar, Button, Icon, MenuItem, boardBg, inputCls, WorkspaceLogo } from "./ui";
+import { AutoTextarea, Avatar, Button, Icon, MenuItem, Popover, boardBg, inputCls, usePopoverState, WorkspaceLogo } from "./ui";
 
 type Page = "boards" | "members" | "settings" | "export";
 
@@ -223,6 +223,7 @@ function Members({ ws, meId, isAdmin }: { ws: WS; meId: string; isAdmin: boolean
               ) : (
                 <span className="text-sm text-[var(--color-text-subtle)]">{m.role === "admin" ? "Admin" : "Member"}</span>
               )}
+              {isAdmin && m.user.isGhost && <LinkGhost wsId={ws.id} ghost={m.user} />}
               {(isAdmin || self) &&
                 (confirm === m.userId ? (
                   <Button variant="danger" onClick={() => remove.mutate({ id: ws.id, userId: m.userId })}>
@@ -238,6 +239,78 @@ function Members({ ws, meId, isAdmin }: { ws: WS; meId: string; isAdmin: boolean
         })}
       </section>
     </div>
+  );
+}
+
+/**
+ * "Link account…": merge an imported Trello placeholder into the real person's
+ * Hackban account (Trello never shares emails, so this can't be automatic).
+ */
+function LinkGhost({ wsId, ghost }: { wsId: string; ghost: { id: string; name: string | null; image: string | null } }) {
+  const utils = api.useUtils();
+  const pop = usePopoverState();
+  const [q, setQ] = useState(ghost.name?.split(" ")[0] ?? "");
+  const [pick, setPick] = useState<{ id: string; name: string | null; image: string | null; email: string | null } | null>(null);
+  const { data: found } = api.board.searchUsers.useQuery({ q }, { enabled: pop.open && q.length >= 2 });
+  const link = api.workspace.linkGhost.useMutation({
+    onSuccess: () => {
+      pop.close();
+      void utils.workspace.get.invalidate({ id: wsId });
+      void utils.workspace.list.invalidate();
+    },
+  });
+  const close = () => {
+    pop.close();
+    setPick(null);
+    link.reset();
+  };
+  return (
+    <>
+      <Button onClick={pop.toggle}>Link account…</Button>
+      <Popover anchor={pop.anchor} open={pop.open} onClose={close} title={pick ? "Link this account?" : `Link ${ghost.name ?? "member"}`} onBack={pick ? () => setPick(null) : undefined} width={340}>
+        {!pick ? (
+          <>
+            <p className="mb-2 text-xs text-[var(--color-text-subtle)]">
+              Pick the Hackban account that belongs to this Trello member. They need to have logged in once.
+            </p>
+            <input autoFocus className={inputCls} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Name or email" />
+            <div className="mt-1">
+              {found
+                ?.filter((u) => !u.isGhost)
+                .map((u) => (
+                  <MenuItem key={u.id} onClick={() => setPick(u)}>
+                    <span className="flex items-center gap-2">
+                      <Avatar user={u} size={28} />
+                      <span className="min-w-0">
+                        <span className="block truncate">{u.name}</span>
+                        <span className="block truncate text-xs text-[var(--color-text-subtlest)]">{u.email}</span>
+                      </span>
+                    </span>
+                  </MenuItem>
+                ))}
+              {found?.every((u) => u.isGhost) && (
+                <p className="py-2 text-sm text-[var(--color-text-subtlest)]">No one found. Ask them to log in to Hackban first.</p>
+              )}
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="my-2 flex items-center justify-center gap-3">
+              <Avatar user={ghost} size={36} />
+              <Icon name="back" className="rotate-180 text-[var(--color-text-subtle)]" />
+              <Avatar user={pick} size={36} />
+            </div>
+            <p className="mb-3 text-sm">
+              <b>{ghost.name}</b> (imported) becomes <b>{pick.name}</b>. Their cards, comments, checklist items and board access all move to {pick.email ?? "that account"}. This can&apos;t be undone.
+            </p>
+            <Button variant="primary" className="w-full" disabled={link.isPending} onClick={() => link.mutate({ id: wsId, ghostId: ghost.id, userId: pick.id })}>
+              {link.isPending ? "Linking…" : "Link account"}
+            </Button>
+          </>
+        )}
+        {link.error && <p className="mt-2 text-xs text-[var(--color-danger)]">{link.error.message}</p>}
+      </Popover>
+    </>
   );
 }
 
