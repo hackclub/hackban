@@ -19,6 +19,7 @@ export const SortableCard = memo(function SortableCard({
   onQuickEdit,
   onHover,
   hidden,
+  readOnly,
 }: {
   card: CardData;
   boardId: string;
@@ -26,12 +27,15 @@ export const SortableCard = memo(function SortableCard({
   onQuickEdit: (card: CardData, el: HTMLElement) => void;
   onHover: (id: string | null) => void;
   hidden: boolean;
+  readOnly: boolean;
 }) {
   const open = useCallback(() => onOpen(card.id), [onOpen, card.id]);
   const quickEdit = useCallback((el: HTMLElement) => onQuickEdit(card, el), [onQuickEdit, card]);
   const { setNodeRef, attributes, listeners, transform, transition, isDragging } = useSortable({
     id: `card:${card.id}`,
     data: { type: "card", card },
+    // Observers can't move cards; don't let them pick one up at all.
+    disabled: readOnly,
   });
   // Computed once per mount so re-renders don't restart the animation.
   const [appear] = useState(() => shouldAppear(card.id, card.title, card.createdAt));
@@ -48,7 +52,7 @@ export const SortableCard = memo(function SortableCard({
       onMouseLeave={() => onHover(null)}
       className={`outline-none ${appear ? "animate-pop-in" : ""}`}
     >
-      <CardFront card={card} boardId={boardId} dragging={isDragging} onOpen={open} onQuickEdit={quickEdit} />
+      <CardFront card={card} boardId={boardId} dragging={isDragging} onOpen={open} onQuickEdit={readOnly ? undefined : quickEdit} readOnly={readOnly} />
     </div>
   );
 });
@@ -79,6 +83,7 @@ export const ListColumn = memo(function ListColumn({
   const { setNodeRef, attributes, listeners, transform, transition, isDragging } = useSortable({
     id: `list:${list.id}`,
     data: { type: "list", list },
+    disabled: readOnly,
   });
   const [collapsed, setCollapsed] = useCollapsed(list.id);
   const setComposerAt = (where: "top" | "bottom" | null) => onComposer(list.id, where);
@@ -143,6 +148,7 @@ export const ListColumn = memo(function ListColumn({
               onOpen={onOpenCard}
               onQuickEdit={onQuickEdit}
               onHover={onHoverCard}
+              readOnly={readOnly}
             />
           ))}
         </SortableContext>

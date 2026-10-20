@@ -48,6 +48,7 @@ export const CardFront = memo(function CardFront({
   overlay,
   onOpen,
   onQuickEdit,
+  readOnly = false,
 }: {
   card: CardData;
   boardId: string;
@@ -55,6 +56,8 @@ export const CardFront = memo(function CardFront({
   overlay?: boolean;
   onOpen?: () => void;
   onQuickEdit?: (el: HTMLElement) => void;
+  /** Observers: no complete/due toggles. */
+  readOnly?: boolean;
 }) {
   const [expanded, toggleLabels] = useLabelsExpanded();
   const utils = api.useUtils();
@@ -123,7 +126,7 @@ export const CardFront = memo(function CardFront({
         <div
           className={`flex min-h-[56px] items-end p-3 ${card.coverUrl ? "bg-gradient-to-t from-black/60 to-transparent pt-16 text-white" : ""}`}
         >
-          <CardTitle title={card.title} complete={card.dueComplete} onChange={overlay ? undefined : setComplete} className="text-base font-medium" />
+          <CardTitle title={card.title} complete={card.dueComplete} onChange={overlay || readOnly ? undefined : setComplete} className="text-base font-medium" />
         </div>
       </div>
     );
@@ -168,7 +171,7 @@ export const CardFront = memo(function CardFront({
             ))}
           </div>
         )}
-        <CardTitle title={card.title} complete={card.dueComplete} onChange={overlay ? undefined : setComplete} />
+        <CardTitle title={card.title} complete={card.dueComplete} onChange={overlay || readOnly ? undefined : setComplete} />
         <div className="mt-1 flex flex-wrap items-center gap-x-1 gap-y-0.5 pb-0.5 text-xs text-[var(--color-text-subtle)]">
           {card.watching && (
             <span className="flex h-6 items-center px-1" title="You are watching this card.">
@@ -179,9 +182,9 @@ export const CardFront = memo(function CardFront({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                setComplete(!card.dueComplete);
+                if (!readOnly) setComplete(!card.dueComplete);
               }}
-              className={`group/due flex h-6 items-center gap-1 rounded-[3px] px-1 ${due ? dueStyles[due] : ""} ${due === "later" ? "hover:bg-[var(--color-neutral)]" : ""}`}
+              className={`group/due flex h-6 items-center gap-1 rounded-[3px] px-1 ${due ? dueStyles[due] : ""} ${due === "later" ? "hover:bg-[var(--color-neutral)]" : ""} ${readOnly ? "pointer-events-none" : ""}`}
             >
               <span className="group-hover/due:hidden">
                 <Icon name="clock" size={14} />
