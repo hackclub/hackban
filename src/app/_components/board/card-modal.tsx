@@ -501,7 +501,7 @@ function Badges({
                   Complete
                 </span>
               )}
-              {due === "overdue" && (
+              {(due === "overdue" || due === "late") && (
                 <span className="rounded-[3px] bg-[#c9372c] px-1 text-xs text-white">
                   Overdue
                 </span>

@@ -63,6 +63,10 @@
   --t-due-overdue-fg: #ffffff;
   --t-due-soon-bg: #f5cd47;
   --t-due-soon-fg: #172b4d;
+  /* More than a day overdue: subtle red chip with a soft glow */
+  --t-due-late-bg: #ffeceb;
+  --t-due-late-fg: #ae2e24;
+  --t-due-late-glow: 0 0 0 1px #f8716866, 0 0 8px #f8716840;
   --t-shadow-card: 0 1px 1px #091e4240, 0 0 1px #091e424f;
   --t-shadow-overlay: 0 8px 12px #091e4226, 0 0 1px #091e424f;
   --t-shadow-raised: 0 8px 16px -4px #091e4240, 0 0 1px #091e424f;
@@ -99,6 +103,9 @@
   --t-due-overdue-fg: #1d2125;
   --t-due-soon-bg: #e2b203;
   --t-due-soon-fg: #1d2125;
+  --t-due-late-bg: #5d1f1a;
+  --t-due-late-fg: #fd9891;
+  --t-due-late-glow: 0 0 0 1px #c9372c99, 0 0 10px #c9372c66;
   --t-shadow-card: 0 1px 1px #03040480, 0 0 1px #03040480;
   --t-shadow-overlay: 0 8px 12px #0304045c, 0 0 1px #03040480;
   --t-shadow-raised: 0 8px 16px -4px #03040480, 0 0 1px #03040480;

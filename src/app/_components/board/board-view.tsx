@@ -15,7 +15,12 @@ import {
   type DragOverEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
-import { arrayMove, horizontalListSortingStrategy, SortableContext, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+import {
+  arrayMove,
+  horizontalListSortingStrategy,
+  SortableContext,
+  sortableKeyboardCoordinates,
+} from "@dnd-kit/sortable";
 import { motion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -26,13 +31,26 @@ import { Header } from "../header";
 import { boardBg } from "../ui";
 import { BoardHeader } from "./board-header";
 import { BoardMenu } from "./board-menu";
+import { BoardCtx } from "./members";
 import { CardFront } from "./card-front";
 import { CardModal } from "./card-modal";
 import { ListColumn, ListComposer } from "./list-column";
 import { QuickEdit } from "./quick-edit";
-import { cardMatches, emptyFilters, filterActive, type BoardData, type CardData, type Filters } from "./types";
+import {
+  cardMatches,
+  emptyFilters,
+  filterActive,
+  type BoardData,
+  type CardData,
+  type Filters,
+} from "./types";
 
-type User = { id: string; name?: string | null; image?: string | null; email?: string | null };
+type User = {
+  id: string;
+  name?: string | null;
+  image?: string | null;
+  email?: string | null;
+};
 
 // list id -> ordered card ids, plus list order. Used as the drag-time model.
 type Layout = { lists: string[]; cards: Record<string, string[]> };
@@ -40,7 +58,9 @@ type Layout = { lists: string[]; cards: Record<string, string[]> };
 function layoutOf(b: BoardData): Layout {
   return {
     lists: b.lists.map((l) => l.id),
-    cards: Object.fromEntries(b.lists.map((l) => [l.id, l.cards.map((c) => c.id)])),
+    cards: Object.fromEntries(
+      b.lists.map((l) => [l.id, l.cards.map((c) => c.id)]),
+    ),
   };
 }
 
@@ -59,7 +79,11 @@ function applyLayout(b: BoardData, layout: Layout): BoardData {
       .filter((l): l is BoardData["lists"][number] => !!l)
       .map((l) => {
         const ids = layout.cards[l.id] ?? [];
-        if (ids.length === l.cards.length && ids.every((id, i) => l.cards[i]!.id === id)) return l;
+        if (
+          ids.length === l.cards.length &&
+          ids.every((id, i) => l.cards[i]!.id === id)
+        )
+          return l;
         return {
           ...l,
           cards: ids
@@ -74,7 +98,15 @@ function applyLayout(b: BoardData, layout: Layout): BoardData {
 const findList = (layout: Layout, cardId: string) =>
   Object.keys(layout.cards).find((l) => layout.cards[l]!.includes(cardId));
 
-export function BoardView({ boardId, initialCardId, user }: { boardId: string; initialCardId?: string; user: User }) {
+export function BoardView({
+  boardId,
+  initialCardId,
+  user,
+}: {
+  boardId: string;
+  initialCardId?: string;
+  user: User;
+}) {
   const utils = api.useUtils();
   const { data: board, error } = api.board.get.useQuery({ id: boardId });
 
@@ -92,7 +124,9 @@ export function BoardView({ boardId, initialCardId, user }: { boardId: string; i
   );
 
   // ----- open card <-> URL (/c/:id) without remounting the board -----
-  const [openCard, setOpenCard] = useState<string | null>(initialCardId ?? null);
+  const [openCard, setOpenCard] = useState<string | null>(
+    initialCardId ?? null,
+  );
   const boardUrl = `/b/${boardId}`;
   const open = useCallback(
     (id: string | null) => {
@@ -116,51 +150,81 @@ export function BoardView({ boardId, initialCardId, user }: { boardId: string; i
   // ----- filters, menu, quick edit, composers -----
   const [filters, setFilters] = useState<Filters>(emptyFilters);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [quick, setQuick] = useState<{ card: CardData; rect: DOMRect } | null>(null);
-  const [composer, setComposer] = useState<{ listId: string; where: "top" | "bottom" } | null>(null);
+  const [quick, setQuick] = useState<{ card: CardData; rect: DOMRect } | null>(
+    null,
+  );
+  const [composer, setComposer] = useState<{
+    listId: string;
+    where: "top" | "bottom";
+  } | null>(null);
   const hovered = useRef<string | null>(null);
   const readOnly = board?.myRole === "observer";
 
   // ----- drag and drop -----
-  const [drag, setDrag] = useState<{ layout: Layout; active: { type: "card"; card: CardData } | { type: "list"; id: string } } | null>(null);
-  const shown = useMemo(() => (board && drag ? applyLayout(board, drag.layout) : board), [board, drag]);
+  const [drag, setDrag] = useState<{
+    layout: Layout;
+    active: { type: "card"; card: CardData } | { type: "list"; id: string };
+  } | null>(null);
+  const shown = useMemo(
+    () => (board && drag ? applyLayout(board, drag.layout) : board),
+    [board, drag],
+  );
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
   );
-  const moveCard = api.card.move.useMutation({ onSettled: () => utils.board.get.invalidate({ id: boardId }) });
-  const moveList = api.list.move.useMutation({ onSettled: () => utils.board.get.invalidate({ id: boardId }) });
+  const moveCard = api.card.move.useMutation({
+    onSettled: () => utils.board.get.invalidate({ id: boardId }),
+  });
+  const moveList = api.list.move.useMutation({
+    onSettled: () => utils.board.get.invalidate({ id: boardId }),
+  });
 
   // Read drag state through a ref so the collision function stays stable.
   const dragRef = useRef(drag);
   dragRef.current = drag;
-  const collision: CollisionDetection = useCallback(
-    (args) => {
-      if (dragRef.current?.active.type === "list") {
-        return closestCenter({ ...args, droppableContainers: args.droppableContainers.filter((c) => String(c.id).startsWith("list:")) });
-      }
-      const within = pointerWithin(args);
-      // Prefer cards under the pointer; fall back to the list column itself.
-      const card = within.find((c) => String(c.id).startsWith("card:"));
-      if (card) return [card];
-      const list = within.find((c) => String(c.id).startsWith("list:"));
-      if (list) {
-        const listId = String(list.id).slice(5);
-        const cardsIn = args.droppableContainers.filter((c) => String(c.id).startsWith("card:") && dragRef.current?.layout.cards[listId]?.includes(String(c.id).slice(5)));
-        if (cardsIn.length) return closestCorners({ ...args, droppableContainers: cardsIn });
-        return [list];
-      }
-      return closestCorners(args);
-    },
-    [],
-  );
+  const collision: CollisionDetection = useCallback((args) => {
+    if (dragRef.current?.active.type === "list") {
+      return closestCenter({
+        ...args,
+        droppableContainers: args.droppableContainers.filter((c) =>
+          String(c.id).startsWith("list:"),
+        ),
+      });
+    }
+    const within = pointerWithin(args);
+    // Prefer cards under the pointer; fall back to the list column itself.
+    const card = within.find((c) => String(c.id).startsWith("card:"));
+    if (card) return [card];
+    const list = within.find((c) => String(c.id).startsWith("list:"));
+    if (list) {
+      const listId = String(list.id).slice(5);
+      const cardsIn = args.droppableContainers.filter(
+        (c) =>
+          String(c.id).startsWith("card:") &&
+          dragRef.current?.layout.cards[listId]?.includes(
+            String(c.id).slice(5),
+          ),
+      );
+      if (cardsIn.length)
+        return closestCorners({ ...args, droppableContainers: cardsIn });
+      return [list];
+    }
+    return closestCorners(args);
+  }, []);
 
   const onDragStart = ({ active }: DragStartEvent) => {
     if (!board) return;
-    const data = active.data.current as { type: "card"; card: CardData } | { type: "list" };
+    const data = active.data.current as
+      { type: "card"; card: CardData } | { type: "list" };
     setDrag({
       layout: layoutOf(board),
-      active: data.type === "card" ? { type: "card", card: data.card } : { type: "list", id: String(active.id).slice(5) },
+      active:
+        data.type === "card"
+          ? { type: "card", card: data.card }
+          : { type: "list", id: String(active.id).slice(5) },
     });
     setQuick(null);
   };
@@ -172,18 +236,30 @@ export function BoardView({ boardId, initialCardId, user }: { boardId: string; i
     setDrag((d) => {
       if (!d) return d;
       const from = findList(d.layout, cardId);
-      const to = overId.startsWith("list:") ? overId.slice(5) : findList(d.layout, overId.slice(5));
+      const to = overId.startsWith("list:")
+        ? overId.slice(5)
+        : findList(d.layout, overId.slice(5));
       if (!from || !to || from === to) return d;
       const fromCards = d.layout.cards[from]!.filter((id) => id !== cardId);
       const toCards = [...d.layout.cards[to]!];
       let idx = toCards.length;
       if (overId.startsWith("card:")) {
         idx = toCards.indexOf(overId.slice(5));
-        const below = over.rect && active.rect.current.translated && active.rect.current.translated.top > over.rect.top + over.rect.height / 2;
+        const below =
+          over.rect &&
+          active.rect.current.translated &&
+          active.rect.current.translated.top >
+            over.rect.top + over.rect.height / 2;
         if (below) idx += 1;
       }
       toCards.splice(idx, 0, cardId);
-      return { ...d, layout: { ...d.layout, cards: { ...d.layout.cards, [from]: fromCards, [to]: toCards } } };
+      return {
+        ...d,
+        layout: {
+          ...d.layout,
+          cards: { ...d.layout.cards, [from]: fromCards, [to]: toCards },
+        },
+      };
     });
   };
 
@@ -197,11 +273,15 @@ export function BoardView({ boardId, initialCardId, user }: { boardId: string; i
       if (over && String(over.id).startsWith("list:")) {
         const oldI = layout.lists.indexOf(id);
         const newI = layout.lists.indexOf(String(over.id).slice(5));
-        if (oldI !== newI) layout = { ...layout, lists: arrayMove(layout.lists, oldI, newI) };
+        if (oldI !== newI)
+          layout = { ...layout, lists: arrayMove(layout.lists, oldI, newI) };
       }
       const i = layout.lists.indexOf(id);
       if (layout.lists.join() === board.lists.map((l) => l.id).join()) return;
-      utils.board.get.setData({ id: boardId }, (b) => b && applyLayout(b, layout));
+      utils.board.get.setData(
+        { id: boardId },
+        (b) => b && applyLayout(b, layout),
+      );
       moveList.mutate({ id, afterId: i === 0 ? null : layout.lists[i - 1]! });
       return;
     }
@@ -212,32 +292,66 @@ export function BoardView({ boardId, initialCardId, user }: { boardId: string; i
       const overId = String(over.id).slice(5);
       const arr = layout.cards[listId]!;
       if (arr.includes(overId) && overId !== cardId) {
-        layout = { ...layout, cards: { ...layout.cards, [listId]: arrayMove(arr, arr.indexOf(cardId), arr.indexOf(overId)) } };
+        layout = {
+          ...layout,
+          cards: {
+            ...layout.cards,
+            [listId]: arrayMove(arr, arr.indexOf(cardId), arr.indexOf(overId)),
+          },
+        };
       }
     }
     const arr = layout.cards[listId]!;
     const i = arr.indexOf(cardId);
     const orig = layoutOf(board);
     const origList = findList(orig, cardId);
-    if (origList === listId && orig.cards[listId]!.join() === arr.join()) return;
-    utils.board.get.setData({ id: boardId }, (b) => b && applyLayout(b, layout));
-    moveCard.mutate({ id: cardId, listId, afterId: i === 0 ? null : arr[i - 1]! });
+    if (origList === listId && orig.cards[listId]!.join() === arr.join())
+      return;
+    utils.board.get.setData(
+      { id: boardId },
+      (b) => b && applyLayout(b, layout),
+    );
+    moveCard.mutate({
+      id: cardId,
+      listId,
+      afterId: i === 0 ? null : arr[i - 1]!,
+    });
   };
 
   // ----- keyboard shortcuts (Trello's) -----
-  const update = api.card.update.useMutation({ onSettled: () => utils.board.get.invalidate({ id: boardId }) });
-  const toggleMember = api.card.toggleMember.useMutation({ onSettled: () => utils.board.get.invalidate({ id: boardId }) });
-  const toggleLabel = api.card.toggleLabel.useMutation({ onSettled: () => utils.board.get.invalidate({ id: boardId }) });
+  const update = api.card.update.useMutation({
+    onSettled: () => utils.board.get.invalidate({ id: boardId }),
+  });
+  const toggleMember = api.card.toggleMember.useMutation({
+    onSettled: () => utils.board.get.invalidate({ id: boardId }),
+  });
+  const toggleLabel = api.card.toggleLabel.useMutation({
+    onSettled: () => utils.board.get.invalidate({ id: boardId }),
+  });
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement;
-      if (/INPUT|TEXTAREA|SELECT/.test(t.tagName) || t.isContentEditable || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (
+        /INPUT|TEXTAREA|SELECT/.test(t.tagName) ||
+        t.isContentEditable ||
+        e.metaKey ||
+        e.ctrlKey ||
+        e.altKey
+      )
+        return;
       if (document.querySelector("[data-popover]")) return;
       const cardId = openCard ?? hovered.current;
-      const card = board?.lists.flatMap((l) => l.cards).find((c) => c.id === cardId);
+      const card = board?.lists
+        .flatMap((l) => l.cards)
+        .find((c) => c.id === cardId);
       switch (e.key) {
         case "q":
-          setFilters((f) => ({ ...f, members: f.members.includes(user.id) ? f.members.filter((m) => m !== user.id) : [...f.members, user.id] }));
+          setFilters((f) => ({
+            ...f,
+            members: f.members.includes(user.id)
+              ? f.members.filter((m) => m !== user.id)
+              : [...f.members, user.id],
+          }));
           break;
         case "x":
           setFilters(emptyFilters);
@@ -254,7 +368,17 @@ export function BoardView({ boardId, initialCardId, user }: { boardId: string; i
       switch (e.key) {
         case "c":
           update.mutate({ id: card.id, closed: true });
-          utils.board.get.setData({ id: boardId }, (b) => b && { ...b, lists: b.lists.map((l) => ({ ...l, cards: l.cards.filter((c) => c.id !== card.id) })) });
+          utils.board.get.setData(
+            { id: boardId },
+            (b) =>
+              b && {
+                ...b,
+                lists: b.lists.map((l) => ({
+                  ...l,
+                  cards: l.cards.filter((c) => c.id !== card.id),
+                })),
+              },
+          );
           if (openCard) open(null);
           break;
         case " ": {
@@ -265,8 +389,20 @@ export function BoardView({ boardId, initialCardId, user }: { boardId: string; i
         }
         case "d":
           update.mutate({ id: card.id, dueComplete: !card.dueComplete });
-          utils.board.get.setData({ id: boardId }, (b) =>
-            b && { ...b, lists: b.lists.map((l) => ({ ...l, cards: l.cards.map((c) => (c.id === card.id ? { ...c, dueComplete: !c.dueComplete } : c)) })) },
+          utils.board.get.setData(
+            { id: boardId },
+            (b) =>
+              b && {
+                ...b,
+                lists: b.lists.map((l) => ({
+                  ...l,
+                  cards: l.cards.map((c) =>
+                    c.id === card.id
+                      ? { ...c, dueComplete: !c.dueComplete }
+                      : c,
+                  ),
+                })),
+              },
           );
           break;
         case "e":
@@ -282,7 +418,12 @@ export function BoardView({ boardId, initialCardId, user }: { boardId: string; i
           if (/^[0-9]$/.test(e.key) && board) {
             // 1..0 toggle the board's labels in order, like Trello
             const label = board.labels[(Number(e.key) + 9) % 10];
-            if (label) toggleLabel.mutate({ id: card.id, labelId: label.id, on: !card.labels.some((l) => l.labelId === label.id) });
+            if (label)
+              toggleLabel.mutate({
+                id: card.id,
+                labelId: label.id,
+                on: !card.labels.some((l) => l.labelId === label.id),
+              });
           }
       }
     };
@@ -290,12 +431,36 @@ export function BoardView({ boardId, initialCardId, user }: { boardId: string; i
     return () => window.removeEventListener("keydown", onKey);
   });
 
-  const isVisible = useMemo(() => (filterActive(filters) ? (c: CardData) => cardMatches(c, filters) : () => true), [filters]);
-  const onQuickEdit = useCallback((card: CardData, el: HTMLElement) => setQuick({ card, rect: el.getBoundingClientRect() }), []);
+  const isVisible = useMemo(
+    () =>
+      filterActive(filters)
+        ? (c: CardData) => cardMatches(c, filters)
+        : () => true,
+    [filters],
+  );
+  const onQuickEdit = useCallback(
+    (card: CardData, el: HTMLElement) =>
+      setQuick({ card, rect: el.getBoundingClientRect() }),
+    [],
+  );
   const onHoverCard = useCallback((id: string | null) => {
     hovered.current = id;
   }, []);
-  const onComposer = useCallback((listId: string, where: "top" | "bottom" | null) => setComposer(where ? { listId, where } : null), []);
+  const onComposer = useCallback(
+    (listId: string, where: "top" | "bottom" | null) =>
+      setComposer(where ? { listId, where } : null),
+    [],
+  );
+  const boardCtx = useMemo(
+    () => ({
+      meId: user.id,
+      filterMember: (id: string) =>
+        setFilters((f) =>
+          f.members.includes(id) ? f : { ...f, members: [...f.members, id] },
+        ),
+    }),
+    [user.id],
+  );
 
   if (error) {
     return (
@@ -303,81 +468,149 @@ export function BoardView({ boardId, initialCardId, user }: { boardId: string; i
         <Header user={user} />
         <div className="mx-auto mt-24 max-w-md text-center">
           <h1 className="mb-2 text-2xl font-semibold">Board not found</h1>
-          <p className="text-[var(--color-text-subtle)]">This board may be private. If someone gave you this link, they may need to share the board with you.</p>
+          <p className="text-[var(--color-text-subtle)]">
+            This board may be private. If someone gave you this link, they may
+            need to share the board with you.
+          </p>
         </div>
       </div>
     );
   }
 
-
   return (
-    <div className="flex h-full flex-col overflow-hidden" style={shown ? boardBg(shown) : { background: "#0079bf" }}>
-      <Header user={user} translucent />
-      {shown && (
-        <>
-          <BoardHeader board={shown} meId={user.id} filters={filters} setFilters={setFilters} onMenu={() => setMenuOpen((m) => !m)} />
-          <div className="relative flex min-h-0 flex-1">
-            <DndContext
-              sensors={sensors}
-              collisionDetection={collision}
-              onDragStart={onDragStart}
-              onDragOver={onDragOver}
-              onDragEnd={onDragEnd}
-              onDragCancel={() => setDrag(null)}
-            >
-              <BoardCanvas>
-                <SortableContext items={shown.lists.map((l) => `list:${l.id}`)} strategy={horizontalListSortingStrategy}>
-                  {shown.lists.map((l) => (
-                    <ListColumn
-                      key={l.id}
-                      list={l}
-                      board={board!}
-                      cards={l.cards}
-                      isVisible={isVisible}
-                      onOpenCard={open}
-                      onQuickEdit={onQuickEdit}
-                      onHoverCard={onHoverCard}
-                      composerAt={composer?.listId === l.id ? composer.where : null}
-                      onComposer={onComposer}
-                      readOnly={readOnly}
-                    />
-                  ))}
-                </SortableContext>
-                {!readOnly && <ListComposer boardId={boardId} />}
-              </BoardCanvas>
-              {typeof document !== "undefined" &&
-                createPortal(
-                  <DragOverlay dropAnimation={{ duration: 180, easing: "cubic-bezier(.2,1,.1,1)" }}>
-                    {drag?.active.type === "card" && (
-                      <motion.div initial={{ rotate: 0 }} animate={{ rotate: 4 }} transition={{ duration: 0.12 }} className="cursor-grabbing shadow-[var(--shadow-raised)] rounded-lg">
-                        <CardFront card={drag.active.card} boardId={boardId} overlay />
-                      </motion.div>
-                    )}
-                    {drag?.active.type === "list" && (() => {
-                      const l = shown.lists.find((x) => x.id === (drag.active as { id: string }).id);
-                      return l ? (
-                        <motion.div initial={{ rotate: 0 }} animate={{ rotate: 3 }} className="w-[272px] cursor-grabbing rounded-xl bg-[var(--color-list)] p-2 shadow-[var(--shadow-raised)] opacity-95">
-                          <h2 className="px-2 py-1.5 text-sm font-semibold">{l.name}</h2>
-                          <div className="flex flex-col gap-2">
-                            {l.cards.slice(0, 8).map((c) => <CardFront key={c.id} card={c} boardId={boardId} overlay />)}
-                          </div>
+    <BoardCtx.Provider value={boardCtx}>
+      <div
+        className="flex h-full flex-col overflow-hidden"
+        style={shown ? boardBg(shown) : { background: "#0079bf" }}
+      >
+        <Header user={user} translucent />
+        {shown && (
+          <>
+            <BoardHeader
+              board={shown}
+              meId={user.id}
+              filters={filters}
+              setFilters={setFilters}
+              onMenu={() => setMenuOpen((m) => !m)}
+            />
+            <div className="relative flex min-h-0 flex-1">
+              <DndContext
+                sensors={sensors}
+                collisionDetection={collision}
+                onDragStart={onDragStart}
+                onDragOver={onDragOver}
+                onDragEnd={onDragEnd}
+                onDragCancel={() => setDrag(null)}
+              >
+                <BoardCanvas>
+                  <SortableContext
+                    items={shown.lists.map((l) => `list:${l.id}`)}
+                    strategy={horizontalListSortingStrategy}
+                  >
+                    {shown.lists.map((l) => (
+                      <ListColumn
+                        key={l.id}
+                        list={l}
+                        board={board!}
+                        cards={l.cards}
+                        isVisible={isVisible}
+                        onOpenCard={open}
+                        onQuickEdit={onQuickEdit}
+                        onHoverCard={onHoverCard}
+                        composerAt={
+                          composer?.listId === l.id ? composer.where : null
+                        }
+                        onComposer={onComposer}
+                        readOnly={readOnly}
+                      />
+                    ))}
+                  </SortableContext>
+                  {!readOnly && <ListComposer boardId={boardId} />}
+                </BoardCanvas>
+                {typeof document !== "undefined" &&
+                  createPortal(
+                    <DragOverlay
+                      dropAnimation={{
+                        duration: 180,
+                        easing: "cubic-bezier(.2,1,.1,1)",
+                      }}
+                    >
+                      {drag?.active.type === "card" && (
+                        <motion.div
+                          initial={{ rotate: 0 }}
+                          animate={{ rotate: 4 }}
+                          transition={{ duration: 0.12 }}
+                          className="cursor-grabbing rounded-lg shadow-[var(--shadow-raised)]"
+                        >
+                          <CardFront
+                            card={drag.active.card}
+                            boardId={boardId}
+                            overlay
+                          />
                         </motion.div>
-                      ) : null;
-                    })()}
-                  </DragOverlay>,
-                  document.body,
-                )}
-            </DndContext>
-            <BoardMenu board={shown} open={menuOpen} onClose={() => setMenuOpen(false)} onOpenCard={open} />
-          </div>
-        </>
-      )}
-      {!shown && <div className="flex-1" />}
-      {quick && board && (
-        <QuickEdit card={quick.card} rect={quick.rect} board={board} onClose={() => setQuick(null)} onOpen={() => { setQuick(null); open(quick.card.id); }} />
-      )}
-      <CardModal cardId={openCard} board={board} onClose={() => open(null)} onOpenCard={open} user={user} />
-    </div>
+                      )}
+                      {drag?.active.type === "list" &&
+                        (() => {
+                          const l = shown.lists.find(
+                            (x) => x.id === (drag.active as { id: string }).id,
+                          );
+                          return l ? (
+                            <motion.div
+                              initial={{ rotate: 0 }}
+                              animate={{ rotate: 3 }}
+                              className="w-[272px] cursor-grabbing rounded-xl bg-[var(--color-list)] p-2 opacity-95 shadow-[var(--shadow-raised)]"
+                            >
+                              <h2 className="px-2 py-1.5 text-sm font-semibold">
+                                {l.name}
+                              </h2>
+                              <div className="flex flex-col gap-2">
+                                {l.cards.slice(0, 8).map((c) => (
+                                  <CardFront
+                                    key={c.id}
+                                    card={c}
+                                    boardId={boardId}
+                                    overlay
+                                  />
+                                ))}
+                              </div>
+                            </motion.div>
+                          ) : null;
+                        })()}
+                    </DragOverlay>,
+                    document.body,
+                  )}
+              </DndContext>
+              <BoardMenu
+                board={shown}
+                open={menuOpen}
+                onClose={() => setMenuOpen(false)}
+                onOpenCard={open}
+              />
+            </div>
+          </>
+        )}
+        {!shown && <div className="flex-1" />}
+        {quick && board && (
+          <QuickEdit
+            card={quick.card}
+            rect={quick.rect}
+            board={board}
+            onClose={() => setQuick(null)}
+            onOpen={() => {
+              setQuick(null);
+              open(quick.card.id);
+            }}
+          />
+        )}
+        <CardModal
+          cardId={openCard}
+          board={board}
+          onClose={() => open(null)}
+          onOpenCard={open}
+          user={user}
+        />
+      </div>
+    </BoardCtx.Provider>
   );
 }
 
@@ -393,7 +626,9 @@ function BoardCanvas({ children }: { children: React.ReactNode }) {
         if (e.target !== e.currentTarget || e.button !== 0) return;
         pan.current = { x: e.clientX, left: ref.current!.scrollLeft };
         const move = (ev: MouseEvent) => {
-          if (pan.current && ref.current) ref.current.scrollLeft = pan.current.left - (ev.clientX - pan.current.x);
+          if (pan.current && ref.current)
+            ref.current.scrollLeft =
+              pan.current.left - (ev.clientX - pan.current.x);
         };
         const up = () => {
           pan.current = null;

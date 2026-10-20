@@ -49,9 +49,6 @@ export function Header({ user, translucent = false }: { user: User; translucent?
       </button>
       <div className="flex-1" />
       <SearchBox translucent={translucent} />
-      <Link href="/import" className={`flex h-8 items-center rounded-[3px] px-2 text-sm font-medium ${btn}`}>
-        Import from Trello
-      </Link>
       <button onClick={bell.toggle} className={`relative flex h-8 w-8 items-center justify-center rounded-full ${btn}`} aria-label="Notifications">
         <Icon name="bell" />
         <UnreadDot />

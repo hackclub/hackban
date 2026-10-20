@@ -429,6 +429,7 @@ export function dueState(due: Date | null, complete: boolean) {
   if (!due) return null;
   if (complete) return "complete" as const;
   const ms = due.getTime() - Date.now();
+  if (ms < -24 * 3600 * 1000) return "late" as const;
   if (ms < 0) return "overdue" as const;
   if (ms < 24 * 3600 * 1000) return "soon" as const;
   return "later" as const;
@@ -437,6 +438,7 @@ export function dueState(due: Date | null, complete: boolean) {
 export const dueStyles = {
   complete: "bg-[var(--t-due-complete-bg)] text-[var(--t-due-complete-fg)]",
   overdue: "bg-[var(--t-due-overdue-bg)] text-[var(--t-due-overdue-fg)]",
+  late: "bg-[var(--t-due-late-bg)] text-[var(--t-due-late-fg)] shadow-[var(--t-due-late-glow)]",
   soon: "bg-[var(--t-due-soon-bg)] text-[var(--t-due-soon-fg)]",
   later: "",
 } as const;

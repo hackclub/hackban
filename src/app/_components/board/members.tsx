@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { api } from "~/trpc/react";
@@ -43,6 +43,52 @@ function useMemberActions(board: BoardData, meId: string) {
 }
 
 /** The face-pile in the board header. Each face opens Trello's member card. */
+/** Board-level context for things deep in the tree (card avatars) that need the viewer or filters. */
+export const BoardCtx = createContext<{ meId: string; filterMember: (userId: string) => void }>({
+  meId: "",
+  filterMember: () => undefined,
+});
+
+/** A card-front avatar that opens the same member card as the board header. */
+export function CardMemberAvatar({ boardId, user }: { boardId: string; user: { id: string; name: string | null; image: string | null } }) {
+  const { meId, filterMember } = useContext(BoardCtx);
+  const [el, setEl] = useState<HTMLElement | null>(null);
+  const { data: board } = api.board.get.useQuery({ id: boardId }, { enabled: !!el });
+  const member = board?.members.find((m) => m.userId === user.id);
+  return (
+    <>
+      <button
+        type="button"
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          e.stopPropagation();
+          setEl(e.currentTarget);
+        }}
+        className="rounded-full transition-shadow hover:ring-2 hover:ring-[var(--color-focus)]"
+        title={user.name ?? undefined}
+        aria-label={`${user.name ?? "Member"} — member details`}
+      >
+        <Avatar user={user} size={24} />
+      </button>
+      <Popover anchor={el ? { el } : null} open={!!el && !!board} onClose={() => setEl(null)}>
+        {board && member ? (
+          <MemberCard
+            board={board}
+            member={member}
+            meId={meId}
+            onFilter={() => {
+              filterMember(user.id);
+              setEl(null);
+            }}
+          />
+        ) : (
+          <p className="py-2 text-sm text-[var(--color-text-subtle)]">{user.name} is no longer a member of this board.</p>
+        )}
+      </Popover>
+    </>
+  );
+}
+
 export function MemberAvatars({ board, meId, onFilterMember }: { board: BoardData; meId: string; onFilterMember: (userId: string) => void }) {
   const [open, setOpen] = useState<{ userId: string; el: HTMLElement } | null>(null);
   const [all, setAll] = useState<HTMLElement | null>(null);
@@ -112,7 +158,7 @@ export function MemberAvatars({ board, meId, onFilterMember }: { board: BoardDat
 }
 
 /** Trello's member popover: big avatar header, then actions. */
-function MemberCard({ board, member, meId, onFilter }: { board: BoardData; member: Member; meId: string; onFilter: () => void }) {
+export function MemberCard({ board, member, meId, onFilter }: { board: BoardData; member: Member; meId: string; onFilter: () => void }) {
   const pop = usePopover();
   const [pane, setPane] = useState<"main" | "role" | "remove">("main");
   const { setRole, remove, error } = useMemberActions(board, meId);

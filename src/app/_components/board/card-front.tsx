@@ -13,6 +13,7 @@ import {
   dueStyles,
   labelStyle,
 } from "../ui";
+import { CardMemberAvatar } from "./members";
 import { type CardData } from "./types";
 
 // Trello's label "collapse" toggle is global and remembered per browser.
@@ -232,9 +233,9 @@ export const CardFront = memo(function CardFront({
           )}
           {card.members.length > 0 && (
             <span className="ml-auto flex flex-row-reverse gap-0.5 py-0.5">
-              {[...card.members].reverse().map((m) => (
-                <Avatar key={m.userId} user={m.user} size={24} />
-              ))}
+              {[...card.members].reverse().map((m) =>
+                overlay ? <Avatar key={m.userId} user={m.user} size={24} /> : <CardMemberAvatar key={m.userId} boardId={boardId} user={m.user} />,
+              )}
             </span>
           )}
         </div>
