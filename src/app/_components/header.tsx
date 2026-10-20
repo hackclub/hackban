@@ -32,9 +32,10 @@ export function Header({ user, translucent = false }: { user: User; translucent?
     >
       <Link href="/" className={`flex h-8 items-center gap-1.5 rounded-[3px] px-1.5 text-[17px] font-bold ${translucent ? "text-white hover:bg-white/20" : "text-[var(--color-text)] hover:bg-[var(--color-neutral-hover)]"}`}>
         <svg width="20" height="20" viewBox="0 0 32 32" aria-hidden>
-          <rect width="32" height="32" rx="6" fill={translucent ? "#fff" : "var(--color-brand)"} />
-          <rect x="6" y="6" width="8.5" height="18" rx="2" fill={translucent ? "#172b4d" : "var(--color-on-brand)"} />
-          <rect x="17.5" y="6" width="8.5" height="11" rx="2" fill={translucent ? "#172b4d" : "var(--color-on-brand)"} />
+          {/* Hack Club red, on every background */}
+          <rect width="32" height="32" rx="6" fill="#ec3750" />
+          <rect x="6" y="6" width="8.5" height="18" rx="2" fill="#fff" />
+          <rect x="17.5" y="6" width="8.5" height="11" rx="2" fill="#fff" />
         </svg>
         Hackban
       </Link>
