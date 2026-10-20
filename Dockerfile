@@ -37,5 +37,6 @@ COPY --from=build /app/generated ./generated
 COPY --from=build /app/node_modules/@prisma ./node_modules/@prisma
 VOLUME /data
 EXPOSE 3000
-# Apply schema changes on boot (refuses destructive changes), then start.
-CMD ["sh", "-c", "mkdir -p /data/uploads && prisma db push --skip-generate --schema ./prisma/schema.prisma && node server.js"]
+# Apply schema changes on boot: pre-push.sql handles changes db push would
+# refuse (e.g. new unique indexes), then db push (refuses destructive changes).
+CMD ["sh", "-c", "mkdir -p /data/uploads && prisma db execute --file ./prisma/pre-push.sql --schema ./prisma/schema.prisma && prisma db push --skip-generate --schema ./prisma/schema.prisma && node server.js"]
