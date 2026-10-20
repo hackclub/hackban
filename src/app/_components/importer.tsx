@@ -278,25 +278,21 @@ function JobView({ id, onReset }: { id: string; onReset: () => void }) {
 }
 
 function Ghosts() {
-  const utils = api.useUtils();
   const { data } = api.import.ghosts.useQuery();
-  const claim = api.import.claimGhost.useMutation({ onSuccess: () => utils.import.ghosts.invalidate() });
   if (!data?.length) return null;
   return (
     <section className="mt-12">
       <h2 className="mb-1 text-lg font-semibold">Imported members</h2>
       <p className="mb-3 text-sm text-[var(--color-text-subtle)]">
-        These Trello members haven&apos;t signed in to Hackban yet. Their cards and comments are kept under a placeholder. If one of them is you, claim it.
-        Teammates can do the same after logging in.
+        These Trello members haven&apos;t been linked to a Hackban account yet, so their cards and comments sit under a placeholder. Once they&apos;ve logged
+        in, a site admin links them from the workspace&apos;s <b>Members</b> page (&ldquo;Link account…&rdquo;).
       </p>
       {data.map((g) => (
         <div key={g.id} className="flex items-center gap-3 border-b border-[var(--color-border)] py-2">
           <Avatar user={g} />
           <span className="flex-1 text-sm">{g.name}</span>
-          <Button onClick={() => claim.mutate({ ghostId: g.id })}>This is me</Button>
         </div>
       ))}
-      {claim.error && <p className="text-sm text-[var(--color-danger)]">{claim.error.message}</p>}
     </section>
   );
 }

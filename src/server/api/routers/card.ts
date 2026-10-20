@@ -4,6 +4,13 @@ import { z } from "zod";
 import { boardIdForList, logActivity, requireBoard, requireCard, touch } from "~/server/api/access";
 import { posAfter, posAtEnd } from "~/server/api/pos";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { type db as Db } from "~/server/db";
+
+/** Assignees (card members, check item owners) must be on the board. */
+async function requireBoardMember(db: typeof Db, boardId: string, userId: string) {
+  const m = await db.boardMember.findUnique({ where: { boardId_userId: { boardId, userId } } });
+  if (!m) throw new TRPCError({ code: "BAD_REQUEST", message: "That person isn't a member of this board." });
+}
 
 const userSelect = { id: true, name: true, image: true, username: true } as const;
 
@@ -146,7 +153,7 @@ export const cardRouter = createTRPCRouter({
     .input(
       z.object({
         id: z.string(),
-        title: z.string().min(1),
+        title: z.string().min(1).max(16384),
         listId: z.string(),
         afterId: z.string().nullable().optional(),
         keep: z.object({ checklists: z.boolean(), labels: z.boolean(), members: z.boolean(), attachments: z.boolean() }),
@@ -225,6 +232,7 @@ export const cardRouter = createTRPCRouter({
     .input(z.object({ id: z.string(), userId: z.string(), on: z.boolean() }))
     .mutation(async ({ ctx, input }) => {
       const boardId = await requireCard(ctx.db, ctx.session.user.id, input.id);
+      if (input.on && input.userId !== ctx.session.user.id) await requireBoardMember(ctx.db, boardId, input.userId);
       if (input.on) {
         await ctx.db.cardMember.upsert({
           where: { cardId_userId: { cardId: input.id, userId: input.userId } },
@@ -299,8 +307,10 @@ export const cardRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const boardId = await requireCard(ctx.db, ctx.session.user.id, input.id);
       const siblings = await ctx.db.checklist.findMany({ where: { cardId: input.id }, orderBy: { pos: "asc" }, select: { id: true, pos: true } });
+      // Only copy from a checklist on this same card (what the UI offers);
+      // otherwise any checklist's contents could be read by id.
       const src = input.copyFrom
-        ? await ctx.db.checklist.findUnique({ where: { id: input.copyFrom }, include: { items: true } })
+        ? await ctx.db.checklist.findFirst({ where: { id: input.copyFrom, cardId: input.id }, include: { items: true } })
         : null;
       await ctx.db.checklist.create({
         data: {
@@ -353,6 +363,7 @@ export const cardRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const item = await ctx.db.checkItem.findUniqueOrThrow({ where: { id: input.itemId }, include: { checklist: true } });
       const boardId = await requireCard(ctx.db, ctx.session.user.id, item.checklist.cardId);
+      if (input.memberId) await requireBoardMember(ctx.db, boardId, input.memberId);
       const { itemId, ...data } = input;
       await ctx.db.checkItem.update({ where: { id: itemId }, data });
       if (input.complete !== undefined) {
@@ -374,6 +385,10 @@ export const cardRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const item = await ctx.db.checkItem.findUniqueOrThrow({ where: { id: input.itemId }, include: { checklist: true } });
       const boardId = await requireCard(ctx.db, ctx.session.user.id, item.checklist.cardId);
+      // The target checklist must be on the same card; otherwise items could be
+      // planted into any board's checklists.
+      const target = await ctx.db.checklist.findFirst({ where: { id: input.checklistId, cardId: item.checklist.cardId } });
+      if (!target) throw new TRPCError({ code: "BAD_REQUEST", message: "Items can only move between checklists on the same card." });
       const siblings = await ctx.db.checkItem.findMany({
         where: { checklistId: input.checklistId, id: { not: input.itemId } },
         orderBy: { pos: "asc" },
@@ -440,7 +455,13 @@ export const cardRouter = createTRPCRouter({
   // ----- Attachments (links; uploads go through /api/files) -----
 
   addLink: protectedProcedure
-    .input(z.object({ id: z.string(), url: z.string().url(), name: z.string().max(256).optional() }))
+    .input(
+      z.object({
+        id: z.string(),
+        url: z.string().max(2048).url().refine((u) => /^https?:\/\//i.test(u), "Links must be http(s)"),
+        name: z.string().max(256).optional(),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
       const boardId = await requireCard(ctx.db, ctx.session.user.id, input.id);
       await ctx.db.attachment.create({

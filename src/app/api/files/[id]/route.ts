@@ -3,6 +3,8 @@ import { auth } from "~/server/auth";
 import { db } from "~/server/db";
 import { readStored } from "~/server/storage";
 
+const INLINE_TYPES = new Set(["image/png", "image/jpeg", "image/gif", "image/webp", "image/avif", "application/pdf"]);
+
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user) return new Response("Unauthorized", { status: 401 });
@@ -15,10 +17,16 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     return new Response("Forbidden", { status: 403 });
   }
   const data = await readStored(a.storageKey);
-  const inline = !!a.mimeType?.startsWith("image/") || a.mimeType === "application/pdf";
+  // The stored MIME type is client-supplied. Only render known-safe types
+  // inline; anything else (e.g. image/svg+xml or text/html, which can run
+  // script on our origin) is served as an opaque download.
+  const inline = !!a.mimeType && INLINE_TYPES.has(a.mimeType);
   return new Response(new Uint8Array(data), {
     headers: {
-      "Content-Type": a.mimeType ?? "application/octet-stream",
+      "Content-Type": inline ? a.mimeType! : "application/octet-stream",
+      // sandbox blocks script even if a browser sniffs content; Chrome's PDF
+      // viewer refuses to render under sandbox, so PDFs get the rest only.
+      "Content-Security-Policy": `default-src 'none'; img-src 'self'; style-src 'unsafe-inline'${a.mimeType === "application/pdf" ? "" : "; sandbox"}`,
       "Content-Disposition": `${inline ? "inline" : "attachment"}; filename*=UTF-8''${encodeURIComponent(a.name)}`,
       "Cache-Control": "private, max-age=31536000, immutable",
       "X-Content-Type-Options": "nosniff",

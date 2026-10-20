@@ -98,6 +98,13 @@ https://hackban.hackclub.com/api/auth/callback/hackclub
 The app doesn't need the `openid` scope: it uses plain OAuth and reads the
 profile from `/api/v1/me`.
 
+## Moving boards
+
+Board admins can move a board to any workspace they belong to from the board
+menu (**… → Move board…**) or a board tile's **…** menu. Site admins can move
+any board from **/admin → Boards**. Board members keep their access.
+"Workspace" visibility then refers to the new workspace.
+
 ## Admins and auto-join
 
 - **Site admins** are anyone in `ADMIN_EMAILS` (applied on login), plus anyone
@@ -110,8 +117,10 @@ profile from `/api/v1/me`.
   also adds everyone who already has an account on that domain. Auto-join
   never changes an existing member's role, and removing a rule keeps the people
   it already added.
-  - Workspace admins can only add **their own** domain, so nobody can pull an
-    entire organization into their workspace. Site admins can add any domain.
+  - Workspace admins can only add **their own** domain, only as Member, and
+    never a public email provider (gmail.com etc.). That way nobody can pull an
+    entire organization into their workspace. Site admins can add any domain
+    and role.
 
 ## Importing from Trello
 
@@ -131,10 +140,15 @@ Re-importing is safe: everything is matched by its Trello ID and updated in plac
 not duplicated.
 
 **Imported members:** Trello never shares members' emails, so each person
-becomes a placeholder member. Once they've logged in to Hackban, a workspace
-admin links them under **Workspace → Members → Link account…**, which moves
-their cards, comments and board access over. (People can also claim themselves
-with "This is me" on /import if they're already on one of the boards.)
+becomes a placeholder member. Once they've logged in to Hackban, a **site
+admin** links them under **Workspace → Members → Link account…**, which moves
+their cards, comments and board access over. Linking is site-admin only
+because it's irreversible and attributes imported history to a real account.
+
+Imports can't touch other people's data: re-importing a Trello board only
+updates it if you're already an admin of that Hackban board, rows are matched
+only within the board being imported, and attachment downloads only go to
+Trello's own hosts.
 
 ## Deploying
 

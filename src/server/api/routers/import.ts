@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { db } from "~/server/db";
-import { applyBoard, mergeUsers, type ImportStats } from "~/server/import/apply";
+import { applyBoard, type ImportStats } from "~/server/import/apply";
 import { fetchBoard, listBoards, me, type TrelloCreds } from "~/server/import/trello-api";
 import { type TrelloBoard } from "~/server/import/types";
 
@@ -47,17 +47,22 @@ async function runImport(jobId: string, userId: string, workspaceId: string | nu
   }
 }
 
+/**
+ * Pick the workspace for an imported board. A Trello workspace maps to an
+ * existing Hackban workspace only if the importer is already a member of it;
+ * otherwise a new one is created (never join someone else's by Trello id).
+ */
 async function workspaceFor(userId: string, orgId: string | null, orgNames: Map<string, string>) {
   if (orgId) {
-    const ws = await db.workspace.upsert({
-      where: { trelloId: orgId },
-      create: { trelloId: orgId, name: orgNames.get(orgId) ?? "Imported workspace" },
-      update: {},
-    });
-    await db.workspaceMember.upsert({
-      where: { workspaceId_userId: { workspaceId: ws.id, userId } },
-      create: { workspaceId: ws.id, userId, role: "admin" },
-      update: {},
+    const linked = await db.workspace.findUnique({ where: { trelloId: orgId }, include: { members: { where: { userId } } } });
+    if (linked?.members.length) return linked.id;
+    const ws = await db.workspace.create({
+      data: {
+        // trelloId is unique; leave it unset if another workspace already claimed it.
+        trelloId: linked ? null : orgId,
+        name: orgNames.get(orgId) ?? "Imported workspace",
+        members: { create: { userId, role: "admin" } },
+      },
     });
     return ws.id;
   }
@@ -65,6 +70,12 @@ async function workspaceFor(userId: string, orgId: string | null, orgNames: Map<
   if (first) return first.workspaceId;
   const ws = await db.workspace.create({ data: { name: "Imported", members: { create: { userId, role: "admin" } } } });
   return ws.id;
+}
+
+async function requireWorkspaceMember(userId: string, workspaceId: string | null) {
+  if (!workspaceId) return;
+  const m = await db.workspaceMember.findUnique({ where: { workspaceId_userId: { workspaceId, userId } } });
+  if (!m) throw new TRPCError({ code: "FORBIDDEN", message: "You're not a member of that workspace." });
 }
 
 export const importRouter = createTRPCRouter({
@@ -78,8 +89,9 @@ export const importRouter = createTRPCRouter({
   }),
 
   startApi: protectedProcedure
-    .input(creds.extend({ boardIds: z.array(z.string()).min(1), workspaceId: z.string().nullable() }))
+    .input(creds.extend({ boardIds: z.array(z.string().max(64)).min(1).max(200), workspaceId: z.string().nullable() }))
     .mutation(async ({ ctx, input }) => {
+      await requireWorkspaceMember(ctx.session.user.id, input.workspaceId);
       const job = await ctx.db.trelloImport.create({ data: { userId: ctx.session.user.id, source: "api" } });
       // Credentials live only in this closure; they are never persisted.
       void runImport(job.id, ctx.session.user.id, input.workspaceId, {
@@ -93,7 +105,7 @@ export const importRouter = createTRPCRouter({
   startJson: protectedProcedure
     .input(
       z.object({
-        files: z.array(z.string()).min(1),
+        files: z.array(z.string().max(50 * 1024 * 1024)).min(1).max(50),
         workspaceId: z.string().nullable(),
         creds: creds.optional(),
       }),
@@ -110,6 +122,7 @@ export const importRouter = createTRPCRouter({
           throw new TRPCError({ code: "BAD_REQUEST", message: "That doesn't look like a Trello board export." });
         }
       }
+      await requireWorkspaceMember(ctx.session.user.id, input.workspaceId);
       const job = await ctx.db.trelloImport.create({ data: { userId: ctx.session.user.id, source: "json" } });
       void runImport(job.id, ctx.session.user.id, input.workspaceId, { kind: "json", boards, creds: input.creds });
       return job;
@@ -135,20 +148,7 @@ export const importRouter = createTRPCRouter({
     }),
   ),
 
-  /** "This Trello member is me" — fold a ghost's history into the current account. */
-  claimGhost: protectedProcedure.input(z.object({ ghostId: z.string() })).mutation(async ({ ctx, input }) => {
-    // Only ghosts on a board the claimer already belongs to can be claimed, so a
-    // stranger can't take over someone's imported history (and board access).
-    const ghost = await ctx.db.user.findFirst({
-      where: {
-        id: input.ghostId,
-        isGhost: true,
-        boards: { some: { board: { members: { some: { userId: ctx.session.user.id } } } } },
-      },
-    });
-    if (!ghost) throw new TRPCError({ code: "NOT_FOUND" });
-    const self = await ctx.db.user.findUniqueOrThrow({ where: { id: ctx.session.user.id } });
-    if (self.trelloId) throw new TRPCError({ code: "BAD_REQUEST", message: "Your account is already linked to a Trello member." });
-    await mergeUsers(ghost.id, self.id);
-  }),
+  // Placeholder members are linked to real accounts by a site admin via
+  // workspace.linkGhost. (A self-serve "this is me" claim was removed: a
+  // crafted import could put any ghost on the attacker's board to claim it.)
 });

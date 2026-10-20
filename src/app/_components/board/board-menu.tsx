@@ -196,7 +196,7 @@ function Background({ board }: { board: BoardData }) {
       </div>
       <h3 className="mt-4 mb-2 text-sm font-semibold">Image URL</h3>
       <input className={inputCls} placeholder="https://images.unsplash.com/…" value={url} onChange={(e) => setUrl(e.target.value)} />
-      <Button className="mt-2" disabled={!/^https?:\/\//.test(url)} onClick={() => update.mutate({ id: board.id, bgImage: url })}>Use image</Button>
+      <Button className="mt-2" disabled={!url.startsWith("https://")} onClick={() => update.mutate({ id: board.id, bgImage: url })}>Use image</Button>
     </div>
   );
 }

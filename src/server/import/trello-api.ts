@@ -70,11 +70,39 @@ export async function fetchBoard(creds: TrelloCreds, id: string): Promise<Trello
   return board;
 }
 
-/** Download a Trello-hosted attachment; uploads need the OAuth header. */
+const MAX_DOWNLOAD = 250 * 1024 * 1024;
+
+/** Hosts Trello serves attachment downloads from (the OAuth header only goes to trello.com). */
+function trelloHost(u: URL) {
+  const h = u.hostname.toLowerCase();
+  if (h === "trello.com" || h.endsWith(".trello.com")) return "trello";
+  if (h === "trello-attachments.s3.amazonaws.com" || h.endsWith(".trellocdn.com")) return "cdn";
+  return null;
+}
+
+/**
+ * Download a Trello-hosted attachment. URLs come from (possibly uploaded)
+ * board JSON, so only https Trello hosts are allowed and every redirect hop is
+ * re-checked: otherwise this is an SSRF that serves the response back to us.
+ */
 export async function downloadAttachment(creds: TrelloCreds, url: string) {
-  const res = await fetch(url, {
-    headers: { Authorization: `OAuth oauth_consumer_key="${creds.key}", oauth_token="${creds.token}"` },
-  });
-  if (!res.ok) throw new Error(`download ${res.status}`);
-  return new Uint8Array(await res.arrayBuffer());
+  let target = new URL(url);
+  for (let hop = 0; hop < 4; hop++) {
+    const kind = trelloHost(target);
+    if (target.protocol !== "https:" || !kind) throw new Error("not a Trello attachment URL");
+    const res = await fetch(target, {
+      redirect: "manual",
+      headers: kind === "trello" ? { Authorization: `OAuth oauth_consumer_key="${creds.key}", oauth_token="${creds.token}"` } : {},
+    });
+    if (res.status >= 300 && res.status < 400 && res.headers.get("location")) {
+      target = new URL(res.headers.get("location")!, target);
+      continue;
+    }
+    if (!res.ok) throw new Error(`download ${res.status}`);
+    if (Number(res.headers.get("content-length") ?? 0) > MAX_DOWNLOAD) throw new Error("file too large");
+    const buf = new Uint8Array(await res.arrayBuffer());
+    if (buf.byteLength > MAX_DOWNLOAD) throw new Error("file too large");
+    return buf;
+  }
+  throw new Error("too many redirects");
 }

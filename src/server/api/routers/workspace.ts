@@ -10,6 +10,13 @@ import { mergeUsers } from "~/server/import/apply";
 export const logoUrl = (w: { id: string; logoKey: string | null }) =>
   w.logoKey ? `/api/workspaces/${w.id}/logo?v=${w.logoKey.slice(0, 8)}` : null;
 
+/** Shared email providers: auto-joining these would pull in strangers. */
+const FREE_MAIL = new Set([
+  "gmail.com", "googlemail.com", "outlook.com", "hotmail.com", "live.com", "msn.com", "yahoo.com", "icloud.com",
+  "me.com", "mac.com", "aol.com", "proton.me", "protonmail.com", "pm.me", "gmx.com", "gmx.net", "mail.com",
+  "yandex.com", "zoho.com", "fastmail.com", "hey.com", "tutanota.com", "qq.com", "163.com",
+]);
+
 export const workspaceRouter = createTRPCRouter({
   list: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.session.user.id;
@@ -137,13 +144,15 @@ export const workspaceRouter = createTRPCRouter({
    * cards, comments, and board/workspace memberships move over. Trello never
    * shares emails, so this can't happen automatically on login.
    *
-   * Merging grants the target everything the ghost had, so the caller must be
-   * an admin of every workspace the ghost belongs to (or a site admin).
+   * Merging grants the target everything the ghost had, and the ghost's
+   * history comes from an import, so only site admins may do it.
    */
   linkGhost: protectedProcedure
     .input(z.object({ id: z.string(), ghostId: z.string(), userId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const callerId = ctx.session.user.id;
+      // Site admins only: linking is irreversible and attributes the ghost's
+      // (importer-controlled) history to someone else's real account.
+      if (!ctx.session.user.isAdmin) throw new TRPCError({ code: "FORBIDDEN", message: "Only site admins can link imported members." });
       const ghost = await ctx.db.user.findUnique({
         where: { id: input.ghostId },
         include: { workspaces: { select: { workspaceId: true } } },
@@ -155,17 +164,6 @@ export const workspaceRouter = createTRPCRouter({
       if (!target || target.isGhost) throw new TRPCError({ code: "BAD_REQUEST", message: "Pick someone who has logged in." });
       if (target.trelloId && target.trelloId !== ghost.trelloId) {
         throw new TRPCError({ code: "BAD_REQUEST", message: `${target.name ?? "That account"} is already linked to a different Trello member.` });
-      }
-      if (!ctx.session.user.isAdmin) {
-        const adminOf = await ctx.db.workspaceMember.count({
-          where: { userId: callerId, role: "admin", workspaceId: { in: ghost.workspaces.map((w) => w.workspaceId) } },
-        });
-        if (adminOf < ghost.workspaces.length) {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: "This person was imported into other workspaces too; an admin of all of them (or a site admin) has to link them.",
-          });
-        }
       }
       await mergeUsers(ghost.id, target.id);
     }),
@@ -199,6 +197,12 @@ export const workspaceRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       if (!ctx.session.user.isAdmin) await requireWorkspace(ctx.db, ctx.session.user.id, input.id, true);
       const domain = normalizeDomain(input.domain);
+      if (!ctx.session.user.isAdmin && input.role !== "normal") {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Only site admins can auto-join people as admins." });
+      }
+      if (!ctx.session.user.isAdmin && FREE_MAIL.has(domain)) {
+        throw new TRPCError({ code: "FORBIDDEN", message: `@${domain} is a public email provider; ask a site admin.` });
+      }
       if (!ctx.session.user.isAdmin && emailDomain(ctx.session.user.email) !== domain) {
         throw new TRPCError({
           code: "FORBIDDEN",

@@ -24,6 +24,24 @@ export type ImportStats = {
 const byPos = <T extends { pos: number }>(a: T, b: T) => a.pos - b.pos;
 const date = (s: string | null | undefined) => (s ? new Date(s) : null);
 
+/**
+ * Re-import support without cross-tenant takeover: a row is only reused when
+ * it already belongs to the board being imported (`findScoped`). A Trello id
+ * that exists anywhere else gets a fresh row with no trelloId, so an uploaded
+ * JSON can never rewrite or re-parent someone else's data.
+ */
+async function scopedUpsert<T>(opts: {
+  trelloId: string;
+  findScoped: () => Promise<{ id: string } | null>;
+  existsGlobally: () => Promise<number>;
+  create: (trelloId: string | null) => Promise<T>;
+  update: (id: string) => Promise<T>;
+}): Promise<T> {
+  const mine = await opts.findScoped();
+  if (mine) return opts.update(mine.id);
+  return opts.create((await opts.existsGlobally()) > 0 ? null : opts.trelloId);
+}
+
 /** Trello object ids embed their creation time in the first 8 hex chars. */
 const createdAtFromId = (id: string) => new Date(parseInt(id.slice(0, 8), 16) * 1000);
 
@@ -85,15 +103,29 @@ export async function applyBoard(opts: {
     bgImage,
     visibility,
   };
-  const board = await db.board.upsert({
+  // Re-importing updates in place, but only for an existing admin of that
+  // board; otherwise anyone could rewrite (and become admin of) any board.
+  const existingBoard = await db.board.findUnique({
     where: { trelloId: tb.id },
-    create: { ...boardData, trelloId: tb.id, workspaceId },
-    update: boardData,
+    include: { members: { where: { userId: importerId } } },
   });
+  if (existingBoard && existingBoard.members[0]?.role !== "admin") {
+    throw new Error(`"${tb.name}" was already imported by someone else. Ask one of its board admins to re-import it.`);
+  }
+  const board = existingBoard
+    ? await db.board.update({ where: { id: existingBoard.id }, data: boardData })
+    : await db.board.create({ data: { ...boardData, trelloId: tb.id, workspaceId } });
   await log(`Board "${tb.name}"`);
 
+  // Only placeholder (ghost) members are added to boards/workspaces. A real
+  // account matched by Trello id is someone else's identity: an uploaded JSON
+  // must not be able to drop them into the importer's board or workspace.
+  const ghostIds = new Set(
+    (await db.user.findMany({ where: { id: { in: [...memberMap.values()] }, isGhost: true }, select: { id: true } })).map((u) => u.id),
+  );
   for (const [tid, uid] of memberMap) {
     if (!tb.members.some((m) => m.id === tid)) continue;
+    if (uid !== importerId && !ghostIds.has(uid)) continue;
     await db.boardMember.upsert({
       where: { boardId_userId: { boardId: board.id, userId: uid } },
       create: { boardId: board.id, userId: uid, role: uid === importerId ? "admin" : "normal" },
@@ -114,10 +146,12 @@ export async function applyBoard(opts: {
   // Labels
   const labelMap = new Map<string, string>();
   for (const l of tb.labels) {
-    const row = await db.label.upsert({
-      where: { trelloId: l.id },
-      create: { trelloId: l.id, boardId: board.id, name: l.name, color: l.color },
-      update: { name: l.name, color: l.color },
+    const row = await scopedUpsert({
+      trelloId: l.id,
+      findScoped: () => db.label.findFirst({ where: { trelloId: l.id, boardId: board.id } }),
+      existsGlobally: () => db.label.count({ where: { trelloId: l.id } }),
+      create: (trelloId) => db.label.create({ data: { trelloId, boardId: board.id, name: l.name, color: l.color } }),
+      update: (id) => db.label.update({ where: { id }, data: { name: l.name, color: l.color } }),
     });
     labelMap.set(l.id, row.id);
   }
@@ -130,10 +164,13 @@ export async function applyBoard(opts: {
   const lists = [...tb.lists].sort(byPos);
   const listKeys = sequentialKeys(lists.length);
   for (const [i, l] of lists.entries()) {
-    const row = await db.list.upsert({
-      where: { trelloId: l.id },
-      create: { trelloId: l.id, boardId: board.id, name: l.name, closed: l.closed, pos: listKeys[i]!, createdAt: createdAtFromId(l.id) },
-      update: { boardId: board.id, name: l.name, closed: l.closed, pos: listKeys[i]! },
+    const row = await scopedUpsert({
+      trelloId: l.id,
+      findScoped: () => db.list.findFirst({ where: { trelloId: l.id, boardId: board.id } }),
+      existsGlobally: () => db.list.count({ where: { trelloId: l.id } }),
+      create: (trelloId) =>
+        db.list.create({ data: { trelloId, boardId: board.id, name: l.name, closed: l.closed, pos: listKeys[i]!, createdAt: createdAtFromId(l.id) } }),
+      update: (id) => db.list.update({ where: { id }, data: { name: l.name, closed: l.closed, pos: listKeys[i]! } }),
     });
     listMap.set(l.id, row.id);
   }
@@ -168,10 +205,13 @@ export async function applyBoard(opts: {
         coverColor: c.cover?.color ?? null,
         coverSize: c.cover?.size === "full" ? "full" : "normal",
       };
-      const card = await db.card.upsert({
-        where: { trelloId: c.id },
-        create: { ...data, trelloId: c.id, createdAt: createdAtFromId(c.id) },
-        update: data,
+      // `data.listId` is always one of this board's lists, so moves stay in-board.
+      const card = await scopedUpsert({
+        trelloId: c.id,
+        findScoped: () => db.card.findFirst({ where: { trelloId: c.id, list: { boardId: board.id } } }),
+        existsGlobally: () => db.card.count({ where: { trelloId: c.id } }),
+        create: (trelloId) => db.card.create({ data: { ...data, trelloId, createdAt: createdAtFromId(c.id) } }),
+        update: (id) => db.card.update({ where: { id }, data }),
       });
       cardMap.set(c.id, card.id);
       cardCount++;
@@ -186,7 +226,8 @@ export async function applyBoard(opts: {
 
       for (const a of c.attachments ?? []) {
         attachments++;
-        const existing = await db.attachment.findUnique({ where: { trelloId: a.id } });
+        // Scoped to this card, so we never reuse another tenant's stored file.
+        const existing = await db.attachment.findFirst({ where: { trelloId: a.id, cardId: card.id } });
         let storageKey = existing?.storageKey ?? null;
         if (a.isUpload && creds && !storageKey) {
           try {
@@ -196,10 +237,7 @@ export async function applyBoard(opts: {
             warnings.push(`Could not download "${a.name}" on "${c.name}": ${(e as Error).message}`);
           }
         }
-        const row = await db.attachment.upsert({
-          where: { trelloId: a.id },
-          create: {
-            trelloId: a.id,
+        const attachmentData = {
             cardId: card.id,
             name: a.name,
             url: a.url,
@@ -209,9 +247,12 @@ export async function applyBoard(opts: {
             storageKey,
             uploaderId: a.idMember ? memberMap.get(a.idMember) ?? null : null,
             createdAt: date(a.date) ?? undefined,
-          },
-          update: { cardId: card.id, name: a.name, storageKey, isUpload: !!storageKey },
-        });
+        };
+        const row = existing
+          ? await db.attachment.update({ where: { id: existing.id }, data: { name: a.name, storageKey, isUpload: !!storageKey } })
+          : await db.attachment.create({
+              data: { ...attachmentData, trelloId: (await db.attachment.count({ where: { trelloId: a.id } })) > 0 ? null : a.id },
+            });
         if (storageKey && row.url !== `/api/files/${row.id}`) {
           await db.attachment.update({ where: { id: row.id }, data: { url: `/api/files/${row.id}` } });
         }
@@ -229,10 +270,12 @@ export async function applyBoard(opts: {
     const cardId = cardMap.get(cl.idCard);
     if (!cardId) continue;
     const [clKey] = sequentialKeys(1);
-    const checklist = await db.checklist.upsert({
-      where: { trelloId: cl.id },
-      create: { trelloId: cl.id, cardId, name: cl.name, pos: clKey! },
-      update: { name: cl.name },
+    const checklist = await scopedUpsert({
+      trelloId: cl.id,
+      findScoped: () => db.checklist.findFirst({ where: { trelloId: cl.id, card: { list: { boardId: board.id } } } }),
+      existsGlobally: () => db.checklist.count({ where: { trelloId: cl.id } }),
+      create: (trelloId) => db.checklist.create({ data: { trelloId, cardId, name: cl.name, pos: clKey! } }),
+      update: (id) => db.checklist.update({ where: { id }, data: { name: cl.name } }),
     });
     const items = [...cl.checkItems].sort(byPos);
     const keys = sequentialKeys(items.length);
@@ -246,7 +289,13 @@ export async function applyBoard(opts: {
         due: date(it.due),
         memberId: it.idMember ? memberMap.get(it.idMember) ?? null : null,
       };
-      await db.checkItem.upsert({ where: { trelloId: it.id }, create: { ...data, trelloId: it.id }, update: data });
+      await scopedUpsert({
+        trelloId: it.id,
+        findScoped: () => db.checkItem.findFirst({ where: { trelloId: it.id, checklistId: checklist.id } }),
+        existsGlobally: () => db.checkItem.count({ where: { trelloId: it.id } }),
+        create: (trelloId) => db.checkItem.create({ data: { ...data, trelloId } }),
+        update: (id) => db.checkItem.update({ where: { id }, data }),
+      });
     }
   }
   // Checklist positions are relative per card in Trello; re-key them in order.
@@ -255,7 +304,7 @@ export async function applyBoard(opts: {
   for (const cls of clByCard.values()) {
     const keys = sequentialKeys(cls.length);
     for (const [i, cl] of [...cls].sort(byPos).entries()) {
-      await db.checklist.updateMany({ where: { trelloId: cl.id }, data: { pos: keys[i]! } });
+      await db.checklist.updateMany({ where: { trelloId: cl.id, card: { list: { boardId: board.id } } }, data: { pos: keys[i]! } });
     }
   }
   await log(`  ${tb.checklists.length} checklists, ${checkItems} items`);
@@ -267,10 +316,13 @@ export async function applyBoard(opts: {
     const cardId = cardMap.get(a.data.card.id);
     const authorId = memberMap.get(a.idMemberCreator) ?? importerId;
     if (!cardId) continue;
-    await db.comment.upsert({
-      where: { trelloId: a.id },
-      create: { trelloId: a.id, cardId, authorId, text: a.data.text, createdAt: new Date(a.date) },
-      update: { text: a.data.text },
+    const text = a.data.text;
+    await scopedUpsert({
+      trelloId: a.id,
+      findScoped: () => db.comment.findFirst({ where: { trelloId: a.id, cardId } }),
+      existsGlobally: () => db.comment.count({ where: { trelloId: a.id } }),
+      create: (trelloId) => db.comment.create({ data: { trelloId, cardId, authorId, text, createdAt: new Date(a.date) } }),
+      update: (id) => db.comment.update({ where: { id }, data: { text } }),
     });
     comments++;
   }

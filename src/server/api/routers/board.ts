@@ -9,6 +9,13 @@ import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { type db as Db } from "~/server/db";
 import { boardBus, type BoardEvent } from "~/server/realtime";
 
+/** Board backgrounds are a color or gradient, never arbitrary CSS. */
+const background = z
+  .string()
+  .max(200)
+  .regex(/^(#[0-9a-fA-F]{3,8}|linear-gradient\([#0-9a-zA-Z%,.\s-]+\))$/, "Invalid background");
+const httpsUrl = z.string().max(2048).url().refine((u) => u.startsWith("https://"), "Must be an https URL");
+
 export const DEFAULT_LABEL_COLORS = ["green", "yellow", "orange", "red", "purple", "blue"];
 
 const cardFrontInclude = {
@@ -85,7 +92,7 @@ export const boardRouter = createTRPCRouter({
       z.object({
         name: z.string().min(1).max(200),
         workspaceId: z.string(),
-        background: z.string().default("#0079bf"),
+        background: background.default("#0079bf"),
         visibility: z.enum(["private", "workspace", "public"]).default("workspace"),
         template: z.enum(["empty", "basic"]).default("basic"),
       }),
@@ -118,15 +125,19 @@ export const boardRouter = createTRPCRouter({
         id: z.string(),
         name: z.string().min(1).max(200).optional(),
         description: z.string().max(16384).optional(),
-        background: z.string().optional(),
-        bgImage: z.string().nullable().optional(),
+        background: background.optional(),
+        bgImage: httpsUrl.nullable().optional(),
         visibility: z.enum(["private", "workspace", "public"]).optional(),
         closed: z.boolean().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       const { id, ...data } = input;
-      await requireBoard(ctx.db, ctx.session.user.id, id);
+      const access = await requireBoard(ctx.db, ctx.session.user.id, id);
+      // Who can see the board, and closing it, are board-admin decisions.
+      if ((input.visibility !== undefined || input.closed !== undefined) && access.members[0]?.role !== "admin" && !ctx.session.user.isAdmin) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Only board admins can change visibility or close the board." });
+      }
       const board = await ctx.db.board.update({ where: { id }, data });
       const type = input.closed === true ? "closeBoard" : input.closed === false ? "reopenBoard" : input.name ? "renameBoard" : "updateBoard";
       await logActivity(ctx.db, { boardId: id, actorId: ctx.session.user.id, type, data: { name: board.name }, origin: ctx.clientId });
@@ -285,29 +296,39 @@ export const boardRouter = createTRPCRouter({
     }),
   ),
 
+  /**
+   * People picker. Matches names/usernames by substring but emails only
+   * exactly, and only site admins get emails back, so this can't be used to
+   * enumerate everyone's address.
+   */
   searchUsers: protectedProcedure
-    .input(z.object({ q: z.string() }))
-    .query(({ ctx, input }) =>
-      input.q.trim().length < 2
-        ? []
-        : ctx.db.user.findMany({
-            where: {
-              OR: [
-                { name: { contains: input.q, mode: "insensitive" } },
-                { email: { contains: input.q, mode: "insensitive" } },
-                { username: { contains: input.q, mode: "insensitive" } },
-              ],
-            },
-            select: { id: true, name: true, image: true, email: true, isGhost: true },
-            take: 8,
-          }),
-    ),
+    .input(z.object({ q: z.string().max(100) }))
+    .query(async ({ ctx, input }) => {
+      const q = input.q.trim();
+      if (q.length < 2) return [];
+      const users = await ctx.db.user.findMany({
+        where: {
+          OR: [
+            { name: { contains: q, mode: "insensitive" } },
+            { username: { contains: q, mode: "insensitive" } },
+            { email: { equals: q, mode: "insensitive" } },
+          ],
+        },
+        select: { id: true, name: true, image: true, email: true, username: true, isGhost: true },
+        take: 8,
+      });
+      const showEmail = ctx.session.user.isAdmin;
+      return users.map((u) => ({ ...u, email: showEmail || u.email?.toLowerCase() === q.toLowerCase() ? u.email : null }));
+    }),
 
   addMember: protectedProcedure
     .input(z.object({ id: z.string(), userId: z.string(), role: z.enum(["admin", "normal", "observer"]).default("normal") }))
     .mutation(async ({ ctx, input }) => {
       const board = await requireBoard(ctx.db, ctx.session.user.id, input.id);
-      const isAdmin = board.members[0]?.role === "admin";
+      // Inviting needs board membership (not just workspace access to a
+      // workspace-visible board); changing roles needs board admin.
+      if (!board.members[0]) throw new TRPCError({ code: "FORBIDDEN", message: "Join the board to invite people." });
+      const isAdmin = board.members[0].role === "admin";
       const existing = await ctx.db.boardMember.findUnique({
         where: { boardId_userId: { boardId: input.id, userId: input.userId } },
       });

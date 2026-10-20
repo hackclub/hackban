@@ -152,6 +152,7 @@ function Identity({ ws, isAdmin }: { ws: WS; isAdmin: boolean }) {
 
 function Members({ ws, meId, isAdmin }: { ws: WS; meId: string; isAdmin: boolean }) {
   const utils = api.useUtils();
+  const siteAdmin = api.me.profile.useQuery().data?.isAdmin ?? false;
   const router = useRouter();
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState("");
@@ -225,7 +226,7 @@ function Members({ ws, meId, isAdmin }: { ws: WS; meId: string; isAdmin: boolean
               ) : (
                 <span className="text-sm text-[var(--color-text-subtle)]">{m.role === "admin" ? "Admin" : "Member"}</span>
               )}
-              {isAdmin && m.user.isGhost && <LinkGhost wsId={ws.id} ghost={m.user} />}
+              {siteAdmin && m.user.isGhost && <LinkGhost wsId={ws.id} ghost={m.user} />}
               {(isAdmin || self) &&
                 (confirm === m.userId ? (
                   <Button variant="danger" onClick={() => remove.mutate({ id: ws.id, userId: m.userId })}>

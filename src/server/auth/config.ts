@@ -50,9 +50,6 @@ export const authConfig = {
       token: "https://auth.hackclub.com/oauth/token",
       userinfo: "https://auth.hackclub.com/api/v1/me",
       checks: ["pkce", "state"],
-      // Ghost users created by the Trello importer share the member's email,
-      // so linking by email is what lets a real login claim them.
-      allowDangerousEmailAccountLinking: true,
       profile({ identity: p }: HackClubProfile) {
         const full = [p.first_name, p.last_name].filter(Boolean).join(" ");
         return {

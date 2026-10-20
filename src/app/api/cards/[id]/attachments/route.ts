@@ -3,7 +3,8 @@ import { auth } from "~/server/auth";
 import { db } from "~/server/db";
 import { saveFile } from "~/server/storage";
 
-const MAX_BYTES = 250 * 1024 * 1024;
+const MAX_BYTES = 100 * 1024 * 1024;
+const MAX_FILES = 20;
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
@@ -17,6 +18,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   }
   const form = await req.formData();
   const files = form.getAll("file").filter((f): f is File => f instanceof File);
+  if (files.length === 0) return new Response("No files", { status: 400 });
+  if (files.length > MAX_FILES) return new Response(`Up to ${MAX_FILES} files at a time`, { status: 413 });
+  if (files.some((f) => f.size > MAX_BYTES)) return new Response("Files must be under 100 MB", { status: 413 });
   const created = [];
   for (const file of files) {
     if (file.size > MAX_BYTES) return new Response("File too large", { status: 413 });

@@ -60,7 +60,7 @@ export const listRouter = createTRPCRouter({
     }),
 
   copy: protectedProcedure
-    .input(z.object({ id: z.string(), name: z.string().min(1) }))
+    .input(z.object({ id: z.string(), name: z.string().min(1).max(512) }))
     .mutation(async ({ ctx, input }) => {
       const src = await ctx.db.list.findUniqueOrThrow({
         where: { id: input.id },
