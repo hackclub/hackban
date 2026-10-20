@@ -57,9 +57,11 @@ export function BoardHeader({
       <button
         onClick={() => star.mutate({ id: board.id, starred: !board.starred })}
         className={`${hdrBtn} w-8 justify-center px-0 ${board.starred ? "text-[#f5cd47]" : ""}`}
-        aria-label="Star board"
+        aria-label={board.starred ? "Unstar board" : "Star board"}
+        aria-pressed={board.starred}
+        title={board.starred ? "Click to unstar this board" : "Click to star this board"}
       >
-        <Icon name="star" className="transition-transform active:scale-125" />
+        <Icon name={board.starred ? "star" : "starOutline"} className="transition-transform active:scale-125" />
       </button>
       <button onClick={vis.toggle} className={`${hdrBtn} w-8 justify-center px-0`} title={v.label}>
         <Icon name={v.icon} />
@@ -67,20 +69,24 @@ export function BoardHeader({
       <div className="flex-1" />
       <button
         onClick={() => setFilters({ ...filters, members: mine ? filters.members.filter((m) => m !== meId) : [...filters.members, meId] })}
-        className={`${hdrBtn} ${mine ? "bg-[var(--color-surface)] text-[var(--color-text)] hover:bg-white/90" : ""}`}
+        className={`${hdrBtn} ${mine ? "bg-[#dcdfe4] text-[#172b4d] hover:bg-white" : ""}`}
         title="Only show cards assigned to me (q)"
       >
         <Icon name="user" /> My cards
       </button>
-      <button onClick={filter.toggle} className={`${hdrBtn} ${active ? "bg-[var(--color-surface)] text-[var(--color-text)] hover:bg-white/90" : ""}`}>
+      <button onClick={filter.toggle} className={`${hdrBtn} ${active ? "bg-[#dcdfe4] text-[#172b4d] hover:bg-white" : ""}`}>
         <Icon name="filter" /> Filters
         {active && <span className="rounded-full bg-[var(--color-brand)] px-1.5 text-xs text-[var(--color-on-brand)]">{count}</span>}
       </button>
-      {active && (
-        <button onClick={() => setFilters({ q: "", members: [], labels: [], due: [] })} className={hdrBtn}>
-          Clear all
-        </button>
-      )}
+      {/* Space is always reserved so the buttons to its left don't jump. */}
+      <button
+        onClick={() => setFilters({ q: "", members: [], labels: [], due: [] })}
+        className={`${hdrBtn} ${active ? "" : "invisible"}`}
+        tabIndex={active ? 0 : -1}
+        aria-hidden={!active}
+      >
+        Clear all
+      </button>
       <span className="mx-1 h-5 w-px bg-white/30" />
       <MemberAvatars
         board={board}

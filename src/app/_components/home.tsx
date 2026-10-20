@@ -87,9 +87,11 @@ export function BoardTile({ b, children }: { b: Tile; children?: React.ReactNode
               star.mutate({ id: b.id, starred: !b.starred });
             }}
             className={`absolute right-2 bottom-2 transition-all duration-100 ${b.starred ? "text-[#f5cd47] opacity-100" : "translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 hover:scale-125"}`}
-            aria-label={b.starred ? "Unstar" : "Star"}
+            aria-label={b.starred ? "Unstar board" : "Star board"}
+            aria-pressed={b.starred}
+            title={b.starred ? "Click to unstar" : "Click to star"}
           >
-            <Icon name="star" />
+            <Icon name={b.starred ? "star" : "starOutline"} className="drop-shadow-[0_1px_1px_#0008]" />
           </button>
         )}
       </Link>

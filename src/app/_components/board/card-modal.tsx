@@ -148,7 +148,7 @@ function CardBody({
       }}
     >
       {dropping && (
-        <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-white/80 text-lg font-semibold">
+        <div className="pointer-events-none absolute inset-2 z-20 flex items-center justify-center rounded-lg border-2 border-dashed border-white/80 bg-black/60 text-lg font-semibold text-white">
           Drop files to upload.
         </div>
       )}
@@ -167,7 +167,7 @@ function CardBody({
           )}
           {!readOnly && (
             <Button
-              className="absolute right-3 bottom-3 bg-white/80 hover:bg-[var(--color-surface)]"
+              className="absolute right-3 bottom-3 bg-black/50 text-white hover:bg-black/70"
               onClick={openPop("cover")}
             >
               <Icon name="cover" size={14} /> Cover
@@ -203,7 +203,7 @@ function CardBody({
             <Icon name="eye" size={14} className="ml-2 inline" />
           )}
           {card.closed && (
-            <span className="ml-2 rounded bg-[#f5cd47] px-1.5 py-0.5 text-xs font-semibold text-[var(--color-text)]">
+            <span className="ml-2 rounded bg-[#f5cd47] px-1.5 py-0.5 text-xs font-semibold text-[#172b4d]">
               Archived
             </span>
           )}
@@ -507,7 +507,7 @@ function Badges({
                 </span>
               )}
               {due === "soon" && (
-                <span className="rounded-[3px] bg-[#f5cd47] px-1 text-xs">
+                <span className="rounded-[3px] bg-[#f5cd47] px-1 text-xs text-[#172b4d]">
                   Due soon
                 </span>
               )}

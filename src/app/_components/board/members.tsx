@@ -60,21 +60,16 @@ export function MemberAvatars({ board, meId, onFilterMember }: { board: BoardDat
           <button
             key={m.userId}
             onClick={(e) => setOpen({ userId: m.userId, el: e.currentTarget })}
-            className="relative rounded-full ring-2 ring-black/20 transition-transform hover:z-10 hover:-translate-y-0.5"
+            className="relative rounded-full ring-2 ring-black/30 transition-shadow hover:z-10 hover:ring-white/70 focus-visible:z-10 focus-visible:ring-white"
             title={m.user.name ?? undefined}
           >
             <Avatar user={m.user} size={28} />
-            {m.role === "admin" && (
-              <span className="absolute -right-0.5 -bottom-0.5 flex h-3 w-3 items-center justify-center rounded-full bg-[var(--color-surface)] text-[8px] text-[var(--color-text)] ring-1 ring-black/20">
-                ▲
-              </span>
-            )}
           </button>
         ))}
         {members.length > shown.length && (
           <button
             onClick={(e) => setAll(e.currentTarget)}
-            className="relative flex h-7 w-7 items-center justify-center rounded-full bg-white/25 text-xs font-semibold text-white ring-2 ring-black/20 hover:bg-white/40"
+            className="relative flex h-7 w-7 items-center justify-center rounded-full bg-white/25 text-xs font-semibold text-white ring-2 ring-black/30 transition-colors hover:bg-white/40 hover:ring-white/70"
           >
             +{members.length - shown.length}
           </button>
