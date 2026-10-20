@@ -67,25 +67,23 @@ export function BoardHeader({
         <Icon name={v.icon} />
       </button>
       <div className="flex-1" />
+      {/* Left of the filter buttons: the row is right-aligned, so this grows
+          into empty space instead of shifting My cards / Filters. */}
+      {active && (
+        <button onClick={() => setFilters({ q: "", members: [], labels: [], due: [] })} className={`${hdrBtn} animate-pop-in`}>
+          Clear all
+        </button>
+      )}
       <button
         onClick={() => setFilters({ ...filters, members: mine ? filters.members.filter((m) => m !== meId) : [...filters.members, meId] })}
-        className={`${hdrBtn} ${mine ? "bg-[#dcdfe4] text-[#172b4d] hover:bg-white" : ""}`}
+        className={`${hdrBtn} ${mine ? "bg-[#dcdfe4] text-[#172b4d]! hover:bg-white" : ""}`}
         title="Only show cards assigned to me (q)"
       >
         <Icon name="user" /> My cards
       </button>
-      <button onClick={filter.toggle} className={`${hdrBtn} ${active ? "bg-[#dcdfe4] text-[#172b4d] hover:bg-white" : ""}`}>
+      <button onClick={filter.toggle} className={`${hdrBtn} ${active ? "bg-[#dcdfe4] text-[#172b4d]! hover:bg-white" : ""}`}>
         <Icon name="filter" /> Filters
         {active && <span className="rounded-full bg-[var(--color-brand)] px-1.5 text-xs text-[var(--color-on-brand)]">{count}</span>}
-      </button>
-      {/* Space is always reserved so the buttons to its left don't jump. */}
-      <button
-        onClick={() => setFilters({ q: "", members: [], labels: [], due: [] })}
-        className={`${hdrBtn} ${active ? "" : "invisible"}`}
-        tabIndex={active ? 0 : -1}
-        aria-hidden={!active}
-      >
-        Clear all
       </button>
       <span className="mx-1 h-5 w-px bg-white/30" />
       <MemberAvatars
