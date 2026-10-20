@@ -17,7 +17,9 @@ RUN bunx prisma generate
 ENV SKIP_ENV_VALIDATION=1 NEXT_TELEMETRY_DISABLED=1
 RUN bun run build
 
-FROM oven/bun:1.1.34 AS run
+# Runtime on bookworm: the bullseye-based bun:1.1.34 image's openssl package
+# 404s on the Debian security mirror.
+FROM oven/bun:1.2.23-debian AS run
 WORKDIR /app
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000 HOSTNAME=0.0.0.0 \
     UPLOAD_DIR=/data/uploads AUTH_TRUST_HOST=true

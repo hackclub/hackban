@@ -1,8 +1,10 @@
 // Hackban schema (PostgreSQL).
 
 generator client {
-  provider = "prisma-client-js"
-  output   = "../generated/prisma"
+  provider      = "prisma-client-js"
+  output        = "../generated/prisma"
+  // native for local dev; openssl-3 for the bookworm runtime image
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {
