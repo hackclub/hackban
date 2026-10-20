@@ -1,0 +1,241 @@
+@import "tailwindcss";
+
+@theme {
+  /* Trello's stack (font-family-body), with Inter standing in for Atlassian Sans */
+  --font-sans: "Atlassian Sans", var(--font-inter), ui-sans-serif, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Ubuntu, "Helvetica Neue", sans-serif;
+
+  /* Colors are theme tokens (see :root below) so dark mode just swaps vars */
+  --color-text: var(--t-text);
+  --color-text-subtle: var(--t-text-subtle);
+  --color-text-subtlest: var(--t-text-subtlest);
+  --color-page: var(--t-page);
+  --color-surface: var(--t-surface);
+  --color-surface-hover: var(--t-surface-hover);
+  --color-overlay: var(--t-overlay);
+  --color-modal: var(--t-modal);
+  --color-list: var(--t-list);
+  --color-border: var(--t-border);
+  --color-neutral: var(--t-neutral);
+  --color-neutral-hover: var(--t-neutral-hover);
+  --color-neutral-pressed: var(--t-neutral-pressed);
+  --color-neutral-bold: var(--t-neutral-bold);
+  --color-brand: var(--t-brand);
+  --color-brand-hover: var(--t-brand-hover);
+  --color-brand-subtle: var(--t-brand-subtle);
+  --color-on-brand: var(--t-on-brand);
+  --color-danger: var(--t-danger);
+  --color-success: var(--t-success);
+  --color-warning: #f5cd47;
+  --color-focus: var(--t-focus);
+  --shadow-card: var(--t-shadow-card);
+  --shadow-overlay: var(--t-shadow-overlay);
+  --shadow-raised: var(--t-shadow-raised);
+}
+
+/* Light (Atlassian) */
+:root {
+  color-scheme: light;
+  --t-text: #172b4d;
+  --t-text-subtle: #44546f;
+  --t-text-subtlest: #626f86;
+  --t-page: #ffffff;
+  --t-surface: #ffffff;
+  --t-surface-hover: #f7f8f9;
+  --t-overlay: #ffffff;
+  --t-modal: #f1f2f4;
+  --t-list: #f1f2f4;
+  --t-border: #091e4224;
+  --t-neutral: #091e420f;
+  --t-neutral-hover: #091e4224;
+  --t-neutral-pressed: #091e424f;
+  --t-neutral-bold: #dcdfe4;
+  --t-brand: #0c66e4;
+  --t-brand-hover: #0055cc;
+  --t-brand-subtle: #e9f2ff;
+  --t-on-brand: #ffffff;
+  --t-danger: #c9372c;
+  --t-success: #1f845a;
+  --t-focus: #388bff;
+  --t-due-complete-bg: #1f845a;
+  --t-due-complete-fg: #ffffff;
+  --t-due-overdue-bg: #c9372c;
+  --t-due-overdue-fg: #ffffff;
+  --t-due-soon-bg: #f5cd47;
+  --t-due-soon-fg: #172b4d;
+  --t-shadow-card: 0 1px 1px #091e4240, 0 0 1px #091e424f;
+  --t-shadow-overlay: 0 8px 12px #091e4226, 0 0 1px #091e424f;
+  --t-shadow-raised: 0 8px 16px -4px #091e4240, 0 0 1px #091e424f;
+}
+
+/* Dark (Trello's dark palette). data-theme is resolved from the user's
+   light/dark/system choice by the inline script in layout.tsx. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --t-text: #b6c2cf;
+  --t-text-subtle: #9fadbc;
+  --t-text-subtlest: #8c9bab;
+  --t-page: #1d2125;
+  --t-surface: #22272b;
+  --t-surface-hover: #2c333a;
+  --t-overlay: #282e33;
+  --t-modal: #323940;
+  --t-list: #101204;
+  --t-border: #a6c5e229;
+  --t-neutral: #a1bdd914;
+  --t-neutral-hover: #a6c5e229;
+  --t-neutral-pressed: #bfdbf847;
+  --t-neutral-bold: #454f59;
+  --t-brand: #579dff;
+  --t-brand-hover: #85b8ff;
+  --t-brand-subtle: #1c2b41;
+  --t-on-brand: #1d2125;
+  --t-danger: #f87168;
+  --t-success: #4bce97;
+  --t-focus: #85b8ff;
+  --t-due-complete-bg: #4bce97;
+  --t-due-complete-fg: #1d2125;
+  --t-due-overdue-bg: #f87168;
+  --t-due-overdue-fg: #1d2125;
+  --t-due-soon-bg: #e2b203;
+  --t-due-soon-fg: #1d2125;
+  --t-shadow-card: 0 1px 1px #03040480, 0 0 1px #03040480;
+  --t-shadow-overlay: 0 8px 12px #0304045c, 0 0 1px #03040480;
+  --t-shadow-raised: 0 8px 16px -4px #03040480, 0 0 1px #03040480;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Entrance animations for things that appear (new cards, lists, toasts) */
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+@keyframes check-pop {
+  0% { transform: scale(0.6); }
+  60% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+.animate-pop-in {
+  animation: pop-in 160ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+.animate-check-pop {
+  animation: check-pop 220ms cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  color: var(--color-text);
+  background: var(--color-page);
+  font-size: 14px;
+  line-height: 20px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Board canvas horizontal scrollbar, like Trello's chunky translucent one */
+.board-scroll::-webkit-scrollbar {
+  height: 12px;
+}
+.board-scroll::-webkit-scrollbar-track {
+  background: #00000026;
+  border-radius: 4px;
+  margin: 0 8px;
+}
+.board-scroll::-webkit-scrollbar-thumb {
+  background: #ffffff66;
+  border-radius: 4px;
+}
+.list-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+.list-scroll::-webkit-scrollbar-thumb {
+  background: #091e4224;
+  border-radius: 4px;
+}
+
+.markdown p {
+  margin: 0 0 8px;
+}
+.markdown ul {
+  list-style: disc;
+  padding-left: 24px;
+  margin-bottom: 8px;
+}
+.markdown ol {
+  list-style: decimal;
+  padding-left: 24px;
+  margin-bottom: 8px;
+}
+.markdown a {
+  color: var(--color-brand);
+  text-decoration: underline;
+}
+.markdown code {
+  background: var(--color-neutral);
+  padding: 0 4px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+.markdown pre {
+  background: var(--color-neutral);
+  padding: 8px;
+  border-radius: 3px;
+  overflow-x: auto;
+  margin-bottom: 8px;
+}
+.markdown h1 {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 12px 0 8px;
+}
+.markdown h2 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 12px 0 8px;
+}
+.markdown h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 12px 0 8px;
+}
+.markdown blockquote {
+  border-left: 3px solid var(--color-neutral-bold);
+  padding-left: 12px;
+  color: var(--color-text-subtle);
+}
+
+/* Tailwind v4's preflight gives buttons the default arrow cursor; restore the
+   pointer on everything clickable, and a not-allowed cursor when disabled. */
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [role="checkbox"],
+  select:not(:disabled),
+  summary,
+  label:has(> input[type="checkbox"]),
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled),
+  input[type="color"],
+  input[type="file"] {
+    cursor: pointer;
+  }
+  button:disabled,
+  select:disabled,
+  input:disabled,
+  textarea:disabled {
+    cursor: not-allowed;
+  }
+}

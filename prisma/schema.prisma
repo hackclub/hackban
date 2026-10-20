@@ -1,0 +1,321 @@
+// Hackban schema. Kept portable (no SQLite-only features) so switching the
+// datasource provider to postgresql is the only change needed later.
+
+generator client {
+    provider = "prisma-client-js"
+    output   = "../generated/prisma"
+}
+
+datasource db {
+    provider = "sqlite"
+    url      = env("DATABASE_URL")
+}
+
+// ---------- Auth (NextAuth) ----------
+
+model Account {
+    id                       String  @id @default(cuid())
+    userId                   String
+    type                     String
+    provider                 String
+    providerAccountId        String
+    refresh_token            String?
+    access_token             String?
+    expires_at               Int?
+    token_type               String?
+    scope                    String?
+    id_token                 String?
+    session_state            String?
+    user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+    refresh_token_expires_in Int?
+
+    @@unique([provider, providerAccountId])
+}
+
+model Session {
+    id           String   @id @default(cuid())
+    sessionToken String   @unique
+    userId       String
+    expires      DateTime
+    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+    identifier String
+    token      String   @unique
+    expires    DateTime
+
+    @@unique([identifier, token])
+}
+
+model User {
+    id            String    @id @default(cuid())
+    name          String?
+    username      String?   @unique
+    email         String?   @unique
+    emailVerified DateTime?
+    image         String?
+    // Ghost users are created by the Trello importer for members who haven't
+    // signed in yet; they are merged into the real account on first login.
+    isGhost       Boolean   @default(false)
+    // Site-wide admin (the /admin panel). Seeded from ADMIN_EMAILS on login.
+    isAdmin       Boolean   @default(false)
+    trelloId      String?   @unique
+    createdAt     DateTime  @default(now())
+
+    accounts         Account[]
+    sessions         Session[]
+    workspaces       WorkspaceMember[]
+    boards           BoardMember[]
+    stars            BoardStar[]
+    cards            CardMember[]
+    comments         Comment[]
+    activities       Activity[]       @relation("actor")
+    notifications    Notification[]
+    checkItems       CheckItem[]
+    attachments      Attachment[]
+    imports          TrelloImport[]
+    watches          Watch[]
+}
+
+// ---------- Workspaces & boards ----------
+
+model Workspace {
+    id          String   @id @default(cuid())
+    name        String
+    description String?
+    // Uploaded logo (storage key); null shows the colored initial instead.
+    logoKey     String?
+    trelloId    String?  @unique
+    createdAt   DateTime @default(now())
+
+    members WorkspaceMember[]
+    boards  Board[]
+}
+
+model WorkspaceMember {
+    workspaceId String
+    userId      String
+    role        String    @default("normal") // admin | normal
+    workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+    user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@id([workspaceId, userId])
+}
+
+model Board {
+    id          String    @id @default(cuid())
+    name        String
+    description String?
+    workspaceId String
+    background  String    @default("#0079bf") // css color or gradient
+    bgImage     String?
+    visibility  String    @default("workspace") // private | workspace | public
+    closed      Boolean   @default(false)
+    trelloId    String?   @unique
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
+    workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+    members    BoardMember[]
+    stars      BoardStar[]
+    lists      List[]
+    labels     Label[]
+    activities Activity[]
+    watches    Watch[]
+}
+
+model BoardMember {
+    boardId    String
+    userId     String
+    role       String    @default("normal") // admin | normal | observer
+    lastViewed DateTime?
+    board      Board     @relation(fields: [boardId], references: [id], onDelete: Cascade)
+    user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@id([boardId, userId])
+}
+
+model BoardStar {
+    boardId String
+    userId  String
+    board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+    user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@id([boardId, userId])
+}
+
+model List {
+    id        String   @id @default(cuid())
+    boardId   String
+    name      String
+    pos       String // fractional index
+    closed    Boolean  @default(false)
+    trelloId  String?  @unique
+    createdAt DateTime @default(now())
+    board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+    cards     Card[]
+
+    @@index([boardId, pos])
+}
+
+model Card {
+    id           String    @id @default(cuid())
+    listId       String
+    title        String
+    description  String    @default("")
+    pos          String
+    start        DateTime?
+    due          DateTime?
+    dueComplete  Boolean   @default(false)
+    coverColor   String?
+    coverAttachmentId String?
+    coverSize    String    @default("normal") // normal | full
+    closed       Boolean   @default(false)
+    trelloId     String?   @unique
+    shortId      Int       @default(0)
+    createdAt    DateTime  @default(now())
+    updatedAt    DateTime  @updatedAt
+    list         List      @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+    labels      CardLabel[]
+    members     CardMember[]
+    checklists  Checklist[]
+    attachments Attachment[]
+    comments    Comment[]
+    activities  Activity[]
+    watches     Watch[]
+
+    @@index([listId, pos])
+}
+
+model Label {
+    id       String      @id @default(cuid())
+    boardId  String
+    name     String      @default("")
+    color    String? // trello color name, null = no color
+    trelloId String?     @unique
+    board    Board       @relation(fields: [boardId], references: [id], onDelete: Cascade)
+    cards    CardLabel[]
+}
+
+model CardLabel {
+    cardId  String
+    labelId String
+    card    Card   @relation(fields: [cardId], references: [id], onDelete: Cascade)
+    label   Label  @relation(fields: [labelId], references: [id], onDelete: Cascade)
+
+    @@id([cardId, labelId])
+}
+
+model CardMember {
+    cardId String
+    userId String
+    card   Card   @relation(fields: [cardId], references: [id], onDelete: Cascade)
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@id([cardId, userId])
+}
+
+model Checklist {
+    id       String      @id @default(cuid())
+    cardId   String
+    name     String
+    pos      String
+    trelloId String?     @unique
+    card     Card        @relation(fields: [cardId], references: [id], onDelete: Cascade)
+    items    CheckItem[]
+}
+
+model CheckItem {
+    id          String    @id @default(cuid())
+    checklistId String
+    name        String
+    pos         String
+    complete    Boolean   @default(false)
+    due         DateTime?
+    memberId    String?
+    trelloId    String?   @unique
+    checklist   Checklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+    member      User?     @relation(fields: [memberId], references: [id], onDelete: SetNull)
+}
+
+model Attachment {
+    id        String   @id @default(cuid())
+    cardId    String
+    uploaderId String?
+    name      String
+    url       String // external url or /api/files/<id>
+    mimeType  String?
+    size      Int?
+    isUpload  Boolean  @default(false)
+    storageKey String?
+    trelloId  String?  @unique
+    createdAt DateTime @default(now())
+    card      Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+    uploader  User?    @relation(fields: [uploaderId], references: [id], onDelete: SetNull)
+}
+
+model Comment {
+    id        String    @id @default(cuid())
+    cardId    String
+    authorId  String
+    text      String
+    trelloId  String?   @unique
+    createdAt DateTime  @default(now())
+    editedAt  DateTime?
+    card      Card      @relation(fields: [cardId], references: [id], onDelete: Cascade)
+    author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+}
+
+model Activity {
+    id        String   @id @default(cuid())
+    boardId   String
+    cardId    String?
+    actorId   String
+    type      String
+    data      String   @default("{}") // JSON
+    createdAt DateTime @default(now())
+    board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+    card      Card?    @relation(fields: [cardId], references: [id], onDelete: Cascade)
+    actor     User     @relation("actor", fields: [actorId], references: [id], onDelete: Cascade)
+
+    @@index([boardId, createdAt])
+    @@index([cardId, createdAt])
+}
+
+model Watch {
+    id      String  @id @default(cuid())
+    userId  String
+    boardId String?
+    cardId  String?
+    user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+    board   Board?  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+    card    Card?   @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, boardId, cardId])
+}
+
+model Notification {
+    id        String   @id @default(cuid())
+    userId    String
+    type      String
+    data      String   @default("{}")
+    read      Boolean  @default(false)
+    createdAt DateTime @default(now())
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([userId, createdAt])
+}
+
+model TrelloImport {
+    id        String   @id @default(cuid())
+    userId    String
+    source    String // api | json
+    status    String   @default("pending") // pending | running | done | error
+    log       String   @default("[]") // JSON array of messages
+    result    String   @default("{}")
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
