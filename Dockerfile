@@ -27,14 +27,15 @@ WORKDIR /app
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000 HOSTNAME=0.0.0.0 \
     UPLOAD_DIR=/data/uploads AUTH_TRUST_HOST=true
 RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
+# Full Prisma CLI (with its dependencies) for the boot-time schema sync.
+RUN npm install -g prisma@6.19.3 && npm cache clean --force
 COPY --from=build /app/.next/standalone ./
 COPY --from=build /app/.next/static ./.next/static
 COPY --from=build /app/public ./public
 COPY --from=build /app/prisma ./prisma
 COPY --from=build /app/generated ./generated
-COPY --from=build /app/node_modules/prisma ./node_modules/prisma
 COPY --from=build /app/node_modules/@prisma ./node_modules/@prisma
 VOLUME /data
 EXPOSE 3000
 # Apply schema changes on boot (refuses destructive changes), then start.
-CMD ["sh", "-c", "mkdir -p /data/uploads && node node_modules/prisma/build/index.js db push --skip-generate && node server.js"]
+CMD ["sh", "-c", "mkdir -p /data/uploads && prisma db push --skip-generate --schema ./prisma/schema.prisma && node server.js"]
