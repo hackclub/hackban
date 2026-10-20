@@ -119,13 +119,14 @@ export const ListColumn = memo(function ListColumn({
     >
       <div {...attributes} {...listeners} className="flex cursor-pointer items-start gap-1 px-2 pt-2 pb-1 outline-none">
         <ListTitle list={list} boardId={board.id} readOnly={readOnly} />
+        <span className="flex h-8 items-center px-1 text-sm text-[var(--color-text-subtle)] tabular-nums">{cards.length}</span>
         <IconButton
           className="text-[var(--color-text-subtle)]"
           onClick={() => setCollapsed(true)}
           aria-label="Collapse list"
           title="Collapse list"
         >
-          <Icon name="collapse" size={14} />
+          <Icon name="collapseIn" size={16} />
         </IconButton>
         {!readOnly && <ListMenu list={list} board={board} onAddCard={() => setComposerAt("top")} />}
       </div>
@@ -358,6 +359,7 @@ export function CardComposer({ listId, boardId, where, onClose }: { listId: stri
         checkTotal: 0,
         checkDone: 0,
         coverUrl: null,
+        watching: false,
       };
       utils.board.get.setData({ id: boardId }, (b) =>
         b && {

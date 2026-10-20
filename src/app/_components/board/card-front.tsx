@@ -169,6 +169,11 @@ export const CardFront = memo(function CardFront({
         )}
         <CardTitle title={card.title} complete={card.dueComplete} onChange={overlay ? undefined : setComplete} />
         <div className="mt-1 flex flex-wrap items-center gap-x-1 gap-y-0.5 pb-0.5 text-xs text-[var(--color-text-subtle)]">
+          {card.watching && (
+            <span className="flex h-6 items-center px-1" title="You are watching this card.">
+              <Icon name="eye" size={16} />
+            </span>
+          )}
           {card.due && (
             <button
               onClick={(e) => {

@@ -9,7 +9,6 @@ import { TRPCReactProvider } from "~/trpc/react";
 export const metadata: Metadata = {
   title: "Hackban",
   description: "Boards for Hack Club",
-  icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
 // Trello's UI font is Atlassian Sans (proprietary, derived from Inter). We

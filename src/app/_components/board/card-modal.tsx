@@ -1330,7 +1330,10 @@ function WatchButton({ card }: { card: CardDetail }) {
         { id: card.id },
         (c) => c && { ...c, watching: on },
       ),
-    onSettled: () => utils.card.get.invalidate({ id: card.id }),
+    onSettled: () => {
+      void utils.card.get.invalidate({ id: card.id });
+      void utils.board.get.invalidate({ id: card.list.boardId });
+    },
   });
   return (
     <SideButton

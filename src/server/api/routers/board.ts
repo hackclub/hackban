@@ -48,6 +48,7 @@ export const boardRouter = createTRPCRouter({
                 orderBy: { pos: "asc" },
                 include: {
                   ...cardFrontInclude,
+                  watches: { where: { userId }, select: { userId: true } },
                   attachments: {
                     select: { id: true, url: true, mimeType: true },
                   },
@@ -68,8 +69,9 @@ export const boardRouter = createTRPCRouter({
         myRole,
         lists: rest.lists.map((l) => ({
           ...l,
-          cards: l.cards.map(({ attachments, checklists, ...c }) => ({
+          cards: l.cards.map(({ attachments, checklists, watches, ...c }) => ({
             ...c,
+            watching: watches.length > 0,
             checkTotal: checklists.reduce((n, cl) => n + cl.items.length, 0),
             checkDone: checklists.reduce((n, cl) => n + cl.items.filter((i) => i.complete).length, 0),
             coverUrl: attachments.find((a) => a.id === c.coverAttachmentId)?.url ?? null,

@@ -140,6 +140,9 @@ body {
 body {
   color: var(--color-text);
   background: var(--color-page);
+  /* Inter sets ~2.4% wider than Atlassian Sans; this tightens it so card
+     titles wrap where Trello's do. */
+  letter-spacing: -0.012em;
   font-size: 14px;
   line-height: 20px;
   -webkit-font-smoothing: antialiased;
