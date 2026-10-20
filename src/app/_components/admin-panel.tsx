@@ -140,6 +140,8 @@ function Boards() {
   const { data } = api.admin.boards.useQuery({ q: dq });
   const join = api.admin.joinBoard.useMutation({ onSuccess: () => utils.admin.boards.invalidate() });
   const del = api.admin.deleteBoard.useMutation({ onSuccess: () => utils.admin.boards.invalidate() });
+  const move = api.board.move.useMutation({ onSuccess: () => utils.admin.boards.invalidate() });
+  const { data: workspaces } = api.admin.workspaces.useQuery({ q: "" });
   const [confirm, setConfirm] = useState<string | null>(null);
   return (
     <div>
@@ -159,6 +161,17 @@ function Boards() {
                 {formatDistanceToNow(b.updatedAt, { addSuffix: true })}
               </div>
             </div>
+            <select
+              className="h-8 max-w-40 rounded-[3px] bg-[var(--color-neutral)] px-2 text-sm"
+              value={b.workspace.id}
+              onChange={(e) => move.mutate({ id: b.id, workspaceId: e.target.value })}
+              title="Move to workspace"
+              aria-label={`Move ${b.name} to workspace`}
+            >
+              {workspaces?.map((w) => (
+                <option key={w.id} value={w.id}>{w.name}</option>
+              ))}
+            </select>
             {mine === "admin" ? (
               <Link href={`/b/${b.id}`}><Button>Open</Button></Link>
             ) : (

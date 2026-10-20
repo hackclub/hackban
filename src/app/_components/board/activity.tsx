@@ -24,6 +24,7 @@ function describe(a: Act, onCard: boolean) {
     case "renameBoard": return <>renamed this board to {s(d.name)}</>;
     case "closeBoard": return <>closed this board</>;
     case "reopenBoard": return <>reopened this board</>;
+    case "moveBoard": return <>moved this board from {s(d.from)} to {s(d.to)}</>;
     case "createList": return <>added list {s(d.name)} to this board</>;
     case "renameList": return <>renamed list to {s(d.name)}</>;
     case "archiveList": return <>archived list {s(d.name)}</>;

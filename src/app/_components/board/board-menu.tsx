@@ -10,7 +10,7 @@ import { AutoTextarea, BOARD_COLORS, BOARD_GRADIENTS, Button, Icon, IconButton, 
 import { ActivityItem } from "./activity";
 import { type BoardData } from "./types";
 
-type Pane = "main" | "about" | "activity" | "archived" | "background" | "labels" | "close";
+type Pane = "main" | "about" | "activity" | "archived" | "background" | "labels" | "move" | "close";
 const TITLES: Record<Pane, string> = {
   main: "Menu",
   about: "About this board",
@@ -18,6 +18,7 @@ const TITLES: Record<Pane, string> = {
   archived: "Archived items",
   background: "Change background",
   labels: "Labels",
+  move: "Move board",
   close: "Close board?",
 };
 
@@ -47,6 +48,7 @@ export function BoardMenu({ board, open, onClose, onOpenCard }: { board: BoardDa
             {pane === "archived" && <Archived board={board} onOpenCard={onOpenCard} />}
             {pane === "background" && <Background board={board} />}
             {pane === "labels" && <Labels board={board} />}
+            {pane === "move" && <MoveBoard board={board} onDone={() => setPane("main")} />}
             {pane === "close" && <CloseBoard board={board} />}
           </div>
         </motion.aside>
@@ -74,6 +76,7 @@ function Main({ board, setPane, onOpenCard }: { board: BoardData; setPane: (p: P
       <Row onClick={() => setPane("background")} style={board.bgImage ? { backgroundImage: `url(${board.bgImage})`, backgroundSize: "cover" } : { background: board.background }}>Change background</Row>
       <Row icon="label" onClick={() => setPane("labels")}>Labels</Row>
       <hr className="my-2 border-[var(--color-border)]" />
+      {board.myRole === "admin" && <Row icon="move" onClick={() => setPane("move")}>Move board…</Row>}
       {board.myRole !== "observer" && <Row icon="close" onClick={() => setPane("close")}>Close board</Row>}
       <hr className="my-2 border-[var(--color-border)]" />
       <h3 className="mt-2 mb-1 flex items-center gap-2 px-3 font-semibold"><Icon name="activity" /> Activity</h3>
@@ -259,6 +262,56 @@ export function Labels({ board, onPick, selected }: { board: BoardData; onPick?:
         </div>
       ))}
       <Button className="mt-2 w-full" onClick={() => setEditing({ name: q, color: "green" })}>Create a new label</Button>
+    </div>
+  );
+}
+
+function MoveBoard({ board, onDone }: { board: BoardData; onDone: () => void }) {
+  const utils = api.useUtils();
+  const { data: workspaces } = api.workspace.list.useQuery();
+  const [target, setTarget] = useState("");
+  const move = api.board.move.useMutation({
+    onSuccess: () => {
+      void utils.board.get.invalidate({ id: board.id });
+      void utils.workspace.list.invalidate();
+      void utils.workspace.get.invalidate();
+      onDone();
+    },
+  });
+  const options = workspaces?.filter((w) => w.id !== board.workspace.id) ?? [];
+  const to = (target !== "" ? target : options[0]?.id) ?? "";
+  const toName = options.find((w) => w.id === to)?.name;
+  return (
+    <div className="text-sm">
+      <p className="mb-3 text-[var(--color-text-subtle)]">
+        Currently in <b className="text-[var(--color-text)]">{board.workspace.name}</b>.
+      </p>
+      {options.length === 0 ? (
+        <p className="text-[var(--color-text-subtle)]">You&apos;re not in any other workspace to move it to.</p>
+      ) : (
+        <>
+          <label className="mb-1 block text-xs font-bold text-[var(--color-text-subtle)]">Move to</label>
+          <select className={inputCls} value={to} onChange={(e) => setTarget(e.target.value)}>
+            {options.map((w) => (
+              <option key={w.id} value={w.id}>{w.name}</option>
+            ))}
+          </select>
+          <ul className="mt-3 list-disc space-y-1 pl-5 text-xs text-[var(--color-text-subtle)]">
+            <li>Board members keep their access.</li>
+            {board.visibility === "workspace" && (
+              <li>
+                It&apos;s workspace-visible, so members of <b>{toName}</b> will be able to see it, and members of {board.workspace.name} who aren&apos;t on the board will lose access.
+              </li>
+            )}
+            {board.visibility === "private" && <li>It stays private to its members.</li>}
+            {board.visibility === "public" && <li>It stays public.</li>}
+          </ul>
+          <Button variant="primary" className="mt-4 w-full" disabled={!to || move.isPending} onClick={() => move.mutate({ id: board.id, workspaceId: to })}>
+            {move.isPending ? "Moving…" : `Move to ${toName ?? "workspace"}`}
+          </Button>
+          {move.error && <p className="mt-2 text-xs text-[var(--color-danger)]">{move.error.message}</p>}
+        </>
+      )}
     </div>
   );
 }

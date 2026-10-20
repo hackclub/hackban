@@ -134,16 +134,37 @@ export const boardRouter = createTRPCRouter({
     }),
 
   /** Move a board to another workspace (board admins who belong to the target). */
+  /**
+   * Move a board to another workspace. Board admins can move into any workspace
+   * they belong to; site admins can move any board anywhere. Board members keep
+   * their access; "workspace" visibility now means the *new* workspace.
+   */
   move: protectedProcedure
     .input(z.object({ id: z.string(), workspaceId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
-      const board = await requireBoard(ctx.db, userId, input.id);
-      if (board.members[0]?.role !== "admin") throw new TRPCError({ code: "FORBIDDEN", message: "Only board admins can move a board." });
-      const target = await ctx.db.workspaceMember.findUnique({ where: { workspaceId_userId: { workspaceId: input.workspaceId, userId } } });
-      if (!target) throw new TRPCError({ code: "FORBIDDEN", message: "You're not in that workspace." });
+      const siteAdmin = ctx.session.user.isAdmin;
+      const board = await ctx.db.board.findUnique({
+        where: { id: input.id },
+        include: { workspace: { select: { name: true } }, members: { where: { userId } } },
+      });
+      if (!board) throw new TRPCError({ code: "NOT_FOUND" });
+      if (!siteAdmin) {
+        if (board.members[0]?.role !== "admin") throw new TRPCError({ code: "FORBIDDEN", message: "Only board admins can move a board." });
+        const target = await ctx.db.workspaceMember.findUnique({ where: { workspaceId_userId: { workspaceId: input.workspaceId, userId } } });
+        if (!target) throw new TRPCError({ code: "FORBIDDEN", message: "You're not in that workspace." });
+      }
+      const to = await ctx.db.workspace.findUnique({ where: { id: input.workspaceId }, select: { name: true } });
+      if (!to) throw new TRPCError({ code: "NOT_FOUND", message: "That workspace doesn't exist." });
+      if (board.workspaceId === input.workspaceId) return;
       await ctx.db.board.update({ where: { id: input.id }, data: { workspaceId: input.workspaceId } });
-      await logActivity(ctx.db, { boardId: input.id, actorId: userId, type: "updateBoard", data: { name: board.name }, origin: ctx.clientId });
+      await logActivity(ctx.db, {
+        boardId: input.id,
+        actorId: userId,
+        type: "moveBoard",
+        data: { name: board.name, from: board.workspace.name, to: to.name },
+        origin: ctx.clientId,
+      });
     }),
 
   /** Copy a board's labels and lists, optionally with its open cards. */
