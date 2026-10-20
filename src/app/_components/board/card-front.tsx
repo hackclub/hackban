@@ -159,7 +159,7 @@ export const CardFront = memo(function CardFront({
                   toggleLabels();
                 }}
                 title={label.name}
-                className={`overflow-hidden rounded-[4px] text-left text-xs font-medium transition-all duration-150 hover:brightness-90 ${expanded ? "h-4 max-w-full min-w-14 truncate px-1.5 leading-4" : "h-2 w-10"}`}
+                className={`overflow-hidden rounded-[4px] text-left text-xs font-medium transition-all duration-150 hover:brightness-90 ${expanded ? "h-4 max-w-full min-w-6 truncate px-1.5 text-center leading-4" : "h-2 w-10"}`}
                 style={labelStyle(label.color)}
               >
                 {expanded ? label.name : null}
