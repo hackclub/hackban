@@ -209,6 +209,7 @@ function CardBody({
             </span>
           )}
         </p>
+        {!readOnly && <QuickActions openPop={openPop} />}
       </div>
 
       <div className="flex flex-col gap-4 px-4 pb-6 md:flex-row">
@@ -298,6 +299,60 @@ function CardBody({
         card={card}
         board={board}
       />
+    </div>
+  );
+}
+
+/** Trello's pill row under the card title: + Add, Labels, Dates, Checklist, Members. */
+function QuickActions({ openPop }: { openPop: (k: PopKind) => (e: React.MouseEvent) => void }) {
+  const [addEl, setAddEl] = useState<HTMLElement | null>(null);
+  const pill =
+    "flex h-8 items-center gap-1.5 rounded-[3px] border border-[var(--color-border)] px-3 text-sm font-medium text-[var(--color-text-subtle)] transition-colors hover:bg-[var(--color-neutral)] hover:text-[var(--color-text)]";
+  return (
+    <div className="mt-3 flex flex-wrap gap-2">
+      <button className={pill} onClick={(e) => setAddEl(e.currentTarget)}>
+        <Icon name="plus" size={14} /> Add
+      </button>
+      <button className={pill} onClick={openPop("labels")}>
+        <Icon name="label" size={14} /> Labels
+      </button>
+      <button className={pill} onClick={openPop("dates")}>
+        <Icon name="clock" size={14} /> Dates
+      </button>
+      <button className={pill} onClick={openPop("checklist")}>
+        <Icon name="check" size={14} /> Checklist
+      </button>
+      <button className={pill} onClick={openPop("members")}>
+        <Icon name="user" size={14} /> Members
+      </button>
+      <Popover anchor={addEl ? { el: addEl } : null} open={!!addEl} onClose={() => setAddEl(null)} title="Add to card" width={260}>
+        {(
+          [
+            ["attach", "Attachment", "Add links, files and images", "attachment"],
+            ["cover", "Cover", "Add a color or image cover", "cover"],
+            ["move", "Move", "Move to another list or board", "move"],
+            ["copy", "Copy", "Duplicate this card", "copy"],
+          ] as const
+        ).map(([icon, label, desc, kind]) => (
+          <button
+            key={kind}
+            onClick={() => {
+              // Anchor the next popover to the "+ Add" pill: this menu item is
+              // about to unmount, so it can't be the anchor.
+              const anchor = addEl;
+              setAddEl(null);
+              if (anchor) openPop(kind)({ currentTarget: anchor } as unknown as React.MouseEvent);
+            }}
+            className="-mx-3 flex w-[calc(100%+24px)] items-start gap-3 px-3 py-2 text-left transition-colors hover:bg-[var(--color-neutral)]"
+          >
+            <Icon name={icon} className="mt-0.5 text-[var(--color-text-subtle)]" />
+            <span>
+              <span className="block text-sm font-medium">{label}</span>
+              <span className="block text-xs text-[var(--color-text-subtle)]">{desc}</span>
+            </span>
+          </button>
+        ))}
+      </Popover>
     </div>
   );
 }
