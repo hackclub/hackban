@@ -1,5 +1,4 @@
-// Hackban schema. Kept portable (no SQLite-only features) so switching the
-// datasource provider to postgresql is the only change needed later.
+// Hackban schema (PostgreSQL).
 
 generator client {
   provider = "prisma-client-js"
@@ -7,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 

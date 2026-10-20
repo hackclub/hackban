@@ -37,7 +37,7 @@ export const adminRouter = createTRPCRouter({
 
   users: adminProcedure.input(q).query(({ ctx, input }) =>
     ctx.db.user.findMany({
-      where: input.q ? { OR: [{ name: { contains: input.q } }, { email: { contains: input.q } }] } : undefined,
+      where: input.q ? { OR: [{ name: { contains: input.q, mode: "insensitive" } }, { email: { contains: input.q, mode: "insensitive" } }] } : undefined,
       orderBy: [{ isAdmin: "desc" }, { createdAt: "desc" }],
       take: 200,
       select: {
@@ -80,7 +80,7 @@ export const adminRouter = createTRPCRouter({
 
   boards: adminProcedure.input(q).query(({ ctx, input }) =>
     ctx.db.board.findMany({
-      where: input.q ? { name: { contains: input.q } } : undefined,
+      where: input.q ? { name: { contains: input.q, mode: "insensitive" } } : undefined,
       orderBy: { updatedAt: "desc" },
       take: 200,
       select: {
@@ -123,7 +123,7 @@ export const adminRouter = createTRPCRouter({
 
   workspaces: adminProcedure.input(q).query(({ ctx, input }) =>
     ctx.db.workspace.findMany({
-      where: input.q ? { name: { contains: input.q } } : undefined,
+      where: input.q ? { name: { contains: input.q, mode: "insensitive" } } : undefined,
       orderBy: { createdAt: "desc" },
       take: 200,
       select: {

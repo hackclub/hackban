@@ -270,9 +270,9 @@ export const boardRouter = createTRPCRouter({
         : ctx.db.user.findMany({
             where: {
               OR: [
-                { name: { contains: input.q } },
-                { email: { contains: input.q } },
-                { username: { contains: input.q } },
+                { name: { contains: input.q, mode: "insensitive" } },
+                { email: { contains: input.q, mode: "insensitive" } },
+                { username: { contains: input.q, mode: "insensitive" } },
               ],
             },
             select: { id: true, name: true, image: true, email: true, isGhost: true },

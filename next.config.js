@@ -5,6 +5,9 @@
 import "./src/env.js";
 
 /** @type {import("next").NextConfig} */
-const config = {};
+const config = {
+  // Self-contained server bundle for the Docker image.
+  output: "standalone",
+};
 
 export default config;

@@ -33,11 +33,11 @@ export const searchRouter = createTRPCRouter({
         ],
       };
       const [boards, cards] = await Promise.all([
-        ctx.db.board.findMany({ where: { ...visible, name: { contains: q } }, take: 6 }),
+        ctx.db.board.findMany({ where: { ...visible, name: { contains: q, mode: "insensitive" } }, take: 6 }),
         ctx.db.card.findMany({
           where: {
             list: { board: visible },
-            OR: [{ title: { contains: q } }, { description: { contains: q } }],
+            OR: [{ title: { contains: q, mode: "insensitive" } }, { description: { contains: q, mode: "insensitive" } }],
           },
           include: { list: { select: { name: true, board: { select: { id: true, name: true } } } } },
           take: 12,
