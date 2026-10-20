@@ -106,7 +106,7 @@ export function MemberAvatars({ board, meId, onFilterMember }: { board: BoardDat
           <button
             key={m.userId}
             onClick={(e) => setOpen({ userId: m.userId, el: e.currentTarget })}
-            className="relative rounded-full ring-2 ring-black/30 transition-shadow hover:z-10 hover:ring-white/70 focus-visible:z-10 focus-visible:ring-white"
+            className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-full ring-2 ring-black/30 transition-shadow hover:z-10 hover:ring-white/70 focus-visible:z-10 focus-visible:ring-white"
             title={m.user.name ?? undefined}
           >
             <Avatar user={m.user} size={28} />
@@ -115,7 +115,7 @@ export function MemberAvatars({ board, meId, onFilterMember }: { board: BoardDat
         {members.length > shown.length && (
           <button
             onClick={(e) => setAll(e.currentTarget)}
-            className="relative flex h-7 w-7 items-center justify-center rounded-full bg-white/25 text-xs font-semibold text-white ring-2 ring-black/30 transition-colors hover:bg-white/40 hover:ring-white/70"
+            className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/25 text-xs leading-none font-semibold text-white ring-2 ring-black/30 transition-colors hover:z-10 hover:bg-white/40 hover:ring-white/70"
           >
             +{members.length - shown.length}
           </button>
