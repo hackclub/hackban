@@ -36,7 +36,13 @@ export function BoardTile({ b, children }: { b: Tile; children?: React.ReactNode
   const utils = api.useUtils();
   const router = useRouter();
   const refresh = () =>
-    Promise.all([utils.workspace.list.invalidate(), utils.board.recent.invalidate(), utils.workspace.get.invalidate(), utils.board.get.invalidate({ id: b.id })]);
+    Promise.all([
+      utils.workspace.list.invalidate(),
+      utils.board.recent.invalidate(),
+      utils.board.guestBoards.invalidate(),
+      utils.workspace.get.invalidate(),
+      utils.board.get.invalidate({ id: b.id }),
+    ]);
   const star = api.board.star.useMutation({
     onMutate: async ({ id, starred }) => {
       await Promise.all([utils.workspace.list.cancel(), utils.board.recent.cancel(), utils.workspace.get.cancel()]);
@@ -213,6 +219,14 @@ export function BoardTile({ b, children }: { b: Tile; children?: React.ReactNode
 export function Home() {
   const { data: workspaces } = api.workspace.list.useQuery();
   const { data: recent } = api.board.recent.useQuery();
+  const { data: guestBoards } = api.board.guestBoards.useQuery();
+  // Guest boards grouped by the workspace they live in.
+  const guestGroups = new Map<string, { name: string; boards: NonNullable<typeof guestBoards> }>();
+  for (const b of guestBoards ?? []) {
+    const g = guestGroups.get(b.workspace.id) ?? { name: b.workspace.name, boards: [] };
+    g.boards.push(b);
+    guestGroups.set(b.workspace.id, g);
+  }
   const [createFor, setCreateFor] = useState<{ el: HTMLElement; ws: string } | null>(null);
   const [newWs, setNewWs] = useState<string | null>(null);
   const utils = api.useUtils();
@@ -297,6 +311,25 @@ export function Home() {
           </section>
         ))}
         {!workspaces && <div className="h-40 animate-pulse rounded bg-[var(--color-neutral)]" />}
+        {guestGroups.size > 0 && (
+          <>
+            <h2 className="mt-2 mb-1 text-base font-bold text-[var(--color-text-subtle)] uppercase">Guest boards</h2>
+            <p className="mb-4 text-sm text-[var(--color-text-subtlest)]">Boards you&apos;ve been added to without being in their workspace.</p>
+            {[...guestGroups].map(([id, g]) => (
+              <section key={id} className="mb-10">
+                <h3 className="mb-3 flex items-center gap-3 text-base font-bold">
+                  <WorkspaceLogo ws={{ name: g.name }} size={32} />
+                  {g.name}
+                </h3>
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                  {g.boards.map((b) => (
+                    <BoardTile key={b.id} b={b} />
+                  ))}
+                </div>
+              </section>
+            ))}
+          </>
+        )}
       </main>
       <CreateBoardPopover
         key={createFor?.ws}

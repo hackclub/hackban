@@ -130,6 +130,10 @@ model Board {
     bgImage     String?
     visibility  String    @default("workspace") // private | workspace | public
     closed      Boolean   @default(false)
+    // "Join this board" link: anyone with it can join as a board-only guest.
+    // null = link disabled. Resetting issues a new token.
+    inviteToken String?   @unique
+    inviteRole  String    @default("normal") // normal | observer
     trelloId    String?   @unique
     createdAt   DateTime  @default(now())
     updatedAt   DateTime  @updatedAt

@@ -220,7 +220,10 @@ export function MemberCard({ board, member, meId, onFilter }: { board: BoardData
         </IconButton>
         <Avatar user={member.user} size={64} className="ring-4 ring-[var(--color-overlay)]" />
         <div className="min-w-0 pb-1 text-[var(--color-on-brand)]">
-          <div className="truncate text-base font-semibold">{member.user.name}</div>
+          <div className="flex items-center gap-1.5 truncate text-base font-semibold">
+            {member.user.name}
+            {member.guest && <GuestTag />}
+          </div>
           <div className="truncate text-xs opacity-80">
             {member.user.isGhost ? "Imported from Trello" : member.user.username ? `@${member.user.username}` : roleLabel(member.role)}
           </div>
@@ -249,6 +252,18 @@ export function MemberCard({ board, member, meId, onFilter }: { board: BoardData
   );
 }
 
+/** Board-only member (not in the workspace). */
+function GuestTag() {
+  return (
+    <span
+      className="rounded-[3px] bg-[var(--color-neutral-bold)] px-1 text-[10px] leading-4 font-semibold tracking-wide text-[var(--color-text)] uppercase"
+      title="Member of this board only, not the workspace"
+    >
+      Guest
+    </span>
+  );
+}
+
 function MemberRow({ children, onClick, danger }: { children: React.ReactNode; onClick: () => void; danger?: boolean }) {
   return (
     <button
@@ -272,12 +287,79 @@ function PaneHeader({ title, onBack }: { title: string; onBack: () => void }) {
   );
 }
 
+/**
+ * "Share this board with a link": anyone who opens it can join as a
+ * board-only guest (not a workspace member). Admins manage it; members copy.
+ */
+function InviteLink({ board }: { board: BoardData }) {
+  const utils = api.useUtils();
+  const isAdmin = board.myRole === "admin";
+  const [copied, setCopied] = useState(false);
+  const set = api.board.setInviteLink.useMutation({ onSuccess: () => utils.board.get.invalidate({ id: board.id }) });
+  const url = board.inviteToken && typeof window !== "undefined" ? `${window.location.origin}/join/${board.inviteToken}` : null;
+  const roleLabel = board.inviteRole === "observer" ? "Observer" : "Member";
+  if (!url && !isAdmin) return null;
+  return (
+    <div className="mb-5 rounded-lg border border-[var(--color-border)] p-3">
+      <div className="flex items-center gap-3">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[3px] bg-[var(--color-neutral)]">
+          <Icon name="share" size={14} />
+        </span>
+        <div className="min-w-0 flex-1 text-sm">
+          <div className="font-medium">Share this board with a link</div>
+          <div className="text-xs text-[var(--color-text-subtle)]">
+            {url
+              ? `Anyone with the link can join this board as ${roleLabel === "Member" ? "a" : "an"} ${roleLabel}. They won't join the workspace.`
+              : "Create a link so people can join just this board, without joining the workspace."}
+          </div>
+        </div>
+        {url ? (
+          <Button
+            onClick={() => {
+              void navigator.clipboard.writeText(url);
+              setCopied(true);
+              setTimeout(() => setCopied(false), 1500);
+            }}
+          >
+            {copied ? "Copied!" : "Copy link"}
+          </Button>
+        ) : (
+          <Button variant="primary" disabled={set.isPending} onClick={() => set.mutate({ id: board.id, enabled: true })}>
+            Create link
+          </Button>
+        )}
+      </div>
+      {url && isAdmin && (
+        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 pl-11 text-xs">
+          <label className="flex items-center gap-1 text-[var(--color-text-subtle)]">
+            Join as
+            <select
+              className="rounded-[3px] bg-[var(--color-neutral)] px-1 py-0.5 text-xs text-[var(--color-text)]"
+              value={board.inviteRole}
+              onChange={(e) => set.mutate({ id: board.id, enabled: true, role: e.target.value as "normal" | "observer" })}
+            >
+              <option value="normal">Member</option>
+              <option value="observer">Observer</option>
+            </select>
+          </label>
+          <button className="text-[var(--color-brand)] hover:underline" onClick={() => set.mutate({ id: board.id, enabled: true, reset: true })}>
+            Reset link
+          </button>
+          <button className="text-[var(--color-danger)] hover:underline" onClick={() => set.mutate({ id: board.id, enabled: false })}>
+            Turn off link
+          </button>
+        </div>
+      )}
+      {set.error && <p className="mt-2 pl-11 text-xs text-[var(--color-danger)]">{set.error.message}</p>}
+    </div>
+  );
+}
+
 /** Trello's centered "Share board" dialog. */
 export function ShareDialog({ board, meId, open, onClose }: { board: BoardData; meId: string; open: boolean; onClose: () => void }) {
   const [q, setQ] = useState("");
   const [picked, setPicked] = useState<{ id: string; name: string | null; image: string | null }[]>([]);
   const [role, setNewRole] = useState<Role>("normal");
-  const [copied, setCopied] = useState(false);
   const [roleFor, setRoleFor] = useState<{ userId: string; el: HTMLElement } | null>(null);
   const utils = api.useUtils();
   const { setRole, remove, error } = useMemberActions(board, meId);
@@ -380,25 +462,7 @@ export function ShareDialog({ board, meId, open, onClose }: { board: BoardData; 
               </div>
             )}
 
-            <div className="mb-5 flex items-center gap-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded-[3px] bg-[var(--color-neutral)]"><Icon name="share" size={14} /></span>
-              <div className="flex-1 text-sm">
-                <div>Share this board with a link</div>
-                <div className="text-xs text-[var(--color-text-subtle)]">
-                  {board.visibility === "private" ? "Only board members can open it." : board.visibility === "public" ? "Anyone with the link can view it." : "Anyone in the workspace can open it."}
-                </div>
-              </div>
-              <button
-                className="text-sm font-medium text-[var(--color-brand)] hover:underline"
-                onClick={() => {
-                  void navigator.clipboard.writeText(`${window.location.origin}/b/${board.id}`);
-                  setCopied(true);
-                  setTimeout(() => setCopied(false), 1500);
-                }}
-              >
-                {copied ? "Copied!" : "Copy link"}
-              </button>
-            </div>
+            <InviteLink board={board} />
 
             <h3 className="mb-2 border-b-2 border-[var(--color-brand)] pb-1 text-sm font-semibold text-[var(--color-brand)]">
               Board members <span className="ml-1 rounded-full bg-[var(--color-neutral)] px-1.5 text-xs text-[var(--color-text)]">{board.members.length}</span>
@@ -412,8 +476,9 @@ export function ShareDialog({ board, meId, open, onClose }: { board: BoardData; 
                   <div key={m.userId} className="flex items-center gap-3 py-2">
                     <Avatar user={m.user} size={32} />
                     <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm font-medium">
+                      <div className="flex items-center gap-1.5 truncate text-sm font-medium">
                         {m.user.name} {self && "(you)"}
+                        {m.guest && <GuestTag />}
                       </div>
                       <div className="truncate text-xs text-[var(--color-text-subtle)]">
                         {m.user.isGhost ? "Imported from Trello" : m.user.username ? `@${m.user.username}` : ""}

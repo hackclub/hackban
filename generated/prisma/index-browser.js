@@ -196,6 +196,8 @@ exports.Prisma.BoardScalarFieldEnum = {
   bgImage: 'bgImage',
   visibility: 'visibility',
   closed: 'closed',
+  inviteToken: 'inviteToken',
+  inviteRole: 'inviteRole',
   trelloId: 'trelloId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

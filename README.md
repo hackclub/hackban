@@ -98,6 +98,18 @@ https://hackban.hackclub.com/api/auth/callback/hackclub
 The app doesn't need the `openid` scope: it uses plain OAuth and reads the
 profile from `/api/v1/me`.
 
+## Sharing boards with people outside a workspace
+
+- **Board guests:** adding someone from a board's **Share** dialog makes them a
+  member of *that board only*. They don't join the workspace, so they can't see
+  its other boards. They're tagged **Guest**, and their boards appear under
+  **Guest boards** on their home page.
+- **Invite links:** in **Share**, a board admin can **Create link**. Anyone who
+  opens it logs in with Hack Club and can join the board as a guest Member or
+  Observer (admin's choice). **Reset link** invalidates the old one, and **Turn
+  off link** disables it. Links never grant admin, and the token is only shown
+  to board members.
+
 ## Moving boards
 
 Board admins can move a board to any workspace they belong to from the board

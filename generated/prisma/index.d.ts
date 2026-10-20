@@ -11322,6 +11322,8 @@ export namespace Prisma {
     bgImage: string | null
     visibility: string | null
     closed: boolean | null
+    inviteToken: string | null
+    inviteRole: string | null
     trelloId: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -11336,6 +11338,8 @@ export namespace Prisma {
     bgImage: string | null
     visibility: string | null
     closed: boolean | null
+    inviteToken: string | null
+    inviteRole: string | null
     trelloId: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -11350,6 +11354,8 @@ export namespace Prisma {
     bgImage: number
     visibility: number
     closed: number
+    inviteToken: number
+    inviteRole: number
     trelloId: number
     createdAt: number
     updatedAt: number
@@ -11366,6 +11372,8 @@ export namespace Prisma {
     bgImage?: true
     visibility?: true
     closed?: true
+    inviteToken?: true
+    inviteRole?: true
     trelloId?: true
     createdAt?: true
     updatedAt?: true
@@ -11380,6 +11388,8 @@ export namespace Prisma {
     bgImage?: true
     visibility?: true
     closed?: true
+    inviteToken?: true
+    inviteRole?: true
     trelloId?: true
     createdAt?: true
     updatedAt?: true
@@ -11394,6 +11404,8 @@ export namespace Prisma {
     bgImage?: true
     visibility?: true
     closed?: true
+    inviteToken?: true
+    inviteRole?: true
     trelloId?: true
     createdAt?: true
     updatedAt?: true
@@ -11481,6 +11493,8 @@ export namespace Prisma {
     bgImage: string | null
     visibility: string
     closed: boolean
+    inviteToken: string | null
+    inviteRole: string
     trelloId: string | null
     createdAt: Date
     updatedAt: Date
@@ -11512,6 +11526,8 @@ export namespace Prisma {
     bgImage?: boolean
     visibility?: boolean
     closed?: boolean
+    inviteToken?: boolean
+    inviteRole?: boolean
     trelloId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -11534,6 +11550,8 @@ export namespace Prisma {
     bgImage?: boolean
     visibility?: boolean
     closed?: boolean
+    inviteToken?: boolean
+    inviteRole?: boolean
     trelloId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -11549,6 +11567,8 @@ export namespace Prisma {
     bgImage?: boolean
     visibility?: boolean
     closed?: boolean
+    inviteToken?: boolean
+    inviteRole?: boolean
     trelloId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -11564,12 +11584,14 @@ export namespace Prisma {
     bgImage?: boolean
     visibility?: boolean
     closed?: boolean
+    inviteToken?: boolean
+    inviteRole?: boolean
     trelloId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type BoardOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "workspaceId" | "background" | "bgImage" | "visibility" | "closed" | "trelloId" | "createdAt" | "updatedAt", ExtArgs["result"]["board"]>
+  export type BoardOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "workspaceId" | "background" | "bgImage" | "visibility" | "closed" | "inviteToken" | "inviteRole" | "trelloId" | "createdAt" | "updatedAt", ExtArgs["result"]["board"]>
   export type BoardInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
     members?: boolean | Board$membersArgs<ExtArgs>
@@ -11607,6 +11629,8 @@ export namespace Prisma {
       bgImage: string | null
       visibility: string
       closed: boolean
+      inviteToken: string | null
+      inviteRole: string
       trelloId: string | null
       createdAt: Date
       updatedAt: Date
@@ -12048,6 +12072,8 @@ export namespace Prisma {
     readonly bgImage: FieldRef<"Board", 'String'>
     readonly visibility: FieldRef<"Board", 'String'>
     readonly closed: FieldRef<"Board", 'Boolean'>
+    readonly inviteToken: FieldRef<"Board", 'String'>
+    readonly inviteRole: FieldRef<"Board", 'String'>
     readonly trelloId: FieldRef<"Board", 'String'>
     readonly createdAt: FieldRef<"Board", 'DateTime'>
     readonly updatedAt: FieldRef<"Board", 'DateTime'>
@@ -29375,6 +29401,8 @@ export namespace Prisma {
     bgImage: 'bgImage',
     visibility: 'visibility',
     closed: 'closed',
+    inviteToken: 'inviteToken',
+    inviteRole: 'inviteRole',
     trelloId: 'trelloId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -30163,6 +30191,8 @@ export namespace Prisma {
     bgImage?: StringNullableFilter<"Board"> | string | null
     visibility?: StringFilter<"Board"> | string
     closed?: BoolFilter<"Board"> | boolean
+    inviteToken?: StringNullableFilter<"Board"> | string | null
+    inviteRole?: StringFilter<"Board"> | string
     trelloId?: StringNullableFilter<"Board"> | string | null
     createdAt?: DateTimeFilter<"Board"> | Date | string
     updatedAt?: DateTimeFilter<"Board"> | Date | string
@@ -30184,6 +30214,8 @@ export namespace Prisma {
     bgImage?: SortOrderInput | SortOrder
     visibility?: SortOrder
     closed?: SortOrder
+    inviteToken?: SortOrderInput | SortOrder
+    inviteRole?: SortOrder
     trelloId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -30198,6 +30230,7 @@ export namespace Prisma {
 
   export type BoardWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    inviteToken?: string
     trelloId?: string
     AND?: BoardWhereInput | BoardWhereInput[]
     OR?: BoardWhereInput[]
@@ -30209,6 +30242,7 @@ export namespace Prisma {
     bgImage?: StringNullableFilter<"Board"> | string | null
     visibility?: StringFilter<"Board"> | string
     closed?: BoolFilter<"Board"> | boolean
+    inviteRole?: StringFilter<"Board"> | string
     createdAt?: DateTimeFilter<"Board"> | Date | string
     updatedAt?: DateTimeFilter<"Board"> | Date | string
     workspace?: XOR<WorkspaceScalarRelationFilter, WorkspaceWhereInput>
@@ -30218,7 +30252,7 @@ export namespace Prisma {
     labels?: LabelListRelationFilter
     activities?: ActivityListRelationFilter
     watches?: WatchListRelationFilter
-  }, "id" | "trelloId">
+  }, "id" | "inviteToken" | "trelloId">
 
   export type BoardOrderByWithAggregationInput = {
     id?: SortOrder
@@ -30229,6 +30263,8 @@ export namespace Prisma {
     bgImage?: SortOrderInput | SortOrder
     visibility?: SortOrder
     closed?: SortOrder
+    inviteToken?: SortOrderInput | SortOrder
+    inviteRole?: SortOrder
     trelloId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -30249,6 +30285,8 @@ export namespace Prisma {
     bgImage?: StringNullableWithAggregatesFilter<"Board"> | string | null
     visibility?: StringWithAggregatesFilter<"Board"> | string
     closed?: BoolWithAggregatesFilter<"Board"> | boolean
+    inviteToken?: StringNullableWithAggregatesFilter<"Board"> | string | null
+    inviteRole?: StringWithAggregatesFilter<"Board"> | string
     trelloId?: StringNullableWithAggregatesFilter<"Board"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Board"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Board"> | Date | string
@@ -31778,6 +31816,8 @@ export namespace Prisma {
     bgImage?: string | null
     visibility?: string
     closed?: boolean
+    inviteToken?: string | null
+    inviteRole?: string
     trelloId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -31799,6 +31839,8 @@ export namespace Prisma {
     bgImage?: string | null
     visibility?: string
     closed?: boolean
+    inviteToken?: string | null
+    inviteRole?: string
     trelloId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -31818,6 +31860,8 @@ export namespace Prisma {
     bgImage?: NullableStringFieldUpdateOperationsInput | string | null
     visibility?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
+    inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
+    inviteRole?: StringFieldUpdateOperationsInput | string
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -31839,6 +31883,8 @@ export namespace Prisma {
     bgImage?: NullableStringFieldUpdateOperationsInput | string | null
     visibility?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
+    inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
+    inviteRole?: StringFieldUpdateOperationsInput | string
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -31859,6 +31905,8 @@ export namespace Prisma {
     bgImage?: string | null
     visibility?: string
     closed?: boolean
+    inviteToken?: string | null
+    inviteRole?: string
     trelloId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -31872,6 +31920,8 @@ export namespace Prisma {
     bgImage?: NullableStringFieldUpdateOperationsInput | string | null
     visibility?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
+    inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
+    inviteRole?: StringFieldUpdateOperationsInput | string
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -31886,6 +31936,8 @@ export namespace Prisma {
     bgImage?: NullableStringFieldUpdateOperationsInput | string | null
     visibility?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
+    inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
+    inviteRole?: StringFieldUpdateOperationsInput | string
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -33464,6 +33516,8 @@ export namespace Prisma {
     bgImage?: SortOrder
     visibility?: SortOrder
     closed?: SortOrder
+    inviteToken?: SortOrder
+    inviteRole?: SortOrder
     trelloId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -33478,6 +33532,8 @@ export namespace Prisma {
     bgImage?: SortOrder
     visibility?: SortOrder
     closed?: SortOrder
+    inviteToken?: SortOrder
+    inviteRole?: SortOrder
     trelloId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -33492,6 +33548,8 @@ export namespace Prisma {
     bgImage?: SortOrder
     visibility?: SortOrder
     closed?: SortOrder
+    inviteToken?: SortOrder
+    inviteRole?: SortOrder
     trelloId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -37172,6 +37230,8 @@ export namespace Prisma {
     bgImage?: string | null
     visibility?: string
     closed?: boolean
+    inviteToken?: string | null
+    inviteRole?: string
     trelloId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -37191,6 +37251,8 @@ export namespace Prisma {
     bgImage?: string | null
     visibility?: string
     closed?: boolean
+    inviteToken?: string | null
+    inviteRole?: string
     trelloId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -37282,6 +37344,8 @@ export namespace Prisma {
     bgImage?: StringNullableFilter<"Board"> | string | null
     visibility?: StringFilter<"Board"> | string
     closed?: BoolFilter<"Board"> | boolean
+    inviteToken?: StringNullableFilter<"Board"> | string | null
+    inviteRole?: StringFilter<"Board"> | string
     trelloId?: StringNullableFilter<"Board"> | string | null
     createdAt?: DateTimeFilter<"Board"> | Date | string
     updatedAt?: DateTimeFilter<"Board"> | Date | string
@@ -37997,6 +38061,8 @@ export namespace Prisma {
     bgImage?: string | null
     visibility?: string
     closed?: boolean
+    inviteToken?: string | null
+    inviteRole?: string
     trelloId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -38017,6 +38083,8 @@ export namespace Prisma {
     bgImage?: string | null
     visibility?: string
     closed?: boolean
+    inviteToken?: string | null
+    inviteRole?: string
     trelloId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -38108,6 +38176,8 @@ export namespace Prisma {
     bgImage?: NullableStringFieldUpdateOperationsInput | string | null
     visibility?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
+    inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
+    inviteRole?: StringFieldUpdateOperationsInput | string
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -38128,6 +38198,8 @@ export namespace Prisma {
     bgImage?: NullableStringFieldUpdateOperationsInput | string | null
     visibility?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
+    inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
+    inviteRole?: StringFieldUpdateOperationsInput | string
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -38209,6 +38281,8 @@ export namespace Prisma {
     bgImage?: string | null
     visibility?: string
     closed?: boolean
+    inviteToken?: string | null
+    inviteRole?: string
     trelloId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -38229,6 +38303,8 @@ export namespace Prisma {
     bgImage?: string | null
     visibility?: string
     closed?: boolean
+    inviteToken?: string | null
+    inviteRole?: string
     trelloId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -38320,6 +38396,8 @@ export namespace Prisma {
     bgImage?: NullableStringFieldUpdateOperationsInput | string | null
     visibility?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
+    inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
+    inviteRole?: StringFieldUpdateOperationsInput | string
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -38340,6 +38418,8 @@ export namespace Prisma {
     bgImage?: NullableStringFieldUpdateOperationsInput | string | null
     visibility?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
+    inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
+    inviteRole?: StringFieldUpdateOperationsInput | string
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -38421,6 +38501,8 @@ export namespace Prisma {
     bgImage?: string | null
     visibility?: string
     closed?: boolean
+    inviteToken?: string | null
+    inviteRole?: string
     trelloId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -38441,6 +38523,8 @@ export namespace Prisma {
     bgImage?: string | null
     visibility?: string
     closed?: boolean
+    inviteToken?: string | null
+    inviteRole?: string
     trelloId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -38535,6 +38619,8 @@ export namespace Prisma {
     bgImage?: NullableStringFieldUpdateOperationsInput | string | null
     visibility?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
+    inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
+    inviteRole?: StringFieldUpdateOperationsInput | string
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -38555,6 +38641,8 @@ export namespace Prisma {
     bgImage?: NullableStringFieldUpdateOperationsInput | string | null
     visibility?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
+    inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
+    inviteRole?: StringFieldUpdateOperationsInput | string
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -38974,6 +39062,8 @@ export namespace Prisma {
     bgImage?: string | null
     visibility?: string
     closed?: boolean
+    inviteToken?: string | null
+    inviteRole?: string
     trelloId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -38994,6 +39084,8 @@ export namespace Prisma {
     bgImage?: string | null
     visibility?: string
     closed?: boolean
+    inviteToken?: string | null
+    inviteRole?: string
     trelloId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -39046,6 +39138,8 @@ export namespace Prisma {
     bgImage?: NullableStringFieldUpdateOperationsInput | string | null
     visibility?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
+    inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
+    inviteRole?: StringFieldUpdateOperationsInput | string
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -39066,6 +39160,8 @@ export namespace Prisma {
     bgImage?: NullableStringFieldUpdateOperationsInput | string | null
     visibility?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
+    inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
+    inviteRole?: StringFieldUpdateOperationsInput | string
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40302,6 +40398,8 @@ export namespace Prisma {
     bgImage?: string | null
     visibility?: string
     closed?: boolean
+    inviteToken?: string | null
+    inviteRole?: string
     trelloId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -40322,6 +40420,8 @@ export namespace Prisma {
     bgImage?: string | null
     visibility?: string
     closed?: boolean
+    inviteToken?: string | null
+    inviteRole?: string
     trelloId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -40468,6 +40568,8 @@ export namespace Prisma {
     bgImage?: NullableStringFieldUpdateOperationsInput | string | null
     visibility?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
+    inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
+    inviteRole?: StringFieldUpdateOperationsInput | string
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40488,6 +40590,8 @@ export namespace Prisma {
     bgImage?: NullableStringFieldUpdateOperationsInput | string | null
     visibility?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
+    inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
+    inviteRole?: StringFieldUpdateOperationsInput | string
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40687,6 +40791,8 @@ export namespace Prisma {
     bgImage?: string | null
     visibility?: string
     closed?: boolean
+    inviteToken?: string | null
+    inviteRole?: string
     trelloId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -40707,6 +40813,8 @@ export namespace Prisma {
     bgImage?: string | null
     visibility?: string
     closed?: boolean
+    inviteToken?: string | null
+    inviteRole?: string
     trelloId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -40859,6 +40967,8 @@ export namespace Prisma {
     bgImage?: NullableStringFieldUpdateOperationsInput | string | null
     visibility?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
+    inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
+    inviteRole?: StringFieldUpdateOperationsInput | string
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40879,6 +40989,8 @@ export namespace Prisma {
     bgImage?: NullableStringFieldUpdateOperationsInput | string | null
     visibility?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
+    inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
+    inviteRole?: StringFieldUpdateOperationsInput | string
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41655,6 +41767,8 @@ export namespace Prisma {
     bgImage?: string | null
     visibility?: string
     closed?: boolean
+    inviteToken?: string | null
+    inviteRole?: string
     trelloId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -41691,6 +41805,8 @@ export namespace Prisma {
     bgImage?: NullableStringFieldUpdateOperationsInput | string | null
     visibility?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
+    inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
+    inviteRole?: StringFieldUpdateOperationsInput | string
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41710,6 +41826,8 @@ export namespace Prisma {
     bgImage?: NullableStringFieldUpdateOperationsInput | string | null
     visibility?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
+    inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
+    inviteRole?: StringFieldUpdateOperationsInput | string
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41729,6 +41847,8 @@ export namespace Prisma {
     bgImage?: NullableStringFieldUpdateOperationsInput | string | null
     visibility?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
+    inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
+    inviteRole?: StringFieldUpdateOperationsInput | string
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
