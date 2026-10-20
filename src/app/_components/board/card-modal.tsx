@@ -13,6 +13,7 @@ import {
   Icon,
   IconButton,
   Markdown,
+  Popover,
   coverColor,
   dueState,
   inputCls,
@@ -393,6 +394,93 @@ function Title({
   );
 }
 
+/**
+ * A member avatar on the card back: hover shows an × to remove them from the
+ * card; click opens their profile with "Remove from card".
+ */
+function CardMemberChip({
+  card,
+  boardId,
+  member,
+  readOnly,
+}: {
+  card: CardDetail;
+  boardId: string;
+  member: CardDetail["members"][number];
+  readOnly: boolean;
+}) {
+  const utils = api.useUtils();
+  const inv = useCardInvalidate(card.id, boardId);
+  const [el, setEl] = useState<HTMLElement | null>(null);
+  const { data: me } = api.me.profile.useQuery();
+  const self = me?.id === member.userId;
+  const toggle = api.card.toggleMember.useMutation({
+    onMutate: () => {
+      utils.card.get.setData({ id: card.id }, (c) => c && { ...c, members: c.members.filter((x) => x.userId !== member.userId) });
+      utils.board.get.setData({ id: boardId }, (b) =>
+        b && {
+          ...b,
+          lists: b.lists.map((l) => ({
+            ...l,
+            cards: l.cards.map((x) => (x.id === card.id ? { ...x, members: x.members.filter((y) => y.userId !== member.userId) } : x)),
+          })),
+        },
+      );
+    },
+    onSettled: inv,
+  });
+  const remove = () => {
+    setEl(null);
+    toggle.mutate({ id: card.id, userId: member.userId, on: false });
+  };
+  return (
+    <span className="group/member relative">
+      <button
+        type="button"
+        onClick={(e) => setEl(e.currentTarget)}
+        className="block rounded-full transition-shadow hover:ring-2 hover:ring-[var(--color-focus)]"
+        aria-label={`${member.user.name ?? "Member"} — details`}
+        title={member.user.name ?? undefined}
+      >
+        <Avatar user={member.user} size={32} />
+      </button>
+      {!readOnly && (
+        <button
+          type="button"
+          onClick={remove}
+          className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--color-overlay)] text-[var(--color-text)] opacity-0 shadow-[var(--shadow-overlay)] transition-opacity group-hover/member:opacity-100 hover:bg-[#c9372c] hover:text-white focus-visible:opacity-100"
+          aria-label={`Remove ${member.user.name ?? "member"} from card`}
+          title="Remove from card"
+        >
+          <Icon name="close" size={10} />
+        </button>
+      )}
+      <Popover anchor={el ? { el } : null} open={!!el} onClose={() => setEl(null)}>
+        <div className="-mx-3">
+          <div className="flex items-center gap-3 px-3 pt-3 pb-2">
+            <Avatar user={member.user} size={48} />
+            <div className="min-w-0">
+              <div className="truncate font-semibold">{member.user.name}</div>
+              {member.user.username && <div className="truncate text-xs text-[var(--color-text-subtle)]">@{member.user.username}</div>}
+            </div>
+          </div>
+          {!readOnly && (
+            <>
+              <hr className="my-1 border-[var(--color-border)]" />
+              <button
+                onClick={remove}
+                className="block w-full px-3 py-1.5 text-left text-sm text-[var(--color-danger)] transition-colors hover:bg-[var(--color-neutral)]"
+              >
+                {self ? "Leave card" : "Remove from card"}
+              </button>
+            </>
+          )}
+        </div>
+      </Popover>
+    </span>
+  );
+}
+
 function Badges({
   card,
   board,
@@ -426,7 +514,7 @@ function Badges({
           </h3>
           <div className="flex gap-1">
             {card.members.map((m) => (
-              <Avatar key={m.userId} user={m.user} size={32} />
+              <CardMemberChip key={m.userId} card={card} boardId={board.id} member={m} readOnly={readOnly} />
             ))}
             {!readOnly && (
               <button
