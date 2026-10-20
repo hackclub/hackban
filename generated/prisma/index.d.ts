@@ -39,6 +39,11 @@ export type User = $Result.DefaultSelection<Prisma.$UserPayload>
  */
 export type Workspace = $Result.DefaultSelection<Prisma.$WorkspacePayload>
 /**
+ * Model WorkspaceAutoJoin
+ * Anyone who logs in with an email on `domain` is added to the workspace.
+ */
+export type WorkspaceAutoJoin = $Result.DefaultSelection<Prisma.$WorkspaceAutoJoinPayload>
+/**
  * Model WorkspaceMember
  * 
  */
@@ -291,6 +296,16 @@ export class PrismaClient<
     * ```
     */
   get workspace(): Prisma.WorkspaceDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.workspaceAutoJoin`: Exposes CRUD operations for the **WorkspaceAutoJoin** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more WorkspaceAutoJoins
+    * const workspaceAutoJoins = await prisma.workspaceAutoJoin.findMany()
+    * ```
+    */
+  get workspaceAutoJoin(): Prisma.WorkspaceAutoJoinDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.workspaceMember`: Exposes CRUD operations for the **WorkspaceMember** model.
@@ -907,6 +922,7 @@ export namespace Prisma {
     VerificationToken: 'VerificationToken',
     User: 'User',
     Workspace: 'Workspace',
+    WorkspaceAutoJoin: 'WorkspaceAutoJoin',
     WorkspaceMember: 'WorkspaceMember',
     Board: 'Board',
     BoardMember: 'BoardMember',
@@ -942,7 +958,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "account" | "session" | "verificationToken" | "user" | "workspace" | "workspaceMember" | "board" | "boardMember" | "boardStar" | "list" | "card" | "label" | "cardLabel" | "cardMember" | "checklist" | "checkItem" | "attachment" | "comment" | "activity" | "watch" | "notification" | "trelloImport"
+      modelProps: "account" | "session" | "verificationToken" | "user" | "workspace" | "workspaceAutoJoin" | "workspaceMember" | "board" | "boardMember" | "boardStar" | "list" | "card" | "label" | "cardLabel" | "cardMember" | "checklist" | "checkItem" | "attachment" | "comment" | "activity" | "watch" | "notification" | "trelloImport"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1313,6 +1329,80 @@ export namespace Prisma {
           count: {
             args: Prisma.WorkspaceCountArgs<ExtArgs>
             result: $Utils.Optional<WorkspaceCountAggregateOutputType> | number
+          }
+        }
+      }
+      WorkspaceAutoJoin: {
+        payload: Prisma.$WorkspaceAutoJoinPayload<ExtArgs>
+        fields: Prisma.WorkspaceAutoJoinFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.WorkspaceAutoJoinFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspaceAutoJoinPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.WorkspaceAutoJoinFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspaceAutoJoinPayload>
+          }
+          findFirst: {
+            args: Prisma.WorkspaceAutoJoinFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspaceAutoJoinPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.WorkspaceAutoJoinFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspaceAutoJoinPayload>
+          }
+          findMany: {
+            args: Prisma.WorkspaceAutoJoinFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspaceAutoJoinPayload>[]
+          }
+          create: {
+            args: Prisma.WorkspaceAutoJoinCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspaceAutoJoinPayload>
+          }
+          createMany: {
+            args: Prisma.WorkspaceAutoJoinCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.WorkspaceAutoJoinCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspaceAutoJoinPayload>[]
+          }
+          delete: {
+            args: Prisma.WorkspaceAutoJoinDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspaceAutoJoinPayload>
+          }
+          update: {
+            args: Prisma.WorkspaceAutoJoinUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspaceAutoJoinPayload>
+          }
+          deleteMany: {
+            args: Prisma.WorkspaceAutoJoinDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.WorkspaceAutoJoinUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.WorkspaceAutoJoinUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspaceAutoJoinPayload>[]
+          }
+          upsert: {
+            args: Prisma.WorkspaceAutoJoinUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspaceAutoJoinPayload>
+          }
+          aggregate: {
+            args: Prisma.WorkspaceAutoJoinAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateWorkspaceAutoJoin>
+          }
+          groupBy: {
+            args: Prisma.WorkspaceAutoJoinGroupByArgs<ExtArgs>
+            result: $Utils.Optional<WorkspaceAutoJoinGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.WorkspaceAutoJoinCountArgs<ExtArgs>
+            result: $Utils.Optional<WorkspaceAutoJoinCountAggregateOutputType> | number
           }
         }
       }
@@ -2675,6 +2765,7 @@ export namespace Prisma {
     verificationToken?: VerificationTokenOmit
     user?: UserOmit
     workspace?: WorkspaceOmit
+    workspaceAutoJoin?: WorkspaceAutoJoinOmit
     workspaceMember?: WorkspaceMemberOmit
     board?: BoardOmit
     boardMember?: BoardMemberOmit
@@ -2785,6 +2876,7 @@ export namespace Prisma {
     attachments: number
     imports: number
     watches: number
+    autoJoinsCreated: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2801,6 +2893,7 @@ export namespace Prisma {
     attachments?: boolean | UserCountOutputTypeCountAttachmentsArgs
     imports?: boolean | UserCountOutputTypeCountImportsArgs
     watches?: boolean | UserCountOutputTypeCountWatchesArgs
+    autoJoinsCreated?: boolean | UserCountOutputTypeCountAutoJoinsCreatedArgs
   }
 
   // Custom InputTypes
@@ -2905,6 +2998,13 @@ export namespace Prisma {
     where?: WatchWhereInput
   }
 
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountAutoJoinsCreatedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: WorkspaceAutoJoinWhereInput
+  }
+
 
   /**
    * Count Type WorkspaceCountOutputType
@@ -2913,11 +3013,13 @@ export namespace Prisma {
   export type WorkspaceCountOutputType = {
     members: number
     boards: number
+    autoJoins: number
   }
 
   export type WorkspaceCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     members?: boolean | WorkspaceCountOutputTypeCountMembersArgs
     boards?: boolean | WorkspaceCountOutputTypeCountBoardsArgs
+    autoJoins?: boolean | WorkspaceCountOutputTypeCountAutoJoinsArgs
   }
 
   // Custom InputTypes
@@ -2943,6 +3045,13 @@ export namespace Prisma {
    */
   export type WorkspaceCountOutputTypeCountBoardsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: BoardWhereInput
+  }
+
+  /**
+   * WorkspaceCountOutputType without action
+   */
+  export type WorkspaceCountOutputTypeCountAutoJoinsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: WorkspaceAutoJoinWhereInput
   }
 
 
@@ -6635,6 +6744,7 @@ export namespace Prisma {
     attachments?: boolean | User$attachmentsArgs<ExtArgs>
     imports?: boolean | User$importsArgs<ExtArgs>
     watches?: boolean | User$watchesArgs<ExtArgs>
+    autoJoinsCreated?: boolean | User$autoJoinsCreatedArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -6692,6 +6802,7 @@ export namespace Prisma {
     attachments?: boolean | User$attachmentsArgs<ExtArgs>
     imports?: boolean | User$importsArgs<ExtArgs>
     watches?: boolean | User$watchesArgs<ExtArgs>
+    autoJoinsCreated?: boolean | User$autoJoinsCreatedArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -6713,6 +6824,7 @@ export namespace Prisma {
       attachments: Prisma.$AttachmentPayload<ExtArgs>[]
       imports: Prisma.$TrelloImportPayload<ExtArgs>[]
       watches: Prisma.$WatchPayload<ExtArgs>[]
+      autoJoinsCreated: Prisma.$WorkspaceAutoJoinPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -7132,6 +7244,7 @@ export namespace Prisma {
     attachments<T extends User$attachmentsArgs<ExtArgs> = {}>(args?: Subset<T, User$attachmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AttachmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     imports<T extends User$importsArgs<ExtArgs> = {}>(args?: Subset<T, User$importsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TrelloImportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     watches<T extends User$watchesArgs<ExtArgs> = {}>(args?: Subset<T, User$watchesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WatchPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    autoJoinsCreated<T extends User$autoJoinsCreatedArgs<ExtArgs> = {}>(args?: Subset<T, User$autoJoinsCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkspaceAutoJoinPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -7871,6 +7984,30 @@ export namespace Prisma {
   }
 
   /**
+   * User.autoJoinsCreated
+   */
+  export type User$autoJoinsCreatedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceAutoJoin
+     */
+    select?: WorkspaceAutoJoinSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceAutoJoin
+     */
+    omit?: WorkspaceAutoJoinOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceAutoJoinInclude<ExtArgs> | null
+    where?: WorkspaceAutoJoinWhereInput
+    orderBy?: WorkspaceAutoJoinOrderByWithRelationInput | WorkspaceAutoJoinOrderByWithRelationInput[]
+    cursor?: WorkspaceAutoJoinWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: WorkspaceAutoJoinScalarFieldEnum | WorkspaceAutoJoinScalarFieldEnum[]
+  }
+
+  /**
    * User without action
    */
   export type UserDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -8063,6 +8200,7 @@ export namespace Prisma {
     createdAt?: boolean
     members?: boolean | Workspace$membersArgs<ExtArgs>
     boards?: boolean | Workspace$boardsArgs<ExtArgs>
+    autoJoins?: boolean | Workspace$autoJoinsArgs<ExtArgs>
     _count?: boolean | WorkspaceCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["workspace"]>
 
@@ -8097,6 +8235,7 @@ export namespace Prisma {
   export type WorkspaceInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     members?: boolean | Workspace$membersArgs<ExtArgs>
     boards?: boolean | Workspace$boardsArgs<ExtArgs>
+    autoJoins?: boolean | Workspace$autoJoinsArgs<ExtArgs>
     _count?: boolean | WorkspaceCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type WorkspaceIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -8107,6 +8246,7 @@ export namespace Prisma {
     objects: {
       members: Prisma.$WorkspaceMemberPayload<ExtArgs>[]
       boards: Prisma.$BoardPayload<ExtArgs>[]
+      autoJoins: Prisma.$WorkspaceAutoJoinPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -8511,6 +8651,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     members<T extends Workspace$membersArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$membersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkspaceMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     boards<T extends Workspace$boardsArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$boardsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BoardPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    autoJoins<T extends Workspace$autoJoinsArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$autoJoinsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkspaceAutoJoinPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -8982,6 +9123,30 @@ export namespace Prisma {
   }
 
   /**
+   * Workspace.autoJoins
+   */
+  export type Workspace$autoJoinsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceAutoJoin
+     */
+    select?: WorkspaceAutoJoinSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceAutoJoin
+     */
+    omit?: WorkspaceAutoJoinOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceAutoJoinInclude<ExtArgs> | null
+    where?: WorkspaceAutoJoinWhereInput
+    orderBy?: WorkspaceAutoJoinOrderByWithRelationInput | WorkspaceAutoJoinOrderByWithRelationInput[]
+    cursor?: WorkspaceAutoJoinWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: WorkspaceAutoJoinScalarFieldEnum | WorkspaceAutoJoinScalarFieldEnum[]
+  }
+
+  /**
    * Workspace without action
    */
   export type WorkspaceDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -8997,6 +9162,1104 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: WorkspaceInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model WorkspaceAutoJoin
+   */
+
+  export type AggregateWorkspaceAutoJoin = {
+    _count: WorkspaceAutoJoinCountAggregateOutputType | null
+    _min: WorkspaceAutoJoinMinAggregateOutputType | null
+    _max: WorkspaceAutoJoinMaxAggregateOutputType | null
+  }
+
+  export type WorkspaceAutoJoinMinAggregateOutputType = {
+    id: string | null
+    workspaceId: string | null
+    domain: string | null
+    role: string | null
+    createdById: string | null
+    createdAt: Date | null
+  }
+
+  export type WorkspaceAutoJoinMaxAggregateOutputType = {
+    id: string | null
+    workspaceId: string | null
+    domain: string | null
+    role: string | null
+    createdById: string | null
+    createdAt: Date | null
+  }
+
+  export type WorkspaceAutoJoinCountAggregateOutputType = {
+    id: number
+    workspaceId: number
+    domain: number
+    role: number
+    createdById: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type WorkspaceAutoJoinMinAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    domain?: true
+    role?: true
+    createdById?: true
+    createdAt?: true
+  }
+
+  export type WorkspaceAutoJoinMaxAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    domain?: true
+    role?: true
+    createdById?: true
+    createdAt?: true
+  }
+
+  export type WorkspaceAutoJoinCountAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    domain?: true
+    role?: true
+    createdById?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type WorkspaceAutoJoinAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which WorkspaceAutoJoin to aggregate.
+     */
+    where?: WorkspaceAutoJoinWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WorkspaceAutoJoins to fetch.
+     */
+    orderBy?: WorkspaceAutoJoinOrderByWithRelationInput | WorkspaceAutoJoinOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: WorkspaceAutoJoinWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WorkspaceAutoJoins from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WorkspaceAutoJoins.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned WorkspaceAutoJoins
+    **/
+    _count?: true | WorkspaceAutoJoinCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: WorkspaceAutoJoinMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: WorkspaceAutoJoinMaxAggregateInputType
+  }
+
+  export type GetWorkspaceAutoJoinAggregateType<T extends WorkspaceAutoJoinAggregateArgs> = {
+        [P in keyof T & keyof AggregateWorkspaceAutoJoin]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateWorkspaceAutoJoin[P]>
+      : GetScalarType<T[P], AggregateWorkspaceAutoJoin[P]>
+  }
+
+
+
+
+  export type WorkspaceAutoJoinGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: WorkspaceAutoJoinWhereInput
+    orderBy?: WorkspaceAutoJoinOrderByWithAggregationInput | WorkspaceAutoJoinOrderByWithAggregationInput[]
+    by: WorkspaceAutoJoinScalarFieldEnum[] | WorkspaceAutoJoinScalarFieldEnum
+    having?: WorkspaceAutoJoinScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: WorkspaceAutoJoinCountAggregateInputType | true
+    _min?: WorkspaceAutoJoinMinAggregateInputType
+    _max?: WorkspaceAutoJoinMaxAggregateInputType
+  }
+
+  export type WorkspaceAutoJoinGroupByOutputType = {
+    id: string
+    workspaceId: string
+    domain: string
+    role: string
+    createdById: string | null
+    createdAt: Date
+    _count: WorkspaceAutoJoinCountAggregateOutputType | null
+    _min: WorkspaceAutoJoinMinAggregateOutputType | null
+    _max: WorkspaceAutoJoinMaxAggregateOutputType | null
+  }
+
+  type GetWorkspaceAutoJoinGroupByPayload<T extends WorkspaceAutoJoinGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<WorkspaceAutoJoinGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof WorkspaceAutoJoinGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], WorkspaceAutoJoinGroupByOutputType[P]>
+            : GetScalarType<T[P], WorkspaceAutoJoinGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type WorkspaceAutoJoinSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    domain?: boolean
+    role?: boolean
+    createdById?: boolean
+    createdAt?: boolean
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    createdBy?: boolean | WorkspaceAutoJoin$createdByArgs<ExtArgs>
+  }, ExtArgs["result"]["workspaceAutoJoin"]>
+
+  export type WorkspaceAutoJoinSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    domain?: boolean
+    role?: boolean
+    createdById?: boolean
+    createdAt?: boolean
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    createdBy?: boolean | WorkspaceAutoJoin$createdByArgs<ExtArgs>
+  }, ExtArgs["result"]["workspaceAutoJoin"]>
+
+  export type WorkspaceAutoJoinSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    domain?: boolean
+    role?: boolean
+    createdById?: boolean
+    createdAt?: boolean
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    createdBy?: boolean | WorkspaceAutoJoin$createdByArgs<ExtArgs>
+  }, ExtArgs["result"]["workspaceAutoJoin"]>
+
+  export type WorkspaceAutoJoinSelectScalar = {
+    id?: boolean
+    workspaceId?: boolean
+    domain?: boolean
+    role?: boolean
+    createdById?: boolean
+    createdAt?: boolean
+  }
+
+  export type WorkspaceAutoJoinOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "domain" | "role" | "createdById" | "createdAt", ExtArgs["result"]["workspaceAutoJoin"]>
+  export type WorkspaceAutoJoinInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    createdBy?: boolean | WorkspaceAutoJoin$createdByArgs<ExtArgs>
+  }
+  export type WorkspaceAutoJoinIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    createdBy?: boolean | WorkspaceAutoJoin$createdByArgs<ExtArgs>
+  }
+  export type WorkspaceAutoJoinIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    createdBy?: boolean | WorkspaceAutoJoin$createdByArgs<ExtArgs>
+  }
+
+  export type $WorkspaceAutoJoinPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "WorkspaceAutoJoin"
+    objects: {
+      workspace: Prisma.$WorkspacePayload<ExtArgs>
+      createdBy: Prisma.$UserPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      workspaceId: string
+      domain: string
+      role: string
+      createdById: string | null
+      createdAt: Date
+    }, ExtArgs["result"]["workspaceAutoJoin"]>
+    composites: {}
+  }
+
+  type WorkspaceAutoJoinGetPayload<S extends boolean | null | undefined | WorkspaceAutoJoinDefaultArgs> = $Result.GetResult<Prisma.$WorkspaceAutoJoinPayload, S>
+
+  type WorkspaceAutoJoinCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<WorkspaceAutoJoinFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: WorkspaceAutoJoinCountAggregateInputType | true
+    }
+
+  export interface WorkspaceAutoJoinDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['WorkspaceAutoJoin'], meta: { name: 'WorkspaceAutoJoin' } }
+    /**
+     * Find zero or one WorkspaceAutoJoin that matches the filter.
+     * @param {WorkspaceAutoJoinFindUniqueArgs} args - Arguments to find a WorkspaceAutoJoin
+     * @example
+     * // Get one WorkspaceAutoJoin
+     * const workspaceAutoJoin = await prisma.workspaceAutoJoin.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends WorkspaceAutoJoinFindUniqueArgs>(args: SelectSubset<T, WorkspaceAutoJoinFindUniqueArgs<ExtArgs>>): Prisma__WorkspaceAutoJoinClient<$Result.GetResult<Prisma.$WorkspaceAutoJoinPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one WorkspaceAutoJoin that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {WorkspaceAutoJoinFindUniqueOrThrowArgs} args - Arguments to find a WorkspaceAutoJoin
+     * @example
+     * // Get one WorkspaceAutoJoin
+     * const workspaceAutoJoin = await prisma.workspaceAutoJoin.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends WorkspaceAutoJoinFindUniqueOrThrowArgs>(args: SelectSubset<T, WorkspaceAutoJoinFindUniqueOrThrowArgs<ExtArgs>>): Prisma__WorkspaceAutoJoinClient<$Result.GetResult<Prisma.$WorkspaceAutoJoinPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first WorkspaceAutoJoin that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkspaceAutoJoinFindFirstArgs} args - Arguments to find a WorkspaceAutoJoin
+     * @example
+     * // Get one WorkspaceAutoJoin
+     * const workspaceAutoJoin = await prisma.workspaceAutoJoin.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends WorkspaceAutoJoinFindFirstArgs>(args?: SelectSubset<T, WorkspaceAutoJoinFindFirstArgs<ExtArgs>>): Prisma__WorkspaceAutoJoinClient<$Result.GetResult<Prisma.$WorkspaceAutoJoinPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first WorkspaceAutoJoin that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkspaceAutoJoinFindFirstOrThrowArgs} args - Arguments to find a WorkspaceAutoJoin
+     * @example
+     * // Get one WorkspaceAutoJoin
+     * const workspaceAutoJoin = await prisma.workspaceAutoJoin.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends WorkspaceAutoJoinFindFirstOrThrowArgs>(args?: SelectSubset<T, WorkspaceAutoJoinFindFirstOrThrowArgs<ExtArgs>>): Prisma__WorkspaceAutoJoinClient<$Result.GetResult<Prisma.$WorkspaceAutoJoinPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more WorkspaceAutoJoins that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkspaceAutoJoinFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all WorkspaceAutoJoins
+     * const workspaceAutoJoins = await prisma.workspaceAutoJoin.findMany()
+     * 
+     * // Get first 10 WorkspaceAutoJoins
+     * const workspaceAutoJoins = await prisma.workspaceAutoJoin.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const workspaceAutoJoinWithIdOnly = await prisma.workspaceAutoJoin.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends WorkspaceAutoJoinFindManyArgs>(args?: SelectSubset<T, WorkspaceAutoJoinFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkspaceAutoJoinPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a WorkspaceAutoJoin.
+     * @param {WorkspaceAutoJoinCreateArgs} args - Arguments to create a WorkspaceAutoJoin.
+     * @example
+     * // Create one WorkspaceAutoJoin
+     * const WorkspaceAutoJoin = await prisma.workspaceAutoJoin.create({
+     *   data: {
+     *     // ... data to create a WorkspaceAutoJoin
+     *   }
+     * })
+     * 
+     */
+    create<T extends WorkspaceAutoJoinCreateArgs>(args: SelectSubset<T, WorkspaceAutoJoinCreateArgs<ExtArgs>>): Prisma__WorkspaceAutoJoinClient<$Result.GetResult<Prisma.$WorkspaceAutoJoinPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many WorkspaceAutoJoins.
+     * @param {WorkspaceAutoJoinCreateManyArgs} args - Arguments to create many WorkspaceAutoJoins.
+     * @example
+     * // Create many WorkspaceAutoJoins
+     * const workspaceAutoJoin = await prisma.workspaceAutoJoin.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends WorkspaceAutoJoinCreateManyArgs>(args?: SelectSubset<T, WorkspaceAutoJoinCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many WorkspaceAutoJoins and returns the data saved in the database.
+     * @param {WorkspaceAutoJoinCreateManyAndReturnArgs} args - Arguments to create many WorkspaceAutoJoins.
+     * @example
+     * // Create many WorkspaceAutoJoins
+     * const workspaceAutoJoin = await prisma.workspaceAutoJoin.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many WorkspaceAutoJoins and only return the `id`
+     * const workspaceAutoJoinWithIdOnly = await prisma.workspaceAutoJoin.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends WorkspaceAutoJoinCreateManyAndReturnArgs>(args?: SelectSubset<T, WorkspaceAutoJoinCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkspaceAutoJoinPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a WorkspaceAutoJoin.
+     * @param {WorkspaceAutoJoinDeleteArgs} args - Arguments to delete one WorkspaceAutoJoin.
+     * @example
+     * // Delete one WorkspaceAutoJoin
+     * const WorkspaceAutoJoin = await prisma.workspaceAutoJoin.delete({
+     *   where: {
+     *     // ... filter to delete one WorkspaceAutoJoin
+     *   }
+     * })
+     * 
+     */
+    delete<T extends WorkspaceAutoJoinDeleteArgs>(args: SelectSubset<T, WorkspaceAutoJoinDeleteArgs<ExtArgs>>): Prisma__WorkspaceAutoJoinClient<$Result.GetResult<Prisma.$WorkspaceAutoJoinPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one WorkspaceAutoJoin.
+     * @param {WorkspaceAutoJoinUpdateArgs} args - Arguments to update one WorkspaceAutoJoin.
+     * @example
+     * // Update one WorkspaceAutoJoin
+     * const workspaceAutoJoin = await prisma.workspaceAutoJoin.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends WorkspaceAutoJoinUpdateArgs>(args: SelectSubset<T, WorkspaceAutoJoinUpdateArgs<ExtArgs>>): Prisma__WorkspaceAutoJoinClient<$Result.GetResult<Prisma.$WorkspaceAutoJoinPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more WorkspaceAutoJoins.
+     * @param {WorkspaceAutoJoinDeleteManyArgs} args - Arguments to filter WorkspaceAutoJoins to delete.
+     * @example
+     * // Delete a few WorkspaceAutoJoins
+     * const { count } = await prisma.workspaceAutoJoin.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends WorkspaceAutoJoinDeleteManyArgs>(args?: SelectSubset<T, WorkspaceAutoJoinDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more WorkspaceAutoJoins.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkspaceAutoJoinUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many WorkspaceAutoJoins
+     * const workspaceAutoJoin = await prisma.workspaceAutoJoin.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends WorkspaceAutoJoinUpdateManyArgs>(args: SelectSubset<T, WorkspaceAutoJoinUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more WorkspaceAutoJoins and returns the data updated in the database.
+     * @param {WorkspaceAutoJoinUpdateManyAndReturnArgs} args - Arguments to update many WorkspaceAutoJoins.
+     * @example
+     * // Update many WorkspaceAutoJoins
+     * const workspaceAutoJoin = await prisma.workspaceAutoJoin.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more WorkspaceAutoJoins and only return the `id`
+     * const workspaceAutoJoinWithIdOnly = await prisma.workspaceAutoJoin.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends WorkspaceAutoJoinUpdateManyAndReturnArgs>(args: SelectSubset<T, WorkspaceAutoJoinUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkspaceAutoJoinPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one WorkspaceAutoJoin.
+     * @param {WorkspaceAutoJoinUpsertArgs} args - Arguments to update or create a WorkspaceAutoJoin.
+     * @example
+     * // Update or create a WorkspaceAutoJoin
+     * const workspaceAutoJoin = await prisma.workspaceAutoJoin.upsert({
+     *   create: {
+     *     // ... data to create a WorkspaceAutoJoin
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the WorkspaceAutoJoin we want to update
+     *   }
+     * })
+     */
+    upsert<T extends WorkspaceAutoJoinUpsertArgs>(args: SelectSubset<T, WorkspaceAutoJoinUpsertArgs<ExtArgs>>): Prisma__WorkspaceAutoJoinClient<$Result.GetResult<Prisma.$WorkspaceAutoJoinPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of WorkspaceAutoJoins.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkspaceAutoJoinCountArgs} args - Arguments to filter WorkspaceAutoJoins to count.
+     * @example
+     * // Count the number of WorkspaceAutoJoins
+     * const count = await prisma.workspaceAutoJoin.count({
+     *   where: {
+     *     // ... the filter for the WorkspaceAutoJoins we want to count
+     *   }
+     * })
+    **/
+    count<T extends WorkspaceAutoJoinCountArgs>(
+      args?: Subset<T, WorkspaceAutoJoinCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], WorkspaceAutoJoinCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a WorkspaceAutoJoin.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkspaceAutoJoinAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends WorkspaceAutoJoinAggregateArgs>(args: Subset<T, WorkspaceAutoJoinAggregateArgs>): Prisma.PrismaPromise<GetWorkspaceAutoJoinAggregateType<T>>
+
+    /**
+     * Group by WorkspaceAutoJoin.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkspaceAutoJoinGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends WorkspaceAutoJoinGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: WorkspaceAutoJoinGroupByArgs['orderBy'] }
+        : { orderBy?: WorkspaceAutoJoinGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, WorkspaceAutoJoinGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetWorkspaceAutoJoinGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the WorkspaceAutoJoin model
+   */
+  readonly fields: WorkspaceAutoJoinFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for WorkspaceAutoJoin.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__WorkspaceAutoJoinClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    workspace<T extends WorkspaceDefaultArgs<ExtArgs> = {}>(args?: Subset<T, WorkspaceDefaultArgs<ExtArgs>>): Prisma__WorkspaceClient<$Result.GetResult<Prisma.$WorkspacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    createdBy<T extends WorkspaceAutoJoin$createdByArgs<ExtArgs> = {}>(args?: Subset<T, WorkspaceAutoJoin$createdByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the WorkspaceAutoJoin model
+   */
+  interface WorkspaceAutoJoinFieldRefs {
+    readonly id: FieldRef<"WorkspaceAutoJoin", 'String'>
+    readonly workspaceId: FieldRef<"WorkspaceAutoJoin", 'String'>
+    readonly domain: FieldRef<"WorkspaceAutoJoin", 'String'>
+    readonly role: FieldRef<"WorkspaceAutoJoin", 'String'>
+    readonly createdById: FieldRef<"WorkspaceAutoJoin", 'String'>
+    readonly createdAt: FieldRef<"WorkspaceAutoJoin", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * WorkspaceAutoJoin findUnique
+   */
+  export type WorkspaceAutoJoinFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceAutoJoin
+     */
+    select?: WorkspaceAutoJoinSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceAutoJoin
+     */
+    omit?: WorkspaceAutoJoinOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceAutoJoinInclude<ExtArgs> | null
+    /**
+     * Filter, which WorkspaceAutoJoin to fetch.
+     */
+    where: WorkspaceAutoJoinWhereUniqueInput
+  }
+
+  /**
+   * WorkspaceAutoJoin findUniqueOrThrow
+   */
+  export type WorkspaceAutoJoinFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceAutoJoin
+     */
+    select?: WorkspaceAutoJoinSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceAutoJoin
+     */
+    omit?: WorkspaceAutoJoinOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceAutoJoinInclude<ExtArgs> | null
+    /**
+     * Filter, which WorkspaceAutoJoin to fetch.
+     */
+    where: WorkspaceAutoJoinWhereUniqueInput
+  }
+
+  /**
+   * WorkspaceAutoJoin findFirst
+   */
+  export type WorkspaceAutoJoinFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceAutoJoin
+     */
+    select?: WorkspaceAutoJoinSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceAutoJoin
+     */
+    omit?: WorkspaceAutoJoinOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceAutoJoinInclude<ExtArgs> | null
+    /**
+     * Filter, which WorkspaceAutoJoin to fetch.
+     */
+    where?: WorkspaceAutoJoinWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WorkspaceAutoJoins to fetch.
+     */
+    orderBy?: WorkspaceAutoJoinOrderByWithRelationInput | WorkspaceAutoJoinOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for WorkspaceAutoJoins.
+     */
+    cursor?: WorkspaceAutoJoinWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WorkspaceAutoJoins from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WorkspaceAutoJoins.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of WorkspaceAutoJoins.
+     */
+    distinct?: WorkspaceAutoJoinScalarFieldEnum | WorkspaceAutoJoinScalarFieldEnum[]
+  }
+
+  /**
+   * WorkspaceAutoJoin findFirstOrThrow
+   */
+  export type WorkspaceAutoJoinFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceAutoJoin
+     */
+    select?: WorkspaceAutoJoinSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceAutoJoin
+     */
+    omit?: WorkspaceAutoJoinOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceAutoJoinInclude<ExtArgs> | null
+    /**
+     * Filter, which WorkspaceAutoJoin to fetch.
+     */
+    where?: WorkspaceAutoJoinWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WorkspaceAutoJoins to fetch.
+     */
+    orderBy?: WorkspaceAutoJoinOrderByWithRelationInput | WorkspaceAutoJoinOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for WorkspaceAutoJoins.
+     */
+    cursor?: WorkspaceAutoJoinWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WorkspaceAutoJoins from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WorkspaceAutoJoins.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of WorkspaceAutoJoins.
+     */
+    distinct?: WorkspaceAutoJoinScalarFieldEnum | WorkspaceAutoJoinScalarFieldEnum[]
+  }
+
+  /**
+   * WorkspaceAutoJoin findMany
+   */
+  export type WorkspaceAutoJoinFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceAutoJoin
+     */
+    select?: WorkspaceAutoJoinSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceAutoJoin
+     */
+    omit?: WorkspaceAutoJoinOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceAutoJoinInclude<ExtArgs> | null
+    /**
+     * Filter, which WorkspaceAutoJoins to fetch.
+     */
+    where?: WorkspaceAutoJoinWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WorkspaceAutoJoins to fetch.
+     */
+    orderBy?: WorkspaceAutoJoinOrderByWithRelationInput | WorkspaceAutoJoinOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing WorkspaceAutoJoins.
+     */
+    cursor?: WorkspaceAutoJoinWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WorkspaceAutoJoins from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WorkspaceAutoJoins.
+     */
+    skip?: number
+    distinct?: WorkspaceAutoJoinScalarFieldEnum | WorkspaceAutoJoinScalarFieldEnum[]
+  }
+
+  /**
+   * WorkspaceAutoJoin create
+   */
+  export type WorkspaceAutoJoinCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceAutoJoin
+     */
+    select?: WorkspaceAutoJoinSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceAutoJoin
+     */
+    omit?: WorkspaceAutoJoinOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceAutoJoinInclude<ExtArgs> | null
+    /**
+     * The data needed to create a WorkspaceAutoJoin.
+     */
+    data: XOR<WorkspaceAutoJoinCreateInput, WorkspaceAutoJoinUncheckedCreateInput>
+  }
+
+  /**
+   * WorkspaceAutoJoin createMany
+   */
+  export type WorkspaceAutoJoinCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many WorkspaceAutoJoins.
+     */
+    data: WorkspaceAutoJoinCreateManyInput | WorkspaceAutoJoinCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * WorkspaceAutoJoin createManyAndReturn
+   */
+  export type WorkspaceAutoJoinCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceAutoJoin
+     */
+    select?: WorkspaceAutoJoinSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceAutoJoin
+     */
+    omit?: WorkspaceAutoJoinOmit<ExtArgs> | null
+    /**
+     * The data used to create many WorkspaceAutoJoins.
+     */
+    data: WorkspaceAutoJoinCreateManyInput | WorkspaceAutoJoinCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceAutoJoinIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * WorkspaceAutoJoin update
+   */
+  export type WorkspaceAutoJoinUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceAutoJoin
+     */
+    select?: WorkspaceAutoJoinSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceAutoJoin
+     */
+    omit?: WorkspaceAutoJoinOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceAutoJoinInclude<ExtArgs> | null
+    /**
+     * The data needed to update a WorkspaceAutoJoin.
+     */
+    data: XOR<WorkspaceAutoJoinUpdateInput, WorkspaceAutoJoinUncheckedUpdateInput>
+    /**
+     * Choose, which WorkspaceAutoJoin to update.
+     */
+    where: WorkspaceAutoJoinWhereUniqueInput
+  }
+
+  /**
+   * WorkspaceAutoJoin updateMany
+   */
+  export type WorkspaceAutoJoinUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update WorkspaceAutoJoins.
+     */
+    data: XOR<WorkspaceAutoJoinUpdateManyMutationInput, WorkspaceAutoJoinUncheckedUpdateManyInput>
+    /**
+     * Filter which WorkspaceAutoJoins to update
+     */
+    where?: WorkspaceAutoJoinWhereInput
+    /**
+     * Limit how many WorkspaceAutoJoins to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * WorkspaceAutoJoin updateManyAndReturn
+   */
+  export type WorkspaceAutoJoinUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceAutoJoin
+     */
+    select?: WorkspaceAutoJoinSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceAutoJoin
+     */
+    omit?: WorkspaceAutoJoinOmit<ExtArgs> | null
+    /**
+     * The data used to update WorkspaceAutoJoins.
+     */
+    data: XOR<WorkspaceAutoJoinUpdateManyMutationInput, WorkspaceAutoJoinUncheckedUpdateManyInput>
+    /**
+     * Filter which WorkspaceAutoJoins to update
+     */
+    where?: WorkspaceAutoJoinWhereInput
+    /**
+     * Limit how many WorkspaceAutoJoins to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceAutoJoinIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * WorkspaceAutoJoin upsert
+   */
+  export type WorkspaceAutoJoinUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceAutoJoin
+     */
+    select?: WorkspaceAutoJoinSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceAutoJoin
+     */
+    omit?: WorkspaceAutoJoinOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceAutoJoinInclude<ExtArgs> | null
+    /**
+     * The filter to search for the WorkspaceAutoJoin to update in case it exists.
+     */
+    where: WorkspaceAutoJoinWhereUniqueInput
+    /**
+     * In case the WorkspaceAutoJoin found by the `where` argument doesn't exist, create a new WorkspaceAutoJoin with this data.
+     */
+    create: XOR<WorkspaceAutoJoinCreateInput, WorkspaceAutoJoinUncheckedCreateInput>
+    /**
+     * In case the WorkspaceAutoJoin was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<WorkspaceAutoJoinUpdateInput, WorkspaceAutoJoinUncheckedUpdateInput>
+  }
+
+  /**
+   * WorkspaceAutoJoin delete
+   */
+  export type WorkspaceAutoJoinDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceAutoJoin
+     */
+    select?: WorkspaceAutoJoinSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceAutoJoin
+     */
+    omit?: WorkspaceAutoJoinOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceAutoJoinInclude<ExtArgs> | null
+    /**
+     * Filter which WorkspaceAutoJoin to delete.
+     */
+    where: WorkspaceAutoJoinWhereUniqueInput
+  }
+
+  /**
+   * WorkspaceAutoJoin deleteMany
+   */
+  export type WorkspaceAutoJoinDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which WorkspaceAutoJoins to delete
+     */
+    where?: WorkspaceAutoJoinWhereInput
+    /**
+     * Limit how many WorkspaceAutoJoins to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * WorkspaceAutoJoin.createdBy
+   */
+  export type WorkspaceAutoJoin$createdByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * WorkspaceAutoJoin without action
+   */
+  export type WorkspaceAutoJoinDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceAutoJoin
+     */
+    select?: WorkspaceAutoJoinSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceAutoJoin
+     */
+    omit?: WorkspaceAutoJoinOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceAutoJoinInclude<ExtArgs> | null
   }
 
 
@@ -28082,6 +29345,18 @@ export namespace Prisma {
   export type WorkspaceScalarFieldEnum = (typeof WorkspaceScalarFieldEnum)[keyof typeof WorkspaceScalarFieldEnum]
 
 
+  export const WorkspaceAutoJoinScalarFieldEnum: {
+    id: 'id',
+    workspaceId: 'workspaceId',
+    domain: 'domain',
+    role: 'role',
+    createdById: 'createdById',
+    createdAt: 'createdAt'
+  };
+
+  export type WorkspaceAutoJoinScalarFieldEnum = (typeof WorkspaceAutoJoinScalarFieldEnum)[keyof typeof WorkspaceAutoJoinScalarFieldEnum]
+
+
   export const WorkspaceMemberScalarFieldEnum: {
     workspaceId: 'workspaceId',
     userId: 'userId',
@@ -28605,6 +29880,7 @@ export namespace Prisma {
     attachments?: AttachmentListRelationFilter
     imports?: TrelloImportListRelationFilter
     watches?: WatchListRelationFilter
+    autoJoinsCreated?: WorkspaceAutoJoinListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -28631,6 +29907,7 @@ export namespace Prisma {
     attachments?: AttachmentOrderByRelationAggregateInput
     imports?: TrelloImportOrderByRelationAggregateInput
     watches?: WatchOrderByRelationAggregateInput
+    autoJoinsCreated?: WorkspaceAutoJoinOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -28660,6 +29937,7 @@ export namespace Prisma {
     attachments?: AttachmentListRelationFilter
     imports?: TrelloImportListRelationFilter
     watches?: WatchListRelationFilter
+    autoJoinsCreated?: WorkspaceAutoJoinListRelationFilter
   }, "id" | "username" | "email" | "trelloId">
 
   export type UserOrderByWithAggregationInput = {
@@ -28706,6 +29984,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Workspace"> | Date | string
     members?: WorkspaceMemberListRelationFilter
     boards?: BoardListRelationFilter
+    autoJoins?: WorkspaceAutoJoinListRelationFilter
   }
 
   export type WorkspaceOrderByWithRelationInput = {
@@ -28717,6 +29996,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     members?: WorkspaceMemberOrderByRelationAggregateInput
     boards?: BoardOrderByRelationAggregateInput
+    autoJoins?: WorkspaceAutoJoinOrderByRelationAggregateInput
   }
 
   export type WorkspaceWhereUniqueInput = Prisma.AtLeast<{
@@ -28731,6 +30011,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Workspace"> | Date | string
     members?: WorkspaceMemberListRelationFilter
     boards?: BoardListRelationFilter
+    autoJoins?: WorkspaceAutoJoinListRelationFilter
   }, "id" | "trelloId">
 
   export type WorkspaceOrderByWithAggregationInput = {
@@ -28755,6 +30036,70 @@ export namespace Prisma {
     logoKey?: StringNullableWithAggregatesFilter<"Workspace"> | string | null
     trelloId?: StringNullableWithAggregatesFilter<"Workspace"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Workspace"> | Date | string
+  }
+
+  export type WorkspaceAutoJoinWhereInput = {
+    AND?: WorkspaceAutoJoinWhereInput | WorkspaceAutoJoinWhereInput[]
+    OR?: WorkspaceAutoJoinWhereInput[]
+    NOT?: WorkspaceAutoJoinWhereInput | WorkspaceAutoJoinWhereInput[]
+    id?: StringFilter<"WorkspaceAutoJoin"> | string
+    workspaceId?: StringFilter<"WorkspaceAutoJoin"> | string
+    domain?: StringFilter<"WorkspaceAutoJoin"> | string
+    role?: StringFilter<"WorkspaceAutoJoin"> | string
+    createdById?: StringNullableFilter<"WorkspaceAutoJoin"> | string | null
+    createdAt?: DateTimeFilter<"WorkspaceAutoJoin"> | Date | string
+    workspace?: XOR<WorkspaceScalarRelationFilter, WorkspaceWhereInput>
+    createdBy?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+  }
+
+  export type WorkspaceAutoJoinOrderByWithRelationInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    domain?: SortOrder
+    role?: SortOrder
+    createdById?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    workspace?: WorkspaceOrderByWithRelationInput
+    createdBy?: UserOrderByWithRelationInput
+  }
+
+  export type WorkspaceAutoJoinWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    workspaceId_domain?: WorkspaceAutoJoinWorkspaceIdDomainCompoundUniqueInput
+    AND?: WorkspaceAutoJoinWhereInput | WorkspaceAutoJoinWhereInput[]
+    OR?: WorkspaceAutoJoinWhereInput[]
+    NOT?: WorkspaceAutoJoinWhereInput | WorkspaceAutoJoinWhereInput[]
+    workspaceId?: StringFilter<"WorkspaceAutoJoin"> | string
+    domain?: StringFilter<"WorkspaceAutoJoin"> | string
+    role?: StringFilter<"WorkspaceAutoJoin"> | string
+    createdById?: StringNullableFilter<"WorkspaceAutoJoin"> | string | null
+    createdAt?: DateTimeFilter<"WorkspaceAutoJoin"> | Date | string
+    workspace?: XOR<WorkspaceScalarRelationFilter, WorkspaceWhereInput>
+    createdBy?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+  }, "id" | "workspaceId_domain">
+
+  export type WorkspaceAutoJoinOrderByWithAggregationInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    domain?: SortOrder
+    role?: SortOrder
+    createdById?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    _count?: WorkspaceAutoJoinCountOrderByAggregateInput
+    _max?: WorkspaceAutoJoinMaxOrderByAggregateInput
+    _min?: WorkspaceAutoJoinMinOrderByAggregateInput
+  }
+
+  export type WorkspaceAutoJoinScalarWhereWithAggregatesInput = {
+    AND?: WorkspaceAutoJoinScalarWhereWithAggregatesInput | WorkspaceAutoJoinScalarWhereWithAggregatesInput[]
+    OR?: WorkspaceAutoJoinScalarWhereWithAggregatesInput[]
+    NOT?: WorkspaceAutoJoinScalarWhereWithAggregatesInput | WorkspaceAutoJoinScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"WorkspaceAutoJoin"> | string
+    workspaceId?: StringWithAggregatesFilter<"WorkspaceAutoJoin"> | string
+    domain?: StringWithAggregatesFilter<"WorkspaceAutoJoin"> | string
+    role?: StringWithAggregatesFilter<"WorkspaceAutoJoin"> | string
+    createdById?: StringNullableWithAggregatesFilter<"WorkspaceAutoJoin"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"WorkspaceAutoJoin"> | Date | string
   }
 
   export type WorkspaceMemberWhereInput = {
@@ -30126,6 +31471,7 @@ export namespace Prisma {
     attachments?: AttachmentCreateNestedManyWithoutUploaderInput
     imports?: TrelloImportCreateNestedManyWithoutUserInput
     watches?: WatchCreateNestedManyWithoutUserInput
+    autoJoinsCreated?: WorkspaceAutoJoinCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -30152,6 +31498,7 @@ export namespace Prisma {
     attachments?: AttachmentUncheckedCreateNestedManyWithoutUploaderInput
     imports?: TrelloImportUncheckedCreateNestedManyWithoutUserInput
     watches?: WatchUncheckedCreateNestedManyWithoutUserInput
+    autoJoinsCreated?: WorkspaceAutoJoinUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUpdateInput = {
@@ -30178,6 +31525,7 @@ export namespace Prisma {
     attachments?: AttachmentUpdateManyWithoutUploaderNestedInput
     imports?: TrelloImportUpdateManyWithoutUserNestedInput
     watches?: WatchUpdateManyWithoutUserNestedInput
+    autoJoinsCreated?: WorkspaceAutoJoinUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -30204,6 +31552,7 @@ export namespace Prisma {
     attachments?: AttachmentUncheckedUpdateManyWithoutUploaderNestedInput
     imports?: TrelloImportUncheckedUpdateManyWithoutUserNestedInput
     watches?: WatchUncheckedUpdateManyWithoutUserNestedInput
+    autoJoinsCreated?: WorkspaceAutoJoinUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -30254,6 +31603,7 @@ export namespace Prisma {
     createdAt?: Date | string
     members?: WorkspaceMemberCreateNestedManyWithoutWorkspaceInput
     boards?: BoardCreateNestedManyWithoutWorkspaceInput
+    autoJoins?: WorkspaceAutoJoinCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateInput = {
@@ -30265,6 +31615,7 @@ export namespace Prisma {
     createdAt?: Date | string
     members?: WorkspaceMemberUncheckedCreateNestedManyWithoutWorkspaceInput
     boards?: BoardUncheckedCreateNestedManyWithoutWorkspaceInput
+    autoJoins?: WorkspaceAutoJoinUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUpdateInput = {
@@ -30276,6 +31627,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     members?: WorkspaceMemberUpdateManyWithoutWorkspaceNestedInput
     boards?: BoardUpdateManyWithoutWorkspaceNestedInput
+    autoJoins?: WorkspaceAutoJoinUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateInput = {
@@ -30287,6 +31639,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     members?: WorkspaceMemberUncheckedUpdateManyWithoutWorkspaceNestedInput
     boards?: BoardUncheckedUpdateManyWithoutWorkspaceNestedInput
+    autoJoins?: WorkspaceAutoJoinUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceCreateManyInput = {
@@ -30313,6 +31666,67 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     logoKey?: NullableStringFieldUpdateOperationsInput | string | null
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WorkspaceAutoJoinCreateInput = {
+    id?: string
+    domain: string
+    role?: string
+    createdAt?: Date | string
+    workspace: WorkspaceCreateNestedOneWithoutAutoJoinsInput
+    createdBy?: UserCreateNestedOneWithoutAutoJoinsCreatedInput
+  }
+
+  export type WorkspaceAutoJoinUncheckedCreateInput = {
+    id?: string
+    workspaceId: string
+    domain: string
+    role?: string
+    createdById?: string | null
+    createdAt?: Date | string
+  }
+
+  export type WorkspaceAutoJoinUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    domain?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workspace?: WorkspaceUpdateOneRequiredWithoutAutoJoinsNestedInput
+    createdBy?: UserUpdateOneWithoutAutoJoinsCreatedNestedInput
+  }
+
+  export type WorkspaceAutoJoinUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    domain?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WorkspaceAutoJoinCreateManyInput = {
+    id?: string
+    workspaceId: string
+    domain: string
+    role?: string
+    createdById?: string | null
+    createdAt?: Date | string
+  }
+
+  export type WorkspaceAutoJoinUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    domain?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WorkspaceAutoJoinUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    domain?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -31796,6 +33210,12 @@ export namespace Prisma {
     none?: WatchWhereInput
   }
 
+  export type WorkspaceAutoJoinListRelationFilter = {
+    every?: WorkspaceAutoJoinWhereInput
+    some?: WorkspaceAutoJoinWhereInput
+    none?: WorkspaceAutoJoinWhereInput
+  }
+
   export type AccountOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -31845,6 +33265,10 @@ export namespace Prisma {
   }
 
   export type WatchOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type WorkspaceAutoJoinOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -31949,6 +33373,43 @@ export namespace Prisma {
   export type WorkspaceScalarRelationFilter = {
     is?: WorkspaceWhereInput
     isNot?: WorkspaceWhereInput
+  }
+
+  export type UserNullableScalarRelationFilter = {
+    is?: UserWhereInput | null
+    isNot?: UserWhereInput | null
+  }
+
+  export type WorkspaceAutoJoinWorkspaceIdDomainCompoundUniqueInput = {
+    workspaceId: string
+    domain: string
+  }
+
+  export type WorkspaceAutoJoinCountOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    domain?: SortOrder
+    role?: SortOrder
+    createdById?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type WorkspaceAutoJoinMaxOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    domain?: SortOrder
+    role?: SortOrder
+    createdById?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type WorkspaceAutoJoinMinOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    domain?: SortOrder
+    role?: SortOrder
+    createdById?: SortOrder
+    createdAt?: SortOrder
   }
 
   export type WorkspaceMemberWorkspaceIdUserIdCompoundUniqueInput = {
@@ -32347,11 +33808,6 @@ export namespace Prisma {
     isNot?: ChecklistWhereInput
   }
 
-  export type UserNullableScalarRelationFilter = {
-    is?: UserWhereInput | null
-    isNot?: UserWhereInput | null
-  }
-
   export type CheckItemCountOrderByAggregateInput = {
     id?: SortOrder
     checklistId?: SortOrder
@@ -32731,6 +34187,13 @@ export namespace Prisma {
     connect?: WatchWhereUniqueInput | WatchWhereUniqueInput[]
   }
 
+  export type WorkspaceAutoJoinCreateNestedManyWithoutCreatedByInput = {
+    create?: XOR<WorkspaceAutoJoinCreateWithoutCreatedByInput, WorkspaceAutoJoinUncheckedCreateWithoutCreatedByInput> | WorkspaceAutoJoinCreateWithoutCreatedByInput[] | WorkspaceAutoJoinUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: WorkspaceAutoJoinCreateOrConnectWithoutCreatedByInput | WorkspaceAutoJoinCreateOrConnectWithoutCreatedByInput[]
+    createMany?: WorkspaceAutoJoinCreateManyCreatedByInputEnvelope
+    connect?: WorkspaceAutoJoinWhereUniqueInput | WorkspaceAutoJoinWhereUniqueInput[]
+  }
+
   export type AccountUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
@@ -32820,6 +34283,13 @@ export namespace Prisma {
     connectOrCreate?: WatchCreateOrConnectWithoutUserInput | WatchCreateOrConnectWithoutUserInput[]
     createMany?: WatchCreateManyUserInputEnvelope
     connect?: WatchWhereUniqueInput | WatchWhereUniqueInput[]
+  }
+
+  export type WorkspaceAutoJoinUncheckedCreateNestedManyWithoutCreatedByInput = {
+    create?: XOR<WorkspaceAutoJoinCreateWithoutCreatedByInput, WorkspaceAutoJoinUncheckedCreateWithoutCreatedByInput> | WorkspaceAutoJoinCreateWithoutCreatedByInput[] | WorkspaceAutoJoinUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: WorkspaceAutoJoinCreateOrConnectWithoutCreatedByInput | WorkspaceAutoJoinCreateOrConnectWithoutCreatedByInput[]
+    createMany?: WorkspaceAutoJoinCreateManyCreatedByInputEnvelope
+    connect?: WorkspaceAutoJoinWhereUniqueInput | WorkspaceAutoJoinWhereUniqueInput[]
   }
 
   export type NullableDateTimeFieldUpdateOperationsInput = {
@@ -33012,6 +34482,20 @@ export namespace Prisma {
     deleteMany?: WatchScalarWhereInput | WatchScalarWhereInput[]
   }
 
+  export type WorkspaceAutoJoinUpdateManyWithoutCreatedByNestedInput = {
+    create?: XOR<WorkspaceAutoJoinCreateWithoutCreatedByInput, WorkspaceAutoJoinUncheckedCreateWithoutCreatedByInput> | WorkspaceAutoJoinCreateWithoutCreatedByInput[] | WorkspaceAutoJoinUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: WorkspaceAutoJoinCreateOrConnectWithoutCreatedByInput | WorkspaceAutoJoinCreateOrConnectWithoutCreatedByInput[]
+    upsert?: WorkspaceAutoJoinUpsertWithWhereUniqueWithoutCreatedByInput | WorkspaceAutoJoinUpsertWithWhereUniqueWithoutCreatedByInput[]
+    createMany?: WorkspaceAutoJoinCreateManyCreatedByInputEnvelope
+    set?: WorkspaceAutoJoinWhereUniqueInput | WorkspaceAutoJoinWhereUniqueInput[]
+    disconnect?: WorkspaceAutoJoinWhereUniqueInput | WorkspaceAutoJoinWhereUniqueInput[]
+    delete?: WorkspaceAutoJoinWhereUniqueInput | WorkspaceAutoJoinWhereUniqueInput[]
+    connect?: WorkspaceAutoJoinWhereUniqueInput | WorkspaceAutoJoinWhereUniqueInput[]
+    update?: WorkspaceAutoJoinUpdateWithWhereUniqueWithoutCreatedByInput | WorkspaceAutoJoinUpdateWithWhereUniqueWithoutCreatedByInput[]
+    updateMany?: WorkspaceAutoJoinUpdateManyWithWhereWithoutCreatedByInput | WorkspaceAutoJoinUpdateManyWithWhereWithoutCreatedByInput[]
+    deleteMany?: WorkspaceAutoJoinScalarWhereInput | WorkspaceAutoJoinScalarWhereInput[]
+  }
+
   export type AccountUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
@@ -33194,6 +34678,20 @@ export namespace Prisma {
     deleteMany?: WatchScalarWhereInput | WatchScalarWhereInput[]
   }
 
+  export type WorkspaceAutoJoinUncheckedUpdateManyWithoutCreatedByNestedInput = {
+    create?: XOR<WorkspaceAutoJoinCreateWithoutCreatedByInput, WorkspaceAutoJoinUncheckedCreateWithoutCreatedByInput> | WorkspaceAutoJoinCreateWithoutCreatedByInput[] | WorkspaceAutoJoinUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: WorkspaceAutoJoinCreateOrConnectWithoutCreatedByInput | WorkspaceAutoJoinCreateOrConnectWithoutCreatedByInput[]
+    upsert?: WorkspaceAutoJoinUpsertWithWhereUniqueWithoutCreatedByInput | WorkspaceAutoJoinUpsertWithWhereUniqueWithoutCreatedByInput[]
+    createMany?: WorkspaceAutoJoinCreateManyCreatedByInputEnvelope
+    set?: WorkspaceAutoJoinWhereUniqueInput | WorkspaceAutoJoinWhereUniqueInput[]
+    disconnect?: WorkspaceAutoJoinWhereUniqueInput | WorkspaceAutoJoinWhereUniqueInput[]
+    delete?: WorkspaceAutoJoinWhereUniqueInput | WorkspaceAutoJoinWhereUniqueInput[]
+    connect?: WorkspaceAutoJoinWhereUniqueInput | WorkspaceAutoJoinWhereUniqueInput[]
+    update?: WorkspaceAutoJoinUpdateWithWhereUniqueWithoutCreatedByInput | WorkspaceAutoJoinUpdateWithWhereUniqueWithoutCreatedByInput[]
+    updateMany?: WorkspaceAutoJoinUpdateManyWithWhereWithoutCreatedByInput | WorkspaceAutoJoinUpdateManyWithWhereWithoutCreatedByInput[]
+    deleteMany?: WorkspaceAutoJoinScalarWhereInput | WorkspaceAutoJoinScalarWhereInput[]
+  }
+
   export type WorkspaceMemberCreateNestedManyWithoutWorkspaceInput = {
     create?: XOR<WorkspaceMemberCreateWithoutWorkspaceInput, WorkspaceMemberUncheckedCreateWithoutWorkspaceInput> | WorkspaceMemberCreateWithoutWorkspaceInput[] | WorkspaceMemberUncheckedCreateWithoutWorkspaceInput[]
     connectOrCreate?: WorkspaceMemberCreateOrConnectWithoutWorkspaceInput | WorkspaceMemberCreateOrConnectWithoutWorkspaceInput[]
@@ -33208,6 +34706,13 @@ export namespace Prisma {
     connect?: BoardWhereUniqueInput | BoardWhereUniqueInput[]
   }
 
+  export type WorkspaceAutoJoinCreateNestedManyWithoutWorkspaceInput = {
+    create?: XOR<WorkspaceAutoJoinCreateWithoutWorkspaceInput, WorkspaceAutoJoinUncheckedCreateWithoutWorkspaceInput> | WorkspaceAutoJoinCreateWithoutWorkspaceInput[] | WorkspaceAutoJoinUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: WorkspaceAutoJoinCreateOrConnectWithoutWorkspaceInput | WorkspaceAutoJoinCreateOrConnectWithoutWorkspaceInput[]
+    createMany?: WorkspaceAutoJoinCreateManyWorkspaceInputEnvelope
+    connect?: WorkspaceAutoJoinWhereUniqueInput | WorkspaceAutoJoinWhereUniqueInput[]
+  }
+
   export type WorkspaceMemberUncheckedCreateNestedManyWithoutWorkspaceInput = {
     create?: XOR<WorkspaceMemberCreateWithoutWorkspaceInput, WorkspaceMemberUncheckedCreateWithoutWorkspaceInput> | WorkspaceMemberCreateWithoutWorkspaceInput[] | WorkspaceMemberUncheckedCreateWithoutWorkspaceInput[]
     connectOrCreate?: WorkspaceMemberCreateOrConnectWithoutWorkspaceInput | WorkspaceMemberCreateOrConnectWithoutWorkspaceInput[]
@@ -33220,6 +34725,13 @@ export namespace Prisma {
     connectOrCreate?: BoardCreateOrConnectWithoutWorkspaceInput | BoardCreateOrConnectWithoutWorkspaceInput[]
     createMany?: BoardCreateManyWorkspaceInputEnvelope
     connect?: BoardWhereUniqueInput | BoardWhereUniqueInput[]
+  }
+
+  export type WorkspaceAutoJoinUncheckedCreateNestedManyWithoutWorkspaceInput = {
+    create?: XOR<WorkspaceAutoJoinCreateWithoutWorkspaceInput, WorkspaceAutoJoinUncheckedCreateWithoutWorkspaceInput> | WorkspaceAutoJoinCreateWithoutWorkspaceInput[] | WorkspaceAutoJoinUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: WorkspaceAutoJoinCreateOrConnectWithoutWorkspaceInput | WorkspaceAutoJoinCreateOrConnectWithoutWorkspaceInput[]
+    createMany?: WorkspaceAutoJoinCreateManyWorkspaceInputEnvelope
+    connect?: WorkspaceAutoJoinWhereUniqueInput | WorkspaceAutoJoinWhereUniqueInput[]
   }
 
   export type WorkspaceMemberUpdateManyWithoutWorkspaceNestedInput = {
@@ -33250,6 +34762,20 @@ export namespace Prisma {
     deleteMany?: BoardScalarWhereInput | BoardScalarWhereInput[]
   }
 
+  export type WorkspaceAutoJoinUpdateManyWithoutWorkspaceNestedInput = {
+    create?: XOR<WorkspaceAutoJoinCreateWithoutWorkspaceInput, WorkspaceAutoJoinUncheckedCreateWithoutWorkspaceInput> | WorkspaceAutoJoinCreateWithoutWorkspaceInput[] | WorkspaceAutoJoinUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: WorkspaceAutoJoinCreateOrConnectWithoutWorkspaceInput | WorkspaceAutoJoinCreateOrConnectWithoutWorkspaceInput[]
+    upsert?: WorkspaceAutoJoinUpsertWithWhereUniqueWithoutWorkspaceInput | WorkspaceAutoJoinUpsertWithWhereUniqueWithoutWorkspaceInput[]
+    createMany?: WorkspaceAutoJoinCreateManyWorkspaceInputEnvelope
+    set?: WorkspaceAutoJoinWhereUniqueInput | WorkspaceAutoJoinWhereUniqueInput[]
+    disconnect?: WorkspaceAutoJoinWhereUniqueInput | WorkspaceAutoJoinWhereUniqueInput[]
+    delete?: WorkspaceAutoJoinWhereUniqueInput | WorkspaceAutoJoinWhereUniqueInput[]
+    connect?: WorkspaceAutoJoinWhereUniqueInput | WorkspaceAutoJoinWhereUniqueInput[]
+    update?: WorkspaceAutoJoinUpdateWithWhereUniqueWithoutWorkspaceInput | WorkspaceAutoJoinUpdateWithWhereUniqueWithoutWorkspaceInput[]
+    updateMany?: WorkspaceAutoJoinUpdateManyWithWhereWithoutWorkspaceInput | WorkspaceAutoJoinUpdateManyWithWhereWithoutWorkspaceInput[]
+    deleteMany?: WorkspaceAutoJoinScalarWhereInput | WorkspaceAutoJoinScalarWhereInput[]
+  }
+
   export type WorkspaceMemberUncheckedUpdateManyWithoutWorkspaceNestedInput = {
     create?: XOR<WorkspaceMemberCreateWithoutWorkspaceInput, WorkspaceMemberUncheckedCreateWithoutWorkspaceInput> | WorkspaceMemberCreateWithoutWorkspaceInput[] | WorkspaceMemberUncheckedCreateWithoutWorkspaceInput[]
     connectOrCreate?: WorkspaceMemberCreateOrConnectWithoutWorkspaceInput | WorkspaceMemberCreateOrConnectWithoutWorkspaceInput[]
@@ -33276,6 +34802,50 @@ export namespace Prisma {
     update?: BoardUpdateWithWhereUniqueWithoutWorkspaceInput | BoardUpdateWithWhereUniqueWithoutWorkspaceInput[]
     updateMany?: BoardUpdateManyWithWhereWithoutWorkspaceInput | BoardUpdateManyWithWhereWithoutWorkspaceInput[]
     deleteMany?: BoardScalarWhereInput | BoardScalarWhereInput[]
+  }
+
+  export type WorkspaceAutoJoinUncheckedUpdateManyWithoutWorkspaceNestedInput = {
+    create?: XOR<WorkspaceAutoJoinCreateWithoutWorkspaceInput, WorkspaceAutoJoinUncheckedCreateWithoutWorkspaceInput> | WorkspaceAutoJoinCreateWithoutWorkspaceInput[] | WorkspaceAutoJoinUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: WorkspaceAutoJoinCreateOrConnectWithoutWorkspaceInput | WorkspaceAutoJoinCreateOrConnectWithoutWorkspaceInput[]
+    upsert?: WorkspaceAutoJoinUpsertWithWhereUniqueWithoutWorkspaceInput | WorkspaceAutoJoinUpsertWithWhereUniqueWithoutWorkspaceInput[]
+    createMany?: WorkspaceAutoJoinCreateManyWorkspaceInputEnvelope
+    set?: WorkspaceAutoJoinWhereUniqueInput | WorkspaceAutoJoinWhereUniqueInput[]
+    disconnect?: WorkspaceAutoJoinWhereUniqueInput | WorkspaceAutoJoinWhereUniqueInput[]
+    delete?: WorkspaceAutoJoinWhereUniqueInput | WorkspaceAutoJoinWhereUniqueInput[]
+    connect?: WorkspaceAutoJoinWhereUniqueInput | WorkspaceAutoJoinWhereUniqueInput[]
+    update?: WorkspaceAutoJoinUpdateWithWhereUniqueWithoutWorkspaceInput | WorkspaceAutoJoinUpdateWithWhereUniqueWithoutWorkspaceInput[]
+    updateMany?: WorkspaceAutoJoinUpdateManyWithWhereWithoutWorkspaceInput | WorkspaceAutoJoinUpdateManyWithWhereWithoutWorkspaceInput[]
+    deleteMany?: WorkspaceAutoJoinScalarWhereInput | WorkspaceAutoJoinScalarWhereInput[]
+  }
+
+  export type WorkspaceCreateNestedOneWithoutAutoJoinsInput = {
+    create?: XOR<WorkspaceCreateWithoutAutoJoinsInput, WorkspaceUncheckedCreateWithoutAutoJoinsInput>
+    connectOrCreate?: WorkspaceCreateOrConnectWithoutAutoJoinsInput
+    connect?: WorkspaceWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutAutoJoinsCreatedInput = {
+    create?: XOR<UserCreateWithoutAutoJoinsCreatedInput, UserUncheckedCreateWithoutAutoJoinsCreatedInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAutoJoinsCreatedInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type WorkspaceUpdateOneRequiredWithoutAutoJoinsNestedInput = {
+    create?: XOR<WorkspaceCreateWithoutAutoJoinsInput, WorkspaceUncheckedCreateWithoutAutoJoinsInput>
+    connectOrCreate?: WorkspaceCreateOrConnectWithoutAutoJoinsInput
+    upsert?: WorkspaceUpsertWithoutAutoJoinsInput
+    connect?: WorkspaceWhereUniqueInput
+    update?: XOR<XOR<WorkspaceUpdateToOneWithWhereWithoutAutoJoinsInput, WorkspaceUpdateWithoutAutoJoinsInput>, WorkspaceUncheckedUpdateWithoutAutoJoinsInput>
+  }
+
+  export type UserUpdateOneWithoutAutoJoinsCreatedNestedInput = {
+    create?: XOR<UserCreateWithoutAutoJoinsCreatedInput, UserUncheckedCreateWithoutAutoJoinsCreatedInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAutoJoinsCreatedInput
+    upsert?: UserUpsertWithoutAutoJoinsCreatedInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutAutoJoinsCreatedInput, UserUpdateWithoutAutoJoinsCreatedInput>, UserUncheckedUpdateWithoutAutoJoinsCreatedInput>
   }
 
   export type WorkspaceCreateNestedOneWithoutMembersInput = {
@@ -34598,6 +36168,7 @@ export namespace Prisma {
     attachments?: AttachmentCreateNestedManyWithoutUploaderInput
     imports?: TrelloImportCreateNestedManyWithoutUserInput
     watches?: WatchCreateNestedManyWithoutUserInput
+    autoJoinsCreated?: WorkspaceAutoJoinCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutAccountsInput = {
@@ -34623,6 +36194,7 @@ export namespace Prisma {
     attachments?: AttachmentUncheckedCreateNestedManyWithoutUploaderInput
     imports?: TrelloImportUncheckedCreateNestedManyWithoutUserInput
     watches?: WatchUncheckedCreateNestedManyWithoutUserInput
+    autoJoinsCreated?: WorkspaceAutoJoinUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutAccountsInput = {
@@ -34664,6 +36236,7 @@ export namespace Prisma {
     attachments?: AttachmentUpdateManyWithoutUploaderNestedInput
     imports?: TrelloImportUpdateManyWithoutUserNestedInput
     watches?: WatchUpdateManyWithoutUserNestedInput
+    autoJoinsCreated?: WorkspaceAutoJoinUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -34689,6 +36262,7 @@ export namespace Prisma {
     attachments?: AttachmentUncheckedUpdateManyWithoutUploaderNestedInput
     imports?: TrelloImportUncheckedUpdateManyWithoutUserNestedInput
     watches?: WatchUncheckedUpdateManyWithoutUserNestedInput
+    autoJoinsCreated?: WorkspaceAutoJoinUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserCreateWithoutSessionsInput = {
@@ -34714,6 +36288,7 @@ export namespace Prisma {
     attachments?: AttachmentCreateNestedManyWithoutUploaderInput
     imports?: TrelloImportCreateNestedManyWithoutUserInput
     watches?: WatchCreateNestedManyWithoutUserInput
+    autoJoinsCreated?: WorkspaceAutoJoinCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutSessionsInput = {
@@ -34739,6 +36314,7 @@ export namespace Prisma {
     attachments?: AttachmentUncheckedCreateNestedManyWithoutUploaderInput
     imports?: TrelloImportUncheckedCreateNestedManyWithoutUserInput
     watches?: WatchUncheckedCreateNestedManyWithoutUserInput
+    autoJoinsCreated?: WorkspaceAutoJoinUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutSessionsInput = {
@@ -34780,6 +36356,7 @@ export namespace Prisma {
     attachments?: AttachmentUpdateManyWithoutUploaderNestedInput
     imports?: TrelloImportUpdateManyWithoutUserNestedInput
     watches?: WatchUpdateManyWithoutUserNestedInput
+    autoJoinsCreated?: WorkspaceAutoJoinUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -34805,6 +36382,7 @@ export namespace Prisma {
     attachments?: AttachmentUncheckedUpdateManyWithoutUploaderNestedInput
     imports?: TrelloImportUncheckedUpdateManyWithoutUserNestedInput
     watches?: WatchUncheckedUpdateManyWithoutUserNestedInput
+    autoJoinsCreated?: WorkspaceAutoJoinUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type AccountCreateWithoutUserInput = {
@@ -35144,6 +36722,32 @@ export namespace Prisma {
 
   export type WatchCreateManyUserInputEnvelope = {
     data: WatchCreateManyUserInput | WatchCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type WorkspaceAutoJoinCreateWithoutCreatedByInput = {
+    id?: string
+    domain: string
+    role?: string
+    createdAt?: Date | string
+    workspace: WorkspaceCreateNestedOneWithoutAutoJoinsInput
+  }
+
+  export type WorkspaceAutoJoinUncheckedCreateWithoutCreatedByInput = {
+    id?: string
+    workspaceId: string
+    domain: string
+    role?: string
+    createdAt?: Date | string
+  }
+
+  export type WorkspaceAutoJoinCreateOrConnectWithoutCreatedByInput = {
+    where: WorkspaceAutoJoinWhereUniqueInput
+    create: XOR<WorkspaceAutoJoinCreateWithoutCreatedByInput, WorkspaceAutoJoinUncheckedCreateWithoutCreatedByInput>
+  }
+
+  export type WorkspaceAutoJoinCreateManyCreatedByInputEnvelope = {
+    data: WorkspaceAutoJoinCreateManyCreatedByInput | WorkspaceAutoJoinCreateManyCreatedByInput[]
     skipDuplicates?: boolean
   }
 
@@ -35512,6 +37116,34 @@ export namespace Prisma {
     cardId?: StringNullableFilter<"Watch"> | string | null
   }
 
+  export type WorkspaceAutoJoinUpsertWithWhereUniqueWithoutCreatedByInput = {
+    where: WorkspaceAutoJoinWhereUniqueInput
+    update: XOR<WorkspaceAutoJoinUpdateWithoutCreatedByInput, WorkspaceAutoJoinUncheckedUpdateWithoutCreatedByInput>
+    create: XOR<WorkspaceAutoJoinCreateWithoutCreatedByInput, WorkspaceAutoJoinUncheckedCreateWithoutCreatedByInput>
+  }
+
+  export type WorkspaceAutoJoinUpdateWithWhereUniqueWithoutCreatedByInput = {
+    where: WorkspaceAutoJoinWhereUniqueInput
+    data: XOR<WorkspaceAutoJoinUpdateWithoutCreatedByInput, WorkspaceAutoJoinUncheckedUpdateWithoutCreatedByInput>
+  }
+
+  export type WorkspaceAutoJoinUpdateManyWithWhereWithoutCreatedByInput = {
+    where: WorkspaceAutoJoinScalarWhereInput
+    data: XOR<WorkspaceAutoJoinUpdateManyMutationInput, WorkspaceAutoJoinUncheckedUpdateManyWithoutCreatedByInput>
+  }
+
+  export type WorkspaceAutoJoinScalarWhereInput = {
+    AND?: WorkspaceAutoJoinScalarWhereInput | WorkspaceAutoJoinScalarWhereInput[]
+    OR?: WorkspaceAutoJoinScalarWhereInput[]
+    NOT?: WorkspaceAutoJoinScalarWhereInput | WorkspaceAutoJoinScalarWhereInput[]
+    id?: StringFilter<"WorkspaceAutoJoin"> | string
+    workspaceId?: StringFilter<"WorkspaceAutoJoin"> | string
+    domain?: StringFilter<"WorkspaceAutoJoin"> | string
+    role?: StringFilter<"WorkspaceAutoJoin"> | string
+    createdById?: StringNullableFilter<"WorkspaceAutoJoin"> | string | null
+    createdAt?: DateTimeFilter<"WorkspaceAutoJoin"> | Date | string
+  }
+
   export type WorkspaceMemberCreateWithoutWorkspaceInput = {
     role?: string
     user: UserCreateNestedOneWithoutWorkspacesInput
@@ -35580,6 +37212,32 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type WorkspaceAutoJoinCreateWithoutWorkspaceInput = {
+    id?: string
+    domain: string
+    role?: string
+    createdAt?: Date | string
+    createdBy?: UserCreateNestedOneWithoutAutoJoinsCreatedInput
+  }
+
+  export type WorkspaceAutoJoinUncheckedCreateWithoutWorkspaceInput = {
+    id?: string
+    domain: string
+    role?: string
+    createdById?: string | null
+    createdAt?: Date | string
+  }
+
+  export type WorkspaceAutoJoinCreateOrConnectWithoutWorkspaceInput = {
+    where: WorkspaceAutoJoinWhereUniqueInput
+    create: XOR<WorkspaceAutoJoinCreateWithoutWorkspaceInput, WorkspaceAutoJoinUncheckedCreateWithoutWorkspaceInput>
+  }
+
+  export type WorkspaceAutoJoinCreateManyWorkspaceInputEnvelope = {
+    data: WorkspaceAutoJoinCreateManyWorkspaceInput | WorkspaceAutoJoinCreateManyWorkspaceInput[]
+    skipDuplicates?: boolean
+  }
+
   export type WorkspaceMemberUpsertWithWhereUniqueWithoutWorkspaceInput = {
     where: WorkspaceMemberWhereUniqueInput
     update: XOR<WorkspaceMemberUpdateWithoutWorkspaceInput, WorkspaceMemberUncheckedUpdateWithoutWorkspaceInput>
@@ -35629,6 +37287,202 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Board"> | Date | string
   }
 
+  export type WorkspaceAutoJoinUpsertWithWhereUniqueWithoutWorkspaceInput = {
+    where: WorkspaceAutoJoinWhereUniqueInput
+    update: XOR<WorkspaceAutoJoinUpdateWithoutWorkspaceInput, WorkspaceAutoJoinUncheckedUpdateWithoutWorkspaceInput>
+    create: XOR<WorkspaceAutoJoinCreateWithoutWorkspaceInput, WorkspaceAutoJoinUncheckedCreateWithoutWorkspaceInput>
+  }
+
+  export type WorkspaceAutoJoinUpdateWithWhereUniqueWithoutWorkspaceInput = {
+    where: WorkspaceAutoJoinWhereUniqueInput
+    data: XOR<WorkspaceAutoJoinUpdateWithoutWorkspaceInput, WorkspaceAutoJoinUncheckedUpdateWithoutWorkspaceInput>
+  }
+
+  export type WorkspaceAutoJoinUpdateManyWithWhereWithoutWorkspaceInput = {
+    where: WorkspaceAutoJoinScalarWhereInput
+    data: XOR<WorkspaceAutoJoinUpdateManyMutationInput, WorkspaceAutoJoinUncheckedUpdateManyWithoutWorkspaceInput>
+  }
+
+  export type WorkspaceCreateWithoutAutoJoinsInput = {
+    id?: string
+    name: string
+    description?: string | null
+    logoKey?: string | null
+    trelloId?: string | null
+    createdAt?: Date | string
+    members?: WorkspaceMemberCreateNestedManyWithoutWorkspaceInput
+    boards?: BoardCreateNestedManyWithoutWorkspaceInput
+  }
+
+  export type WorkspaceUncheckedCreateWithoutAutoJoinsInput = {
+    id?: string
+    name: string
+    description?: string | null
+    logoKey?: string | null
+    trelloId?: string | null
+    createdAt?: Date | string
+    members?: WorkspaceMemberUncheckedCreateNestedManyWithoutWorkspaceInput
+    boards?: BoardUncheckedCreateNestedManyWithoutWorkspaceInput
+  }
+
+  export type WorkspaceCreateOrConnectWithoutAutoJoinsInput = {
+    where: WorkspaceWhereUniqueInput
+    create: XOR<WorkspaceCreateWithoutAutoJoinsInput, WorkspaceUncheckedCreateWithoutAutoJoinsInput>
+  }
+
+  export type UserCreateWithoutAutoJoinsCreatedInput = {
+    id?: string
+    name?: string | null
+    username?: string | null
+    email?: string | null
+    emailVerified?: Date | string | null
+    image?: string | null
+    isGhost?: boolean
+    isAdmin?: boolean
+    trelloId?: string | null
+    createdAt?: Date | string
+    accounts?: AccountCreateNestedManyWithoutUserInput
+    sessions?: SessionCreateNestedManyWithoutUserInput
+    workspaces?: WorkspaceMemberCreateNestedManyWithoutUserInput
+    boards?: BoardMemberCreateNestedManyWithoutUserInput
+    stars?: BoardStarCreateNestedManyWithoutUserInput
+    cards?: CardMemberCreateNestedManyWithoutUserInput
+    comments?: CommentCreateNestedManyWithoutAuthorInput
+    activities?: ActivityCreateNestedManyWithoutActorInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    checkItems?: CheckItemCreateNestedManyWithoutMemberInput
+    attachments?: AttachmentCreateNestedManyWithoutUploaderInput
+    imports?: TrelloImportCreateNestedManyWithoutUserInput
+    watches?: WatchCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutAutoJoinsCreatedInput = {
+    id?: string
+    name?: string | null
+    username?: string | null
+    email?: string | null
+    emailVerified?: Date | string | null
+    image?: string | null
+    isGhost?: boolean
+    isAdmin?: boolean
+    trelloId?: string | null
+    createdAt?: Date | string
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
+    sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
+    workspaces?: WorkspaceMemberUncheckedCreateNestedManyWithoutUserInput
+    boards?: BoardMemberUncheckedCreateNestedManyWithoutUserInput
+    stars?: BoardStarUncheckedCreateNestedManyWithoutUserInput
+    cards?: CardMemberUncheckedCreateNestedManyWithoutUserInput
+    comments?: CommentUncheckedCreateNestedManyWithoutAuthorInput
+    activities?: ActivityUncheckedCreateNestedManyWithoutActorInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    checkItems?: CheckItemUncheckedCreateNestedManyWithoutMemberInput
+    attachments?: AttachmentUncheckedCreateNestedManyWithoutUploaderInput
+    imports?: TrelloImportUncheckedCreateNestedManyWithoutUserInput
+    watches?: WatchUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutAutoJoinsCreatedInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutAutoJoinsCreatedInput, UserUncheckedCreateWithoutAutoJoinsCreatedInput>
+  }
+
+  export type WorkspaceUpsertWithoutAutoJoinsInput = {
+    update: XOR<WorkspaceUpdateWithoutAutoJoinsInput, WorkspaceUncheckedUpdateWithoutAutoJoinsInput>
+    create: XOR<WorkspaceCreateWithoutAutoJoinsInput, WorkspaceUncheckedCreateWithoutAutoJoinsInput>
+    where?: WorkspaceWhereInput
+  }
+
+  export type WorkspaceUpdateToOneWithWhereWithoutAutoJoinsInput = {
+    where?: WorkspaceWhereInput
+    data: XOR<WorkspaceUpdateWithoutAutoJoinsInput, WorkspaceUncheckedUpdateWithoutAutoJoinsInput>
+  }
+
+  export type WorkspaceUpdateWithoutAutoJoinsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    logoKey?: NullableStringFieldUpdateOperationsInput | string | null
+    trelloId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    members?: WorkspaceMemberUpdateManyWithoutWorkspaceNestedInput
+    boards?: BoardUpdateManyWithoutWorkspaceNestedInput
+  }
+
+  export type WorkspaceUncheckedUpdateWithoutAutoJoinsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    logoKey?: NullableStringFieldUpdateOperationsInput | string | null
+    trelloId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    members?: WorkspaceMemberUncheckedUpdateManyWithoutWorkspaceNestedInput
+    boards?: BoardUncheckedUpdateManyWithoutWorkspaceNestedInput
+  }
+
+  export type UserUpsertWithoutAutoJoinsCreatedInput = {
+    update: XOR<UserUpdateWithoutAutoJoinsCreatedInput, UserUncheckedUpdateWithoutAutoJoinsCreatedInput>
+    create: XOR<UserCreateWithoutAutoJoinsCreatedInput, UserUncheckedCreateWithoutAutoJoinsCreatedInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutAutoJoinsCreatedInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutAutoJoinsCreatedInput, UserUncheckedUpdateWithoutAutoJoinsCreatedInput>
+  }
+
+  export type UserUpdateWithoutAutoJoinsCreatedInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    isGhost?: BoolFieldUpdateOperationsInput | boolean
+    isAdmin?: BoolFieldUpdateOperationsInput | boolean
+    trelloId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    accounts?: AccountUpdateManyWithoutUserNestedInput
+    sessions?: SessionUpdateManyWithoutUserNestedInput
+    workspaces?: WorkspaceMemberUpdateManyWithoutUserNestedInput
+    boards?: BoardMemberUpdateManyWithoutUserNestedInput
+    stars?: BoardStarUpdateManyWithoutUserNestedInput
+    cards?: CardMemberUpdateManyWithoutUserNestedInput
+    comments?: CommentUpdateManyWithoutAuthorNestedInput
+    activities?: ActivityUpdateManyWithoutActorNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    checkItems?: CheckItemUpdateManyWithoutMemberNestedInput
+    attachments?: AttachmentUpdateManyWithoutUploaderNestedInput
+    imports?: TrelloImportUpdateManyWithoutUserNestedInput
+    watches?: WatchUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutAutoJoinsCreatedInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    isGhost?: BoolFieldUpdateOperationsInput | boolean
+    isAdmin?: BoolFieldUpdateOperationsInput | boolean
+    trelloId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    workspaces?: WorkspaceMemberUncheckedUpdateManyWithoutUserNestedInput
+    boards?: BoardMemberUncheckedUpdateManyWithoutUserNestedInput
+    stars?: BoardStarUncheckedUpdateManyWithoutUserNestedInput
+    cards?: CardMemberUncheckedUpdateManyWithoutUserNestedInput
+    comments?: CommentUncheckedUpdateManyWithoutAuthorNestedInput
+    activities?: ActivityUncheckedUpdateManyWithoutActorNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    checkItems?: CheckItemUncheckedUpdateManyWithoutMemberNestedInput
+    attachments?: AttachmentUncheckedUpdateManyWithoutUploaderNestedInput
+    imports?: TrelloImportUncheckedUpdateManyWithoutUserNestedInput
+    watches?: WatchUncheckedUpdateManyWithoutUserNestedInput
+  }
+
   export type WorkspaceCreateWithoutMembersInput = {
     id?: string
     name: string
@@ -35637,6 +37491,7 @@ export namespace Prisma {
     trelloId?: string | null
     createdAt?: Date | string
     boards?: BoardCreateNestedManyWithoutWorkspaceInput
+    autoJoins?: WorkspaceAutoJoinCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutMembersInput = {
@@ -35647,6 +37502,7 @@ export namespace Prisma {
     trelloId?: string | null
     createdAt?: Date | string
     boards?: BoardUncheckedCreateNestedManyWithoutWorkspaceInput
+    autoJoins?: WorkspaceAutoJoinUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutMembersInput = {
@@ -35677,6 +37533,7 @@ export namespace Prisma {
     attachments?: AttachmentCreateNestedManyWithoutUploaderInput
     imports?: TrelloImportCreateNestedManyWithoutUserInput
     watches?: WatchCreateNestedManyWithoutUserInput
+    autoJoinsCreated?: WorkspaceAutoJoinCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutWorkspacesInput = {
@@ -35702,6 +37559,7 @@ export namespace Prisma {
     attachments?: AttachmentUncheckedCreateNestedManyWithoutUploaderInput
     imports?: TrelloImportUncheckedCreateNestedManyWithoutUserInput
     watches?: WatchUncheckedCreateNestedManyWithoutUserInput
+    autoJoinsCreated?: WorkspaceAutoJoinUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutWorkspacesInput = {
@@ -35728,6 +37586,7 @@ export namespace Prisma {
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     boards?: BoardUpdateManyWithoutWorkspaceNestedInput
+    autoJoins?: WorkspaceAutoJoinUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutMembersInput = {
@@ -35738,6 +37597,7 @@ export namespace Prisma {
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     boards?: BoardUncheckedUpdateManyWithoutWorkspaceNestedInput
+    autoJoins?: WorkspaceAutoJoinUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type UserUpsertWithoutWorkspacesInput = {
@@ -35774,6 +37634,7 @@ export namespace Prisma {
     attachments?: AttachmentUpdateManyWithoutUploaderNestedInput
     imports?: TrelloImportUpdateManyWithoutUserNestedInput
     watches?: WatchUpdateManyWithoutUserNestedInput
+    autoJoinsCreated?: WorkspaceAutoJoinUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutWorkspacesInput = {
@@ -35799,6 +37660,7 @@ export namespace Prisma {
     attachments?: AttachmentUncheckedUpdateManyWithoutUploaderNestedInput
     imports?: TrelloImportUncheckedUpdateManyWithoutUserNestedInput
     watches?: WatchUncheckedUpdateManyWithoutUserNestedInput
+    autoJoinsCreated?: WorkspaceAutoJoinUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type WorkspaceCreateWithoutBoardsInput = {
@@ -35809,6 +37671,7 @@ export namespace Prisma {
     trelloId?: string | null
     createdAt?: Date | string
     members?: WorkspaceMemberCreateNestedManyWithoutWorkspaceInput
+    autoJoins?: WorkspaceAutoJoinCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutBoardsInput = {
@@ -35819,6 +37682,7 @@ export namespace Prisma {
     trelloId?: string | null
     createdAt?: Date | string
     members?: WorkspaceMemberUncheckedCreateNestedManyWithoutWorkspaceInput
+    autoJoins?: WorkspaceAutoJoinUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutBoardsInput = {
@@ -35991,6 +37855,7 @@ export namespace Prisma {
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     members?: WorkspaceMemberUpdateManyWithoutWorkspaceNestedInput
+    autoJoins?: WorkspaceAutoJoinUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutBoardsInput = {
@@ -36001,6 +37866,7 @@ export namespace Prisma {
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     members?: WorkspaceMemberUncheckedUpdateManyWithoutWorkspaceNestedInput
+    autoJoins?: WorkspaceAutoJoinUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type BoardMemberUpsertWithWhereUniqueWithoutBoardInput = {
@@ -36189,6 +38055,7 @@ export namespace Prisma {
     attachments?: AttachmentCreateNestedManyWithoutUploaderInput
     imports?: TrelloImportCreateNestedManyWithoutUserInput
     watches?: WatchCreateNestedManyWithoutUserInput
+    autoJoinsCreated?: WorkspaceAutoJoinCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutBoardsInput = {
@@ -36214,6 +38081,7 @@ export namespace Prisma {
     attachments?: AttachmentUncheckedCreateNestedManyWithoutUploaderInput
     imports?: TrelloImportUncheckedCreateNestedManyWithoutUserInput
     watches?: WatchUncheckedCreateNestedManyWithoutUserInput
+    autoJoinsCreated?: WorkspaceAutoJoinUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutBoardsInput = {
@@ -36304,6 +38172,7 @@ export namespace Prisma {
     attachments?: AttachmentUpdateManyWithoutUploaderNestedInput
     imports?: TrelloImportUpdateManyWithoutUserNestedInput
     watches?: WatchUpdateManyWithoutUserNestedInput
+    autoJoinsCreated?: WorkspaceAutoJoinUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutBoardsInput = {
@@ -36329,6 +38198,7 @@ export namespace Prisma {
     attachments?: AttachmentUncheckedUpdateManyWithoutUploaderNestedInput
     imports?: TrelloImportUncheckedUpdateManyWithoutUserNestedInput
     watches?: WatchUncheckedUpdateManyWithoutUserNestedInput
+    autoJoinsCreated?: WorkspaceAutoJoinUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type BoardCreateWithoutStarsInput = {
@@ -36397,6 +38267,7 @@ export namespace Prisma {
     attachments?: AttachmentCreateNestedManyWithoutUploaderInput
     imports?: TrelloImportCreateNestedManyWithoutUserInput
     watches?: WatchCreateNestedManyWithoutUserInput
+    autoJoinsCreated?: WorkspaceAutoJoinCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutStarsInput = {
@@ -36422,6 +38293,7 @@ export namespace Prisma {
     attachments?: AttachmentUncheckedCreateNestedManyWithoutUploaderInput
     imports?: TrelloImportUncheckedCreateNestedManyWithoutUserInput
     watches?: WatchUncheckedCreateNestedManyWithoutUserInput
+    autoJoinsCreated?: WorkspaceAutoJoinUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutStarsInput = {
@@ -36512,6 +38384,7 @@ export namespace Prisma {
     attachments?: AttachmentUpdateManyWithoutUploaderNestedInput
     imports?: TrelloImportUpdateManyWithoutUserNestedInput
     watches?: WatchUpdateManyWithoutUserNestedInput
+    autoJoinsCreated?: WorkspaceAutoJoinUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutStarsInput = {
@@ -36537,6 +38410,7 @@ export namespace Prisma {
     attachments?: AttachmentUncheckedUpdateManyWithoutUploaderNestedInput
     imports?: TrelloImportUncheckedUpdateManyWithoutUserNestedInput
     watches?: WatchUncheckedUpdateManyWithoutUserNestedInput
+    autoJoinsCreated?: WorkspaceAutoJoinUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type BoardCreateWithoutListsInput = {
@@ -37460,6 +39334,7 @@ export namespace Prisma {
     attachments?: AttachmentCreateNestedManyWithoutUploaderInput
     imports?: TrelloImportCreateNestedManyWithoutUserInput
     watches?: WatchCreateNestedManyWithoutUserInput
+    autoJoinsCreated?: WorkspaceAutoJoinCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutCardsInput = {
@@ -37485,6 +39360,7 @@ export namespace Prisma {
     attachments?: AttachmentUncheckedCreateNestedManyWithoutUploaderInput
     imports?: TrelloImportUncheckedCreateNestedManyWithoutUserInput
     watches?: WatchUncheckedCreateNestedManyWithoutUserInput
+    autoJoinsCreated?: WorkspaceAutoJoinUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutCardsInput = {
@@ -37587,6 +39463,7 @@ export namespace Prisma {
     attachments?: AttachmentUpdateManyWithoutUploaderNestedInput
     imports?: TrelloImportUpdateManyWithoutUserNestedInput
     watches?: WatchUpdateManyWithoutUserNestedInput
+    autoJoinsCreated?: WorkspaceAutoJoinUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCardsInput = {
@@ -37612,6 +39489,7 @@ export namespace Prisma {
     attachments?: AttachmentUncheckedUpdateManyWithoutUploaderNestedInput
     imports?: TrelloImportUncheckedUpdateManyWithoutUserNestedInput
     watches?: WatchUncheckedUpdateManyWithoutUserNestedInput
+    autoJoinsCreated?: WorkspaceAutoJoinUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type CardCreateWithoutChecklistsInput = {
@@ -37820,6 +39698,7 @@ export namespace Prisma {
     attachments?: AttachmentCreateNestedManyWithoutUploaderInput
     imports?: TrelloImportCreateNestedManyWithoutUserInput
     watches?: WatchCreateNestedManyWithoutUserInput
+    autoJoinsCreated?: WorkspaceAutoJoinCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutCheckItemsInput = {
@@ -37845,6 +39724,7 @@ export namespace Prisma {
     attachments?: AttachmentUncheckedCreateNestedManyWithoutUploaderInput
     imports?: TrelloImportUncheckedCreateNestedManyWithoutUserInput
     watches?: WatchUncheckedCreateNestedManyWithoutUserInput
+    autoJoinsCreated?: WorkspaceAutoJoinUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutCheckItemsInput = {
@@ -37913,6 +39793,7 @@ export namespace Prisma {
     attachments?: AttachmentUpdateManyWithoutUploaderNestedInput
     imports?: TrelloImportUpdateManyWithoutUserNestedInput
     watches?: WatchUpdateManyWithoutUserNestedInput
+    autoJoinsCreated?: WorkspaceAutoJoinUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCheckItemsInput = {
@@ -37938,6 +39819,7 @@ export namespace Prisma {
     attachments?: AttachmentUncheckedUpdateManyWithoutUploaderNestedInput
     imports?: TrelloImportUncheckedUpdateManyWithoutUserNestedInput
     watches?: WatchUncheckedUpdateManyWithoutUserNestedInput
+    autoJoinsCreated?: WorkspaceAutoJoinUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type CardCreateWithoutAttachmentsInput = {
@@ -38018,6 +39900,7 @@ export namespace Prisma {
     checkItems?: CheckItemCreateNestedManyWithoutMemberInput
     imports?: TrelloImportCreateNestedManyWithoutUserInput
     watches?: WatchCreateNestedManyWithoutUserInput
+    autoJoinsCreated?: WorkspaceAutoJoinCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutAttachmentsInput = {
@@ -38043,6 +39926,7 @@ export namespace Prisma {
     checkItems?: CheckItemUncheckedCreateNestedManyWithoutMemberInput
     imports?: TrelloImportUncheckedCreateNestedManyWithoutUserInput
     watches?: WatchUncheckedCreateNestedManyWithoutUserInput
+    autoJoinsCreated?: WorkspaceAutoJoinUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutAttachmentsInput = {
@@ -38145,6 +40029,7 @@ export namespace Prisma {
     checkItems?: CheckItemUpdateManyWithoutMemberNestedInput
     imports?: TrelloImportUpdateManyWithoutUserNestedInput
     watches?: WatchUpdateManyWithoutUserNestedInput
+    autoJoinsCreated?: WorkspaceAutoJoinUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAttachmentsInput = {
@@ -38170,6 +40055,7 @@ export namespace Prisma {
     checkItems?: CheckItemUncheckedUpdateManyWithoutMemberNestedInput
     imports?: TrelloImportUncheckedUpdateManyWithoutUserNestedInput
     watches?: WatchUncheckedUpdateManyWithoutUserNestedInput
+    autoJoinsCreated?: WorkspaceAutoJoinUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type CardCreateWithoutCommentsInput = {
@@ -38250,6 +40136,7 @@ export namespace Prisma {
     attachments?: AttachmentCreateNestedManyWithoutUploaderInput
     imports?: TrelloImportCreateNestedManyWithoutUserInput
     watches?: WatchCreateNestedManyWithoutUserInput
+    autoJoinsCreated?: WorkspaceAutoJoinCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutCommentsInput = {
@@ -38275,6 +40162,7 @@ export namespace Prisma {
     attachments?: AttachmentUncheckedCreateNestedManyWithoutUploaderInput
     imports?: TrelloImportUncheckedCreateNestedManyWithoutUserInput
     watches?: WatchUncheckedCreateNestedManyWithoutUserInput
+    autoJoinsCreated?: WorkspaceAutoJoinUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutCommentsInput = {
@@ -38377,6 +40265,7 @@ export namespace Prisma {
     attachments?: AttachmentUpdateManyWithoutUploaderNestedInput
     imports?: TrelloImportUpdateManyWithoutUserNestedInput
     watches?: WatchUpdateManyWithoutUserNestedInput
+    autoJoinsCreated?: WorkspaceAutoJoinUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCommentsInput = {
@@ -38402,6 +40291,7 @@ export namespace Prisma {
     attachments?: AttachmentUncheckedUpdateManyWithoutUploaderNestedInput
     imports?: TrelloImportUncheckedUpdateManyWithoutUserNestedInput
     watches?: WatchUncheckedUpdateManyWithoutUserNestedInput
+    autoJoinsCreated?: WorkspaceAutoJoinUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type BoardCreateWithoutActivitiesInput = {
@@ -38525,6 +40415,7 @@ export namespace Prisma {
     attachments?: AttachmentCreateNestedManyWithoutUploaderInput
     imports?: TrelloImportCreateNestedManyWithoutUserInput
     watches?: WatchCreateNestedManyWithoutUserInput
+    autoJoinsCreated?: WorkspaceAutoJoinCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutActivitiesInput = {
@@ -38550,6 +40441,7 @@ export namespace Prisma {
     attachments?: AttachmentUncheckedCreateNestedManyWithoutUploaderInput
     imports?: TrelloImportUncheckedCreateNestedManyWithoutUserInput
     watches?: WatchUncheckedCreateNestedManyWithoutUserInput
+    autoJoinsCreated?: WorkspaceAutoJoinUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutActivitiesInput = {
@@ -38701,6 +40593,7 @@ export namespace Prisma {
     attachments?: AttachmentUpdateManyWithoutUploaderNestedInput
     imports?: TrelloImportUpdateManyWithoutUserNestedInput
     watches?: WatchUpdateManyWithoutUserNestedInput
+    autoJoinsCreated?: WorkspaceAutoJoinUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutActivitiesInput = {
@@ -38726,6 +40619,7 @@ export namespace Prisma {
     attachments?: AttachmentUncheckedUpdateManyWithoutUploaderNestedInput
     imports?: TrelloImportUncheckedUpdateManyWithoutUserNestedInput
     watches?: WatchUncheckedUpdateManyWithoutUserNestedInput
+    autoJoinsCreated?: WorkspaceAutoJoinUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserCreateWithoutWatchesInput = {
@@ -38751,6 +40645,7 @@ export namespace Prisma {
     checkItems?: CheckItemCreateNestedManyWithoutMemberInput
     attachments?: AttachmentCreateNestedManyWithoutUploaderInput
     imports?: TrelloImportCreateNestedManyWithoutUserInput
+    autoJoinsCreated?: WorkspaceAutoJoinCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutWatchesInput = {
@@ -38776,6 +40671,7 @@ export namespace Prisma {
     checkItems?: CheckItemUncheckedCreateNestedManyWithoutMemberInput
     attachments?: AttachmentUncheckedCreateNestedManyWithoutUploaderInput
     imports?: TrelloImportUncheckedCreateNestedManyWithoutUserInput
+    autoJoinsCreated?: WorkspaceAutoJoinUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutWatchesInput = {
@@ -38915,6 +40811,7 @@ export namespace Prisma {
     checkItems?: CheckItemUpdateManyWithoutMemberNestedInput
     attachments?: AttachmentUpdateManyWithoutUploaderNestedInput
     imports?: TrelloImportUpdateManyWithoutUserNestedInput
+    autoJoinsCreated?: WorkspaceAutoJoinUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutWatchesInput = {
@@ -38940,6 +40837,7 @@ export namespace Prisma {
     checkItems?: CheckItemUncheckedUpdateManyWithoutMemberNestedInput
     attachments?: AttachmentUncheckedUpdateManyWithoutUploaderNestedInput
     imports?: TrelloImportUncheckedUpdateManyWithoutUserNestedInput
+    autoJoinsCreated?: WorkspaceAutoJoinUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type BoardUpsertWithoutWatchesInput = {
@@ -39075,6 +40973,7 @@ export namespace Prisma {
     attachments?: AttachmentCreateNestedManyWithoutUploaderInput
     imports?: TrelloImportCreateNestedManyWithoutUserInput
     watches?: WatchCreateNestedManyWithoutUserInput
+    autoJoinsCreated?: WorkspaceAutoJoinCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutNotificationsInput = {
@@ -39100,6 +40999,7 @@ export namespace Prisma {
     attachments?: AttachmentUncheckedCreateNestedManyWithoutUploaderInput
     imports?: TrelloImportUncheckedCreateNestedManyWithoutUserInput
     watches?: WatchUncheckedCreateNestedManyWithoutUserInput
+    autoJoinsCreated?: WorkspaceAutoJoinUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutNotificationsInput = {
@@ -39141,6 +41041,7 @@ export namespace Prisma {
     attachments?: AttachmentUpdateManyWithoutUploaderNestedInput
     imports?: TrelloImportUpdateManyWithoutUserNestedInput
     watches?: WatchUpdateManyWithoutUserNestedInput
+    autoJoinsCreated?: WorkspaceAutoJoinUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutNotificationsInput = {
@@ -39166,6 +41067,7 @@ export namespace Prisma {
     attachments?: AttachmentUncheckedUpdateManyWithoutUploaderNestedInput
     imports?: TrelloImportUncheckedUpdateManyWithoutUserNestedInput
     watches?: WatchUncheckedUpdateManyWithoutUserNestedInput
+    autoJoinsCreated?: WorkspaceAutoJoinUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserCreateWithoutImportsInput = {
@@ -39191,6 +41093,7 @@ export namespace Prisma {
     checkItems?: CheckItemCreateNestedManyWithoutMemberInput
     attachments?: AttachmentCreateNestedManyWithoutUploaderInput
     watches?: WatchCreateNestedManyWithoutUserInput
+    autoJoinsCreated?: WorkspaceAutoJoinCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutImportsInput = {
@@ -39216,6 +41119,7 @@ export namespace Prisma {
     checkItems?: CheckItemUncheckedCreateNestedManyWithoutMemberInput
     attachments?: AttachmentUncheckedCreateNestedManyWithoutUploaderInput
     watches?: WatchUncheckedCreateNestedManyWithoutUserInput
+    autoJoinsCreated?: WorkspaceAutoJoinUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutImportsInput = {
@@ -39257,6 +41161,7 @@ export namespace Prisma {
     checkItems?: CheckItemUpdateManyWithoutMemberNestedInput
     attachments?: AttachmentUpdateManyWithoutUploaderNestedInput
     watches?: WatchUpdateManyWithoutUserNestedInput
+    autoJoinsCreated?: WorkspaceAutoJoinUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutImportsInput = {
@@ -39282,6 +41187,7 @@ export namespace Prisma {
     checkItems?: CheckItemUncheckedUpdateManyWithoutMemberNestedInput
     attachments?: AttachmentUncheckedUpdateManyWithoutUploaderNestedInput
     watches?: WatchUncheckedUpdateManyWithoutUserNestedInput
+    autoJoinsCreated?: WorkspaceAutoJoinUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type AccountCreateManyUserInput = {
@@ -39387,6 +41293,14 @@ export namespace Prisma {
     id?: string
     boardId?: string | null
     cardId?: string | null
+  }
+
+  export type WorkspaceAutoJoinCreateManyCreatedByInput = {
+    id?: string
+    workspaceId: string
+    domain: string
+    role?: string
+    createdAt?: Date | string
   }
 
   export type AccountUpdateWithoutUserInput = {
@@ -39704,6 +41618,30 @@ export namespace Prisma {
     cardId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
+  export type WorkspaceAutoJoinUpdateWithoutCreatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    domain?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workspace?: WorkspaceUpdateOneRequiredWithoutAutoJoinsNestedInput
+  }
+
+  export type WorkspaceAutoJoinUncheckedUpdateWithoutCreatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    domain?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WorkspaceAutoJoinUncheckedUpdateManyWithoutCreatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    domain?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type WorkspaceMemberCreateManyWorkspaceInput = {
     userId: string
     role?: string
@@ -39720,6 +41658,14 @@ export namespace Prisma {
     trelloId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+  }
+
+  export type WorkspaceAutoJoinCreateManyWorkspaceInput = {
+    id?: string
+    domain: string
+    role?: string
+    createdById?: string | null
+    createdAt?: Date | string
   }
 
   export type WorkspaceMemberUpdateWithoutWorkspaceInput = {
@@ -39786,6 +41732,30 @@ export namespace Prisma {
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WorkspaceAutoJoinUpdateWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    domain?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: UserUpdateOneWithoutAutoJoinsCreatedNestedInput
+  }
+
+  export type WorkspaceAutoJoinUncheckedUpdateWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    domain?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WorkspaceAutoJoinUncheckedUpdateManyWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    domain?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type BoardMemberCreateManyBoardInput = {

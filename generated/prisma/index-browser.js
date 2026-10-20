@@ -172,6 +172,15 @@ exports.Prisma.WorkspaceScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.WorkspaceAutoJoinScalarFieldEnum = {
+  id: 'id',
+  workspaceId: 'workspaceId',
+  domain: 'domain',
+  role: 'role',
+  createdById: 'createdById',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.WorkspaceMemberScalarFieldEnum = {
   workspaceId: 'workspaceId',
   userId: 'userId',
@@ -353,6 +362,7 @@ exports.Prisma.ModelName = {
   VerificationToken: 'VerificationToken',
   User: 'User',
   Workspace: 'Workspace',
+  WorkspaceAutoJoin: 'WorkspaceAutoJoin',
   WorkspaceMember: 'WorkspaceMember',
   Board: 'Board',
   BoardMember: 'BoardMember',

@@ -2,6 +2,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { type DefaultSession, type NextAuthConfig } from "next-auth";
 
 import { env } from "~/env";
+import { applyAutoJoinForUser } from "~/server/autojoin";
 import { db } from "~/server/db";
 
 declare module "next-auth" {
@@ -72,6 +73,8 @@ export const authConfig = {
           where: { id: user.id, isGhost: true },
           data: { isGhost: false },
         });
+        // Domain auto-join rules (e.g. everyone @hackclub.com joins Hack Club).
+        await applyAutoJoinForUser(user.id, user.email);
         if (user.email && adminEmails().has(user.email.toLowerCase())) {
           await db.user.update({ where: { id: user.id }, data: { isAdmin: true } });
         }

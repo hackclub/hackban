@@ -33,6 +33,8 @@ export function WorkspacePage({ id, meId, page }: { id: string; meId: string; pa
       <PageTitle>Settings</PageTitle>
       <Identity ws={ws} isAdmin={isAdmin} />
       <hr className="my-8 border-[var(--color-border)]" />
+      <AutoJoinSettings workspaceId={ws.id} canEdit={isAdmin} />
+      <hr className="my-8 border-[var(--color-border)]" />
       <Danger ws={ws} meId={meId} isAdmin={isAdmin} />
     </>
   );
@@ -428,6 +430,88 @@ function Export({ ws }: { ws: WS }) {
       ))}
       {open.length === 0 && <p className="text-sm text-[var(--color-text-subtle)]">No boards to export.</p>}
     </div>
+  );
+}
+
+/**
+ * Domain auto-join rules: anyone logging in with an email on the domain joins
+ * this workspace. Shared with the admin panel (which can add any domain).
+ */
+export function AutoJoinSettings({ workspaceId, canEdit }: { workspaceId: string; canEdit: boolean }) {
+  const utils = api.useUtils();
+  const { data: rules } = api.workspace.autoJoins.useQuery({ id: workspaceId });
+  const { data: me } = api.me.profile.useQuery();
+  const myDomain = me?.email?.split("@")[1]?.toLowerCase() ?? "";
+  const [domain, setDomain] = useState<string | null>(null);
+  const [role, setRole] = useState<"normal" | "admin">("normal");
+  const [result, setResult] = useState<string | null>(null);
+  const refresh = () => Promise.all([utils.workspace.autoJoins.invalidate({ id: workspaceId }), utils.workspace.get.invalidate({ id: workspaceId })]);
+  const add = api.workspace.addAutoJoin.useMutation({
+    onSuccess: ({ rule, added }) => {
+      void refresh();
+      setDomain(null);
+      setResult(`Anyone with an @${rule.domain} email now joins automatically.${added ? ` Added ${added} existing ${added === 1 ? "person" : "people"}.` : ""}`);
+    },
+  });
+  const remove = api.workspace.removeAutoJoin.useMutation({ onSuccess: refresh });
+  const value = domain ?? myDomain;
+
+  return (
+    <section>
+      <h2 className="mb-1 font-semibold">Auto-join by email domain</h2>
+      <p className="mb-4 text-sm text-[var(--color-text-subtle)]">
+        Anyone who logs in with a matching email is added to this workspace automatically, including people who already have an account.
+      </p>
+      {rules && rules.length > 0 && (
+        <div className="mb-4 overflow-hidden rounded-lg border border-[var(--color-border)]">
+          {rules.map((r) => (
+            <div key={r.id} className="flex items-center gap-3 border-b border-[var(--color-border)] px-4 py-3 last:border-b-0">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-brand-subtle)] text-[var(--color-brand)]">
+                <Icon name="people" size={14} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-medium">@{r.domain}</div>
+                <div className="text-xs text-[var(--color-text-subtlest)]">
+                  Joins as {r.role === "admin" ? "Admin" : "Member"} · {r.memberCount} current member{r.memberCount === 1 ? "" : "s"}
+                  {r.createdBy?.name ? ` · added by ${r.createdBy.name}` : ""}
+                </div>
+              </div>
+              {canEdit && (
+                <Button onClick={() => remove.mutate({ id: workspaceId, ruleId: r.id })} title="Stop auto-adding people. Existing members stay.">
+                  Remove
+                </Button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+      {rules?.length === 0 && !canEdit && <p className="text-sm text-[var(--color-text-subtlest)]">No auto-join rules.</p>}
+      {canEdit && (
+        <form
+          className="flex flex-wrap items-center gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            setResult(null);
+            add.mutate({ id: workspaceId, domain: value, role });
+          }}
+        >
+          <div className="relative w-64">
+            <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[var(--color-text-subtlest)]">@</span>
+            <input className={`${inputCls} pl-7`} value={value} onChange={(e) => setDomain(e.target.value)} placeholder="hackclub.com" />
+          </div>
+          <select className="h-9 rounded-[3px] bg-[var(--color-neutral)] px-2 text-sm" value={role} onChange={(e) => setRole(e.target.value as typeof role)}>
+            <option value="normal">as Member</option>
+            <option value="admin">as Admin</option>
+          </select>
+          <Button variant="primary" type="submit" disabled={!value.trim() || add.isPending}>
+            {add.isPending ? "Adding…" : "Add rule"}
+          </Button>
+        </form>
+      )}
+      {canEdit && <p className="mt-2 text-xs text-[var(--color-text-subtlest)]">You can add your own domain. Site admins can add any domain from the admin panel.</p>}
+      {result && <p className="mt-2 text-sm text-[var(--color-success)]">{result}</p>}
+      {(add.error ?? remove.error) && <p className="mt-2 text-sm text-[var(--color-danger)]">{(add.error ?? remove.error)!.message}</p>}
+    </section>
   );
 }
 

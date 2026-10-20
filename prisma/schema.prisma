@@ -77,6 +77,7 @@ model User {
     attachments      Attachment[]
     imports          TrelloImport[]
     watches          Watch[]
+    autoJoinsCreated WorkspaceAutoJoin[] @relation("autoJoinCreator")
 }
 
 // ---------- Workspaces & boards ----------
@@ -90,8 +91,24 @@ model Workspace {
     trelloId    String?  @unique
     createdAt   DateTime @default(now())
 
-    members WorkspaceMember[]
-    boards  Board[]
+    members   WorkspaceMember[]
+    boards    Board[]
+    autoJoins WorkspaceAutoJoin[]
+}
+
+/// Anyone who logs in with an email on `domain` is added to the workspace.
+model WorkspaceAutoJoin {
+    id          String    @id @default(cuid())
+    workspaceId String
+    domain      String // lowercase, no "@", e.g. "hackclub.com"
+    role        String    @default("normal") // admin | normal
+    createdById String?
+    createdAt   DateTime  @default(now())
+    workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+    createdBy   User?     @relation("autoJoinCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+    @@unique([workspaceId, domain])
+    @@index([domain])
 }
 
 model WorkspaceMember {

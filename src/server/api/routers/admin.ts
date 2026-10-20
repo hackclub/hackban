@@ -4,6 +4,7 @@ import { z } from "zod";
 import { touch } from "~/server/api/access";
 import { adminProcedure, createTRPCRouter } from "~/server/api/trpc";
 import { adminEmails } from "~/server/auth/config";
+import { upsertAutoJoin } from "~/server/autojoin";
 
 const q = z.object({ q: z.string().default("") });
 
@@ -143,6 +144,29 @@ export const adminRouter = createTRPCRouter({
       create: { workspaceId: input.workspaceId, userId: ctx.session.user.id, role: "admin" },
       update: { role: "admin" },
     }),
+  ),
+
+  autoJoins: adminProcedure.query(async ({ ctx }) => {
+    const rules = await ctx.db.workspaceAutoJoin.findMany({
+      orderBy: [{ domain: "asc" }, { createdAt: "asc" }],
+      include: { workspace: { select: { id: true, name: true } }, createdBy: { select: { name: true } } },
+    });
+    const counts = await Promise.all(
+      rules.map((r) =>
+        ctx.db.workspaceMember.count({
+          where: { workspaceId: r.workspaceId, user: { email: { endsWith: `@${r.domain}`, mode: "insensitive" } } },
+        }),
+      ),
+    );
+    return rules.map((r, i) => ({ ...r, memberCount: counts[i]! }));
+  }),
+
+  addAutoJoin: adminProcedure
+    .input(z.object({ workspaceId: z.string(), domain: z.string(), role: z.enum(["admin", "normal"]).default("normal") }))
+    .mutation(({ ctx, input }) => upsertAutoJoin({ ...input, createdById: ctx.session.user.id })),
+
+  removeAutoJoin: adminProcedure.input(z.object({ ruleId: z.string() })).mutation(({ ctx, input }) =>
+    ctx.db.workspaceAutoJoin.delete({ where: { id: input.ruleId } }),
   ),
 
   imports: adminProcedure.query(async ({ ctx }) => {

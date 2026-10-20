@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { type db as Db } from "~/server/db";
+import { emailDomain, normalizeDomain, upsertAutoJoin } from "~/server/autojoin";
 import { mergeUsers } from "~/server/import/apply";
 
 /** Versioned URL for a workspace's logo, or null to fall back to its initial. */
@@ -167,6 +168,52 @@ export const workspaceRouter = createTRPCRouter({
         }
       }
       await mergeUsers(ghost.id, target.id);
+    }),
+
+  // ----- Auto-join by email domain -----
+
+  autoJoins: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
+    if (!ctx.session.user.isAdmin) await requireWorkspace(ctx.db, ctx.session.user.id, input.id);
+    const rules = await ctx.db.workspaceAutoJoin.findMany({
+      where: { workspaceId: input.id },
+      orderBy: { createdAt: "asc" },
+      include: { createdBy: { select: { name: true } } },
+    });
+    const counts = await Promise.all(
+      rules.map((r) =>
+        ctx.db.workspaceMember.count({
+          where: { workspaceId: input.id, user: { email: { endsWith: `@${r.domain}`, mode: "insensitive" } } },
+        }),
+      ),
+    );
+    return rules.map((r, i) => ({ ...r, memberCount: counts[i]! }));
+  }),
+
+  /**
+   * Workspace admins can only add their own email domain (otherwise anyone
+   * could pull e.g. every @hackclub.com account into their workspace). Site
+   * admins can add any domain.
+   */
+  addAutoJoin: protectedProcedure
+    .input(z.object({ id: z.string(), domain: z.string(), role: z.enum(["admin", "normal"]).default("normal") }))
+    .mutation(async ({ ctx, input }) => {
+      if (!ctx.session.user.isAdmin) await requireWorkspace(ctx.db, ctx.session.user.id, input.id, true);
+      const domain = normalizeDomain(input.domain);
+      if (!ctx.session.user.isAdmin && emailDomain(ctx.session.user.email) !== domain) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: `You can only add your own domain (@${emailDomain(ctx.session.user.email) ?? "?"}). Ask a site admin for others.`,
+        });
+      }
+      return upsertAutoJoin({ workspaceId: input.id, domain, role: input.role, createdById: ctx.session.user.id });
+    }),
+
+  removeAutoJoin: protectedProcedure
+    .input(z.object({ id: z.string(), ruleId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      if (!ctx.session.user.isAdmin) await requireWorkspace(ctx.db, ctx.session.user.id, input.id, true);
+      // Existing members stay; this only stops future auto-joins.
+      await ctx.db.workspaceAutoJoin.deleteMany({ where: { id: input.ruleId, workspaceId: input.id } });
     }),
 
   removeMember: protectedProcedure

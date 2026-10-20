@@ -249,3 +249,29 @@ body {
     cursor: not-allowed;
   }
 }
+
+/* Loading skeletons: a soft sweep, quieter in dark mode, off for reduced motion. */
+@keyframes skeleton-sweep {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+.skeleton {
+  background: linear-gradient(
+      90deg,
+      var(--color-neutral) 0%,
+      var(--color-neutral-hover) 50%,
+      var(--color-neutral) 100%
+    )
+    0 0 / 200% 100%;
+  animation: skeleton-sweep 1.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}

@@ -480,12 +480,12 @@ export function BoardView({
   return (
     <BoardCtx.Provider value={boardCtx}>
       <div
-        className="flex h-full flex-col overflow-hidden"
-        style={shown ? boardBg(shown) : { background: "#0079bf" }}
+        className="flex h-full flex-col overflow-hidden transition-[background-color] duration-300"
+        style={shown ? boardBg(shown) : { background: "var(--color-page)" }}
       >
         <Header user={user} translucent />
         {shown && (
-          <>
+          <div className="flex min-h-0 flex-1 animate-[fade-in_200ms_ease-out] flex-col">
             <BoardHeader
               board={shown}
               meId={user.id}
@@ -587,9 +587,9 @@ export function BoardView({
                 onOpenCard={open}
               />
             </div>
-          </>
+          </div>
         )}
-        {!shown && <div className="flex-1" />}
+        {!shown && <BoardSkeleton />}
         {quick && board && (
           <QuickEdit
             card={quick.card}
@@ -640,6 +640,49 @@ function BoardCanvas({ children }: { children: React.ReactNode }) {
       }}
     >
       {children}
+    </div>
+  );
+}
+
+/**
+ * Loading state: a quiet, Trello-shaped skeleton on the page background
+ * (no bright placeholder color) that shimmers until the board arrives.
+ */
+function BoardSkeleton() {
+  // Fixed card heights per list so it looks like a real board, not a grid.
+  const lists = [
+    [56, 76, 56, 96],
+    [76, 56, 56],
+    [56, 96, 56, 56, 76],
+    [56, 56],
+  ];
+  return (
+    <div className="flex min-h-0 flex-1 flex-col" aria-busy="true" aria-label="Loading board">
+      <div className="flex h-14 shrink-0 items-center gap-3 px-4">
+        <div className="skeleton h-6 w-44 rounded" />
+        <div className="skeleton h-6 w-6 rounded" />
+        <div className="flex-1" />
+        <div className="skeleton h-7 w-28 rounded" />
+        <div className="skeleton h-7 w-7 rounded-full" />
+        <div className="skeleton h-7 w-7 rounded-full" />
+      </div>
+      <div className="flex min-h-0 flex-1 items-start gap-3 overflow-hidden px-3 pt-3">
+        {lists.map((cards, i) => (
+          <div
+            key={i}
+            className="animate-pop-in w-[272px] shrink-0 rounded-xl bg-[var(--color-list)] p-2 shadow-[var(--shadow-card)]"
+            style={{ animationDelay: `${i * 60}ms` }}
+          >
+            <div className="skeleton mx-2 mt-1.5 mb-3 h-4 w-24 rounded" />
+            <div className="flex flex-col gap-2">
+              {cards.map((h, j) => (
+                <div key={j} className="skeleton rounded-lg" style={{ height: h, animationDelay: `${(i + j) * 90}ms` }} />
+              ))}
+            </div>
+            <div className="skeleton mx-2 mt-3 mb-1 h-4 w-20 rounded" />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

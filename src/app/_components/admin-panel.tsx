@@ -8,7 +8,7 @@ import { api } from "~/trpc/react";
 
 import { Avatar, Button, Icon, boardBg, inputCls, WorkspaceLogo } from "./ui";
 
-type Tab = "overview" | "users" | "boards" | "workspaces" | "imports";
+type Tab = "overview" | "users" | "boards" | "workspaces" | "autojoin" | "imports";
 
 export function AdminPanel({ meId }: { meId: string }) {
   const [tab, setTab] = useState<Tab>("overview");
@@ -18,7 +18,7 @@ export function AdminPanel({ meId }: { meId: string }) {
         <h1 className="mb-4 flex items-center gap-2 px-2 text-lg font-semibold">
           <Icon name="lock" /> Admin
         </h1>
-        {(["overview", "users", "boards", "workspaces", "imports"] as const).map((t) => (
+        {(["overview", "users", "boards", "workspaces", "autojoin", "imports"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -26,7 +26,7 @@ export function AdminPanel({ meId }: { meId: string }) {
               tab === t ? "bg-[var(--color-brand-subtle)] text-[var(--color-brand)]" : "hover:bg-[var(--color-neutral)]"
             }`}
           >
-            {t}
+            {t === "autojoin" ? "Auto-join" : t}
           </button>
         ))}
       </nav>
@@ -35,6 +35,7 @@ export function AdminPanel({ meId }: { meId: string }) {
         {tab === "users" && <Users meId={meId} />}
         {tab === "boards" && <Boards />}
         {tab === "workspaces" && <Workspaces />}
+        {tab === "autojoin" && <AutoJoin />}
         {tab === "imports" && <Imports />}
       </main>
     </div>
@@ -203,6 +204,73 @@ function Workspaces() {
           ) : (
             <Button onClick={() => join.mutate({ workspaceId: w.id })}>Join as admin</Button>
           )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function AutoJoin() {
+  const utils = api.useUtils();
+  const { data: rules } = api.admin.autoJoins.useQuery();
+  const { data: workspaces } = api.admin.workspaces.useQuery({ q: "" });
+  const [ws, setWs] = useState("");
+  const [domain, setDomain] = useState("");
+  const [role, setRole] = useState<"normal" | "admin">("normal");
+  const [result, setResult] = useState<string | null>(null);
+  const add = api.admin.addAutoJoin.useMutation({
+    onSuccess: ({ rule, added }) => {
+      void utils.admin.autoJoins.invalidate();
+      setDomain("");
+      setResult(`@${rule.domain} now auto-joins.${added ? ` Added ${added} existing ${added === 1 ? "person" : "people"}.` : ""}`);
+    },
+  });
+  const remove = api.admin.removeAutoJoin.useMutation({ onSuccess: () => utils.admin.autoJoins.invalidate() });
+  const wsId = (ws !== "" ? ws : workspaces?.[0]?.id) ?? "";
+  return (
+    <div>
+      <p className="mb-4 text-sm text-[var(--color-text-subtle)]">
+        People who log in with a matching email are added to the workspace automatically. Removing a rule keeps existing members.
+      </p>
+      <form
+        className="mb-6 flex flex-wrap items-center gap-2"
+        onSubmit={(e) => {
+          e.preventDefault();
+          setResult(null);
+          add.mutate({ workspaceId: wsId, domain, role });
+        }}
+      >
+        <div className="relative w-56">
+          <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[var(--color-text-subtlest)]">@</span>
+          <input className={`${inputCls} pl-7`} value={domain} onChange={(e) => setDomain(e.target.value)} placeholder="hackclub.com" />
+        </div>
+        <span className="text-sm text-[var(--color-text-subtle)]">joins</span>
+        <select className="h-9 max-w-56 rounded-[3px] bg-[var(--color-neutral)] px-2 text-sm" value={wsId} onChange={(e) => setWs(e.target.value)}>
+          {workspaces?.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
+        </select>
+        <select className="h-9 rounded-[3px] bg-[var(--color-neutral)] px-2 text-sm" value={role} onChange={(e) => setRole(e.target.value as typeof role)}>
+          <option value="normal">as Member</option>
+          <option value="admin">as Admin</option>
+        </select>
+        <Button variant="primary" type="submit" disabled={!domain.trim() || !wsId || add.isPending}>
+          {add.isPending ? "Adding…" : "Add rule"}
+        </Button>
+      </form>
+      {result && <p className="mb-3 text-sm text-[var(--color-success)]">{result}</p>}
+      {(add.error ?? remove.error) && <p className="mb-3 text-sm text-[var(--color-danger)]">{(add.error ?? remove.error)!.message}</p>}
+      {rules?.length === 0 && <p className="text-sm text-[var(--color-text-subtle)]">No auto-join rules yet.</p>}
+      {rules?.map((r) => (
+        <div key={r.id} className="flex items-center gap-3 border-b border-[var(--color-border)] py-2.5">
+          <div className="min-w-0 flex-1">
+            <div className="text-sm font-medium">
+              @{r.domain} <span className="font-normal text-[var(--color-text-subtle)]">→</span> {r.workspace.name}
+            </div>
+            <div className="text-xs text-[var(--color-text-subtlest)]">
+              as {r.role === "admin" ? "Admin" : "Member"} · {r.memberCount} current member{r.memberCount === 1 ? "" : "s"} from this domain
+              {r.createdBy?.name ? ` · added by ${r.createdBy.name}` : ""}
+            </div>
+          </div>
+          <Button onClick={() => remove.mutate({ ruleId: r.id })}>Remove</Button>
         </div>
       ))}
     </div>
