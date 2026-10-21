@@ -57,7 +57,14 @@ export async function requireCard(db: DB, userId: string, cardId: string, write 
   return boardId;
 }
 
-export async function logActivity(
+/**
+ * Record an activity entry and notify realtime subscribers.
+ *
+ * Runs in the background: the mutation's real change is already committed,
+ * so callers (and the user) don't wait on the extra insert. The realtime
+ * event fires after the insert so other viewers' activity feeds include it.
+ */
+export function logActivity(
   db: DB,
   a: {
     boardId: string;
@@ -67,17 +74,20 @@ export async function logActivity(
     data?: Record<string, unknown>;
     origin?: string;
   },
-) {
-  await db.activity.create({
-    data: {
-      boardId: a.boardId,
-      cardId: a.cardId ?? null,
-      actorId: a.actorId,
-      type: a.type,
-      data: JSON.stringify(a.data ?? {}),
-    },
-  });
-  touch(a.boardId, a.cardId ?? undefined, a.origin);
+): Promise<void> {
+  void db.activity
+    .create({
+      data: {
+        boardId: a.boardId,
+        cardId: a.cardId ?? null,
+        actorId: a.actorId,
+        type: a.type,
+        data: JSON.stringify(a.data ?? {}),
+      },
+    })
+    .catch((e: unknown) => console.error("[activity] insert failed", a.type, e))
+    .finally(() => touch(a.boardId, a.cardId ?? undefined, a.origin));
+  return Promise.resolve();
 }
 
 /** Notify subscribers that a board (and optionally a card) changed. */

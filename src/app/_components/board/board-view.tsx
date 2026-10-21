@@ -25,6 +25,9 @@ import { motion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
+import { useQueryClient } from "@tanstack/react-query";
+
+import { type AppQueryClient } from "~/trpc/query-client";
 import { api, clientId } from "~/trpc/react";
 
 import { Header } from "../header";
@@ -216,8 +219,19 @@ export function BoardView({
     return closestCorners(args);
   }, []);
 
+  // Hold board refetches for the whole drag (incl. other people's realtime
+  // updates) so data can't shift under the cursor; released on drop.
+  const queryClient = useQueryClient() as AppQueryClient;
+  const releaseHold = useRef<(() => void) | null>(null);
+  const endHold = () => {
+    releaseHold.current?.();
+    releaseHold.current = null;
+  };
+
   const onDragStart = ({ active }: DragStartEvent) => {
     if (!board) return;
+    endHold();
+    releaseHold.current = queryClient.hold();
     const data = active.data.current as
       { type: "card"; card: CardData } | { type: "list" };
     setDrag({
@@ -264,7 +278,17 @@ export function BoardView({
     });
   };
 
-  const onDragEnd = ({ active, over }: DragEndEvent) => {
+  const onDragEnd = (e: DragEndEvent) => {
+    // Release after the move mutation has started, so it keeps refetches
+    // queued until the server confirms.
+    try {
+      handleDragEnd(e);
+    } finally {
+      endHold();
+    }
+  };
+
+  const handleDragEnd = ({ active, over }: DragEndEvent) => {
     const d = drag;
     setDrag(null);
     if (!d || !board) return;
@@ -508,7 +532,10 @@ export function BoardView({
                 onDragStart={onDragStart}
                 onDragOver={onDragOver}
                 onDragEnd={onDragEnd}
-                onDragCancel={() => setDrag(null)}
+                onDragCancel={() => {
+                  setDrag(null);
+                  endHold();
+                }}
               >
                 <BoardCanvas>
                   <SortableContext
