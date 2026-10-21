@@ -17,6 +17,14 @@ export const notificationRouter = createTRPCRouter({
       data: { read: true },
     }),
   ),
+  markRead: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(({ ctx, input }) =>
+      ctx.db.notification.updateMany({
+        where: { id: input.id, userId: ctx.session.user.id },
+        data: { read: true },
+      }),
+    ),
 });
 
 export const searchRouter = createTRPCRouter({

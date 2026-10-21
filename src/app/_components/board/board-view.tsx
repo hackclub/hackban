@@ -152,7 +152,22 @@ export function BoardView({
   }, [board]);
 
   // ----- filters, menu, quick edit, composers -----
+  // Filters stick across card opens/reloads on this board; switching boards
+  // drops them (only one board's filters are ever stored).
   const [filters, setFilters] = useState<Filters>(emptyFilters);
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(sessionStorage.getItem("boardFilters") ?? "null") as { boardId: string; filters: Filters } | null;
+      if (saved?.boardId === boardId) setFilters(saved.filters);
+      else sessionStorage.removeItem("boardFilters");
+    } catch {}
+  }, [boardId]);
+  useEffect(() => {
+    try {
+      if (filterActive(filters)) sessionStorage.setItem("boardFilters", JSON.stringify({ boardId, filters }));
+      else if ((JSON.parse(sessionStorage.getItem("boardFilters") ?? "null") as { boardId: string } | null)?.boardId === boardId) sessionStorage.removeItem("boardFilters");
+    } catch {}
+  }, [boardId, filters]);
   const [menuOpen, setMenuOpen] = useState(false);
   const [quick, setQuick] = useState<{ card: CardData; rect: DOMRect } | null>(
     null,

@@ -135,6 +135,10 @@ function Notifications({ onPick }: { onPick: () => void }) {
   const utils = api.useUtils();
   const { data } = api.notification.list.useQuery();
   const markRead = api.notification.markAllRead.useMutation({ onSuccess: () => utils.notification.list.invalidate() });
+  const markOne = api.notification.markRead.useMutation({
+    onMutate: ({ id }) => utils.notification.list.setData(undefined, (d) => d?.map((x) => (x.id === id ? { ...x, read: true } : x))),
+    onSettled: () => utils.notification.list.invalidate(),
+  });
   return (
     <div>
       <div className="mb-2 flex justify-end">
@@ -145,9 +149,27 @@ function Notifications({ onPick }: { onPick: () => void }) {
         <Link
           key={n.id}
           href={`/c/${n.data.cardId}`}
-          onClick={onPick}
-          className={`mb-2 block rounded-lg border border-[var(--color-border)] p-3 hover:bg-[var(--color-neutral)] ${n.read ? "opacity-70" : ""}`}
+          onClick={() => {
+            if (!n.read) markOne.mutate({ id: n.id });
+            onPick();
+          }}
+          className={`group relative mb-2 block rounded-lg border border-[var(--color-border)] p-3 hover:bg-[var(--color-neutral)] ${n.read ? "opacity-70" : "pr-9"}`}
         >
+          {!n.read && (
+            <button
+              type="button"
+              title="Mark as read"
+              aria-label="Mark as read"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                markOne.mutate({ id: n.id });
+              }}
+              className="absolute top-2.5 right-2.5 flex h-6 w-6 items-center justify-center rounded-full hover:bg-[var(--color-border)]"
+            >
+              <span className="h-2.5 w-2.5 rounded-full bg-[var(--color-brand)]" />
+            </button>
+          )}
           <div className="text-sm">
             <b>{n.data.by}</b>{" "}
             {n.type === "addedToCard" ? "added you to the card" : "commented on the card"} <b>{n.data.title}</b>
