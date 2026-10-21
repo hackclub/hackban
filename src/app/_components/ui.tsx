@@ -139,7 +139,14 @@ export function WorkspaceLogo({ ws, size = 32, className = "" }: { ws: { name: s
     >
       {ws.logo && !broken ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={ws.logo} alt="" className="h-full w-full bg-white object-cover" onError={() => setBroken(true)} />
+        // Transparent logos sit on a theme-aware neutral (not white, which hid
+        // white artwork) and are contained, not cropped.
+        <img
+          src={ws.logo}
+          alt=""
+          className="h-full w-full bg-[var(--color-neutral-bold)] object-contain p-[8%]"
+          onError={() => setBroken(true)}
+        />
       ) : (
         ws.name[0]?.toUpperCase()
       )}
