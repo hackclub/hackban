@@ -39,6 +39,8 @@ function describe(a: Act, onCard: boolean) {
     case "moveCard": return <>moved {card} from {s(d.from)} to {s(d.to)}</>;
     case "copyCard": return <>copied {card} from {s(d.from)}</>;
     case "changeDue": return d.due ? <>set {card} to be due {format(new Date(d.due as string), "MMM d 'at' h:mm a")}</> : <>removed the due date from {card}</>;
+    case "recurCard": return <>completed {card}; it repeats, next due {format(new Date(d.due as string), "MMM d")}</>;
+    case "changeRecurrence": return d.recurrence ? <>set {card} to repeat {s(d.recurrence) === "weekdays" ? "every weekday" : s(d.recurrence)}</> : <>stopped {card} repeating</>;
     case "completeDue": return <>marked the due date on {card} complete</>;
     case "incompleteDue": return <>marked the due date on {card} incomplete</>;
     case "addMemberToCard": return <>joined {card}</>;

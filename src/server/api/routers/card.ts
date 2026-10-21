@@ -4,6 +4,7 @@ import { z } from "zod";
 import { boardIdForList, logActivity, requireBoard, requireCard, touch } from "~/server/api/access";
 import { posAfter, posAtEnd } from "~/server/api/pos";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { RECURRENCES, nextDue, type Recurrence } from "~/server/recurrence";
 import { type db as Db } from "~/server/db";
 
 /** Assignees (card members, check item owners) must be on the board. */
@@ -86,6 +87,7 @@ export const cardRouter = createTRPCRouter({
         coverAttachmentId: z.string().nullable().optional(),
         coverSize: z.enum(["normal", "full"]).optional(),
         closed: z.boolean().optional(),
+        recurrence: z.enum(RECURRENCES).nullable().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -93,17 +95,39 @@ export const cardRouter = createTRPCRouter({
       const { id, ...data } = input;
       if (data.coverColor) data.coverAttachmentId = null;
       if (data.coverAttachmentId) data.coverColor = null;
-      const card = await ctx.db.card.update({ where: { id }, data });
+      let card = await ctx.db.card.update({ where: { id }, data });
+
+      // Repeating card marked complete: roll it to the next occurrence instead
+      // of leaving it done (Trello's "Repeat"). Checklists reset for next time.
+      if (input.dueComplete === true && card.recurrence && card.due) {
+        const next = nextDue(card.due, card.recurrence as Recurrence);
+        const shift = next.getTime() - card.due.getTime();
+        card = await ctx.db.card.update({
+          where: { id },
+          data: { due: next, start: card.start ? new Date(card.start.getTime() + shift) : null, dueComplete: false },
+        });
+        await ctx.db.checkItem.updateMany({ where: { checklist: { cardId: id } }, data: { complete: false } });
+        await logActivity(ctx.db, {
+          boardId,
+          cardId: id,
+          actorId: ctx.session.user.id,
+          type: "recurCard",
+          data: { title: card.title, due: next },
+          origin: ctx.clientId,
+        });
+        return card;
+      }
       const type =
         input.closed === true ? "archiveCard"
         : input.closed === false ? "restoreCard"
         : input.dueComplete !== undefined ? (input.dueComplete ? "completeDue" : "incompleteDue")
         : input.due !== undefined ? "changeDue"
+        : input.recurrence !== undefined ? "changeRecurrence"
         : input.title ? "renameCard"
         : input.description !== undefined ? "updateDescription"
         : null;
       if (type) {
-        await logActivity(ctx.db, { boardId, cardId: id, actorId: ctx.session.user.id, type, data: { title: card.title, due: card.due }, origin: ctx.clientId });
+        await logActivity(ctx.db, { boardId, cardId: id, actorId: ctx.session.user.id, type, data: { title: card.title, due: card.due, recurrence: card.recurrence }, origin: ctx.clientId });
       } else {
         touch(boardId, id, ctx.clientId);
       }
@@ -181,6 +205,7 @@ export const cardRouter = createTRPCRouter({
           pos: input.afterId === undefined ? posAtEnd(siblings) : posAfter(siblings, input.afterId),
           start: src.start,
           due: src.due,
+          recurrence: src.recurrence,
           coverColor: src.coverColor,
           labels: input.keep.labels && sameBoard ? { create: src.labels.map((l) => ({ labelId: l.labelId })) } : undefined,
           members: input.keep.members ? { create: src.members.map((m) => ({ userId: m.userId })) } : undefined,

@@ -62,7 +62,10 @@ export const CardFront = memo(function CardFront({
   const [expanded, toggleLabels] = useLabelsExpanded();
   const utils = api.useUtils();
   const toggleDue = api.card.update.useMutation({
+    // A repeating card is rolled forward by the server rather than staying
+    // complete, so don't optimistically mark it done.
     onMutate: ({ dueComplete }) =>
+      !(dueComplete && card.recurrence) &&
       utils.board.get.setData(
         { id: boardId },
         (b) =>
@@ -194,6 +197,11 @@ export const CardFront = memo(function CardFront({
               </span>
               {card.start && `${shortDate(card.start)} - `}
               {shortDate(card.due)}
+              {card.recurrence && (
+                <span title={`Repeats ${card.recurrence === "weekdays" ? "every weekday" : card.recurrence}`}>
+                  <Icon name="repeat" size={12} />
+                </span>
+              )}
             </button>
           )}
           {card.start && !card.due && (

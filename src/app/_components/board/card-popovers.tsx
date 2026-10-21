@@ -21,6 +21,15 @@ import { Avatar, Button, Icon, IconButton, MenuItem, Popover, coverColor, inputC
 import { Labels } from "./board-menu";
 import { type BoardData } from "./types";
 
+type Recurrence = "daily" | "weekdays" | "weekly" | "monthly" | "yearly";
+export const RECURRENCE_OPTIONS: [Recurrence, string][] = [
+  ["daily", "Daily"],
+  ["weekdays", "Every weekday"],
+  ["weekly", "Weekly"],
+  ["monthly", "Monthly"],
+  ["yearly", "Yearly"],
+];
+
 export type CardDetail = RouterOutputs["card"]["get"];
 export type PopKind = "members" | "labels" | "checklist" | "dates" | "attachment" | "cover" | "move" | "copy";
 type Anchor = Parameters<typeof Popover>[0]["anchor"];
@@ -207,6 +216,7 @@ function DatesPane({ card, board }: { card: CardDetail; board: BoardData }) {
   const [due, setDue] = useState<Date>(card.due ?? (() => { const d = addDays(new Date(), 1); d.setHours(12, 0, 0, 0); return d; })());
   const [time, setTime] = useState(format(card.due ?? due, "HH:mm"));
   const [focus, setFocus] = useState<"start" | "due">(dueOn ? "due" : "start");
+  const [repeat, setRepeat] = useState<Recurrence | "">((card.recurrence as Recurrence | null) ?? "");
   const withTime = (d: Date) => {
     const [h, m] = time.split(":").map(Number);
     const r = new Date(d);
@@ -232,11 +242,29 @@ function DatesPane({ card, board }: { card: CardDetail; board: BoardData }) {
         <input disabled={!dueOn} onFocus={() => setFocus("due")} readOnly className={`${inputCls} w-28`} value={dueOn ? format(due, "M/d/yyyy") : "M/D/YYYY"} />
         <input disabled={!dueOn} type="time" className={`${inputCls} w-28`} value={time} onChange={(e) => setTime(e.target.value)} />
       </div>
+      <label className="mt-3 mb-1 block text-xs font-bold text-[var(--color-text-subtle)]">Repeat</label>
+      <select disabled={!dueOn} className={inputCls} value={dueOn ? repeat : ""} onChange={(e) => setRepeat(e.target.value as Recurrence | "")}>
+        <option value="">Never</option>
+        {RECURRENCE_OPTIONS.map(([v, label]) => (
+          <option key={v} value={v}>{label}</option>
+        ))}
+      </select>
+      {dueOn && repeat && (
+        <p className="mt-1 text-xs text-[var(--color-text-subtle)]">
+          Completing this card moves it to the next due date and unchecks its checklists.
+        </p>
+      )}
       <Button
         variant="primary"
         className="mt-4 w-full"
         onClick={() => {
-          update.mutate({ id: card.id, start: startOn ? start : null, due: dueOn ? withTime(due) : null });
+          update.mutate({
+            id: card.id,
+            start: startOn ? start : null,
+            due: dueOn ? withTime(due) : null,
+            // Repeating needs a due date to step from.
+            recurrence: dueOn && repeat ? repeat : null,
+          });
           pop.close();
         }}
       >
@@ -245,7 +273,7 @@ function DatesPane({ card, board }: { card: CardDetail; board: BoardData }) {
       <Button
         className="mt-2 w-full"
         onClick={() => {
-          update.mutate({ id: card.id, start: null, due: null, dueComplete: false });
+          update.mutate({ id: card.id, start: null, due: null, dueComplete: false, recurrence: null });
           pop.close();
         }}
       >

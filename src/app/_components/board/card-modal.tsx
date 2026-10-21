@@ -654,6 +654,12 @@ function Badges({
                   Due soon
                 </span>
               )}
+              {card.recurrence && card.due && (
+                <span className="flex items-center gap-1 text-xs font-normal text-[var(--color-text-subtle)]">
+                  <Icon name="repeat" size={12} />
+                  {card.recurrence === "weekdays" ? "Every weekday" : `Repeats ${card.recurrence}`}
+                </span>
+              )}
               <svg
                 width="12"
                 height="12"

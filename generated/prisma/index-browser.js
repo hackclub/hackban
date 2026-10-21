@@ -234,6 +234,7 @@ exports.Prisma.CardScalarFieldEnum = {
   start: 'start',
   due: 'due',
   dueComplete: 'dueComplete',
+  recurrence: 'recurrence',
   coverColor: 'coverColor',
   coverAttachmentId: 'coverAttachmentId',
   coverSize: 'coverSize',

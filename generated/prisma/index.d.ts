@@ -15858,6 +15858,7 @@ export namespace Prisma {
     start: Date | null
     due: Date | null
     dueComplete: boolean | null
+    recurrence: string | null
     coverColor: string | null
     coverAttachmentId: string | null
     coverSize: string | null
@@ -15877,6 +15878,7 @@ export namespace Prisma {
     start: Date | null
     due: Date | null
     dueComplete: boolean | null
+    recurrence: string | null
     coverColor: string | null
     coverAttachmentId: string | null
     coverSize: string | null
@@ -15896,6 +15898,7 @@ export namespace Prisma {
     start: number
     due: number
     dueComplete: number
+    recurrence: number
     coverColor: number
     coverAttachmentId: number
     coverSize: number
@@ -15925,6 +15928,7 @@ export namespace Prisma {
     start?: true
     due?: true
     dueComplete?: true
+    recurrence?: true
     coverColor?: true
     coverAttachmentId?: true
     coverSize?: true
@@ -15944,6 +15948,7 @@ export namespace Prisma {
     start?: true
     due?: true
     dueComplete?: true
+    recurrence?: true
     coverColor?: true
     coverAttachmentId?: true
     coverSize?: true
@@ -15963,6 +15968,7 @@ export namespace Prisma {
     start?: true
     due?: true
     dueComplete?: true
+    recurrence?: true
     coverColor?: true
     coverAttachmentId?: true
     coverSize?: true
@@ -16069,6 +16075,7 @@ export namespace Prisma {
     start: Date | null
     due: Date | null
     dueComplete: boolean
+    recurrence: string | null
     coverColor: string | null
     coverAttachmentId: string | null
     coverSize: string
@@ -16107,6 +16114,7 @@ export namespace Prisma {
     start?: boolean
     due?: boolean
     dueComplete?: boolean
+    recurrence?: boolean
     coverColor?: boolean
     coverAttachmentId?: boolean
     coverSize?: boolean
@@ -16135,6 +16143,7 @@ export namespace Prisma {
     start?: boolean
     due?: boolean
     dueComplete?: boolean
+    recurrence?: boolean
     coverColor?: boolean
     coverAttachmentId?: boolean
     coverSize?: boolean
@@ -16155,6 +16164,7 @@ export namespace Prisma {
     start?: boolean
     due?: boolean
     dueComplete?: boolean
+    recurrence?: boolean
     coverColor?: boolean
     coverAttachmentId?: boolean
     coverSize?: boolean
@@ -16175,6 +16185,7 @@ export namespace Prisma {
     start?: boolean
     due?: boolean
     dueComplete?: boolean
+    recurrence?: boolean
     coverColor?: boolean
     coverAttachmentId?: boolean
     coverSize?: boolean
@@ -16185,7 +16196,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type CardOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "listId" | "title" | "description" | "pos" | "start" | "due" | "dueComplete" | "coverColor" | "coverAttachmentId" | "coverSize" | "closed" | "trelloId" | "shortId" | "createdAt" | "updatedAt", ExtArgs["result"]["card"]>
+  export type CardOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "listId" | "title" | "description" | "pos" | "start" | "due" | "dueComplete" | "recurrence" | "coverColor" | "coverAttachmentId" | "coverSize" | "closed" | "trelloId" | "shortId" | "createdAt" | "updatedAt", ExtArgs["result"]["card"]>
   export type CardInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     list?: boolean | ListDefaultArgs<ExtArgs>
     labels?: boolean | Card$labelsArgs<ExtArgs>
@@ -16225,6 +16236,7 @@ export namespace Prisma {
       start: Date | null
       due: Date | null
       dueComplete: boolean
+      recurrence: string | null
       coverColor: string | null
       coverAttachmentId: string | null
       coverSize: string
@@ -16672,6 +16684,7 @@ export namespace Prisma {
     readonly start: FieldRef<"Card", 'DateTime'>
     readonly due: FieldRef<"Card", 'DateTime'>
     readonly dueComplete: FieldRef<"Card", 'Boolean'>
+    readonly recurrence: FieldRef<"Card", 'String'>
     readonly coverColor: FieldRef<"Card", 'String'>
     readonly coverAttachmentId: FieldRef<"Card", 'String'>
     readonly coverSize: FieldRef<"Card", 'String'>
@@ -29451,6 +29464,7 @@ export namespace Prisma {
     start: 'start',
     due: 'due',
     dueComplete: 'dueComplete',
+    recurrence: 'recurrence',
     coverColor: 'coverColor',
     coverAttachmentId: 'coverAttachmentId',
     coverSize: 'coverSize',
@@ -30470,6 +30484,7 @@ export namespace Prisma {
     start?: DateTimeNullableFilter<"Card"> | Date | string | null
     due?: DateTimeNullableFilter<"Card"> | Date | string | null
     dueComplete?: BoolFilter<"Card"> | boolean
+    recurrence?: StringNullableFilter<"Card"> | string | null
     coverColor?: StringNullableFilter<"Card"> | string | null
     coverAttachmentId?: StringNullableFilter<"Card"> | string | null
     coverSize?: StringFilter<"Card"> | string
@@ -30497,6 +30512,7 @@ export namespace Prisma {
     start?: SortOrderInput | SortOrder
     due?: SortOrderInput | SortOrder
     dueComplete?: SortOrder
+    recurrence?: SortOrderInput | SortOrder
     coverColor?: SortOrderInput | SortOrder
     coverAttachmentId?: SortOrderInput | SortOrder
     coverSize?: SortOrder
@@ -30528,6 +30544,7 @@ export namespace Prisma {
     start?: DateTimeNullableFilter<"Card"> | Date | string | null
     due?: DateTimeNullableFilter<"Card"> | Date | string | null
     dueComplete?: BoolFilter<"Card"> | boolean
+    recurrence?: StringNullableFilter<"Card"> | string | null
     coverColor?: StringNullableFilter<"Card"> | string | null
     coverAttachmentId?: StringNullableFilter<"Card"> | string | null
     coverSize?: StringFilter<"Card"> | string
@@ -30554,6 +30571,7 @@ export namespace Prisma {
     start?: SortOrderInput | SortOrder
     due?: SortOrderInput | SortOrder
     dueComplete?: SortOrder
+    recurrence?: SortOrderInput | SortOrder
     coverColor?: SortOrderInput | SortOrder
     coverAttachmentId?: SortOrderInput | SortOrder
     coverSize?: SortOrder
@@ -30581,6 +30599,7 @@ export namespace Prisma {
     start?: DateTimeNullableWithAggregatesFilter<"Card"> | Date | string | null
     due?: DateTimeNullableWithAggregatesFilter<"Card"> | Date | string | null
     dueComplete?: BoolWithAggregatesFilter<"Card"> | boolean
+    recurrence?: StringNullableWithAggregatesFilter<"Card"> | string | null
     coverColor?: StringNullableWithAggregatesFilter<"Card"> | string | null
     coverAttachmentId?: StringNullableWithAggregatesFilter<"Card"> | string | null
     coverSize?: StringWithAggregatesFilter<"Card"> | string
@@ -32105,6 +32124,7 @@ export namespace Prisma {
     start?: Date | string | null
     due?: Date | string | null
     dueComplete?: boolean
+    recurrence?: string | null
     coverColor?: string | null
     coverAttachmentId?: string | null
     coverSize?: string
@@ -32132,6 +32152,7 @@ export namespace Prisma {
     start?: Date | string | null
     due?: Date | string | null
     dueComplete?: boolean
+    recurrence?: string | null
     coverColor?: string | null
     coverAttachmentId?: string | null
     coverSize?: string
@@ -32157,6 +32178,7 @@ export namespace Prisma {
     start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     due?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dueComplete?: BoolFieldUpdateOperationsInput | boolean
+    recurrence?: NullableStringFieldUpdateOperationsInput | string | null
     coverColor?: NullableStringFieldUpdateOperationsInput | string | null
     coverAttachmentId?: NullableStringFieldUpdateOperationsInput | string | null
     coverSize?: StringFieldUpdateOperationsInput | string
@@ -32184,6 +32206,7 @@ export namespace Prisma {
     start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     due?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dueComplete?: BoolFieldUpdateOperationsInput | boolean
+    recurrence?: NullableStringFieldUpdateOperationsInput | string | null
     coverColor?: NullableStringFieldUpdateOperationsInput | string | null
     coverAttachmentId?: NullableStringFieldUpdateOperationsInput | string | null
     coverSize?: StringFieldUpdateOperationsInput | string
@@ -32210,6 +32233,7 @@ export namespace Prisma {
     start?: Date | string | null
     due?: Date | string | null
     dueComplete?: boolean
+    recurrence?: string | null
     coverColor?: string | null
     coverAttachmentId?: string | null
     coverSize?: string
@@ -32228,6 +32252,7 @@ export namespace Prisma {
     start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     due?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dueComplete?: BoolFieldUpdateOperationsInput | boolean
+    recurrence?: NullableStringFieldUpdateOperationsInput | string | null
     coverColor?: NullableStringFieldUpdateOperationsInput | string | null
     coverAttachmentId?: NullableStringFieldUpdateOperationsInput | string | null
     coverSize?: StringFieldUpdateOperationsInput | string
@@ -32247,6 +32272,7 @@ export namespace Prisma {
     start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     due?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dueComplete?: BoolFieldUpdateOperationsInput | boolean
+    recurrence?: NullableStringFieldUpdateOperationsInput | string | null
     coverColor?: NullableStringFieldUpdateOperationsInput | string | null
     coverAttachmentId?: NullableStringFieldUpdateOperationsInput | string | null
     coverSize?: StringFieldUpdateOperationsInput | string
@@ -33691,6 +33717,7 @@ export namespace Prisma {
     start?: SortOrder
     due?: SortOrder
     dueComplete?: SortOrder
+    recurrence?: SortOrder
     coverColor?: SortOrder
     coverAttachmentId?: SortOrder
     coverSize?: SortOrder
@@ -33714,6 +33741,7 @@ export namespace Prisma {
     start?: SortOrder
     due?: SortOrder
     dueComplete?: SortOrder
+    recurrence?: SortOrder
     coverColor?: SortOrder
     coverAttachmentId?: SortOrder
     coverSize?: SortOrder
@@ -33733,6 +33761,7 @@ export namespace Prisma {
     start?: SortOrder
     due?: SortOrder
     dueComplete?: SortOrder
+    recurrence?: SortOrder
     coverColor?: SortOrder
     coverAttachmentId?: SortOrder
     coverSize?: SortOrder
@@ -38548,6 +38577,7 @@ export namespace Prisma {
     start?: Date | string | null
     due?: Date | string | null
     dueComplete?: boolean
+    recurrence?: string | null
     coverColor?: string | null
     coverAttachmentId?: string | null
     coverSize?: string
@@ -38573,6 +38603,7 @@ export namespace Prisma {
     start?: Date | string | null
     due?: Date | string | null
     dueComplete?: boolean
+    recurrence?: string | null
     coverColor?: string | null
     coverAttachmentId?: string | null
     coverSize?: string
@@ -38681,6 +38712,7 @@ export namespace Prisma {
     start?: DateTimeNullableFilter<"Card"> | Date | string | null
     due?: DateTimeNullableFilter<"Card"> | Date | string | null
     dueComplete?: BoolFilter<"Card"> | boolean
+    recurrence?: StringNullableFilter<"Card"> | string | null
     coverColor?: StringNullableFilter<"Card"> | string | null
     coverAttachmentId?: StringNullableFilter<"Card"> | string | null
     coverSize?: StringFilter<"Card"> | string
@@ -39196,6 +39228,7 @@ export namespace Prisma {
     start?: Date | string | null
     due?: Date | string | null
     dueComplete?: boolean
+    recurrence?: string | null
     coverColor?: string | null
     coverAttachmentId?: string | null
     coverSize?: string
@@ -39222,6 +39255,7 @@ export namespace Prisma {
     start?: Date | string | null
     due?: Date | string | null
     dueComplete?: boolean
+    recurrence?: string | null
     coverColor?: string | null
     coverAttachmentId?: string | null
     coverSize?: string
@@ -39283,6 +39317,7 @@ export namespace Prisma {
     start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     due?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dueComplete?: BoolFieldUpdateOperationsInput | boolean
+    recurrence?: NullableStringFieldUpdateOperationsInput | string | null
     coverColor?: NullableStringFieldUpdateOperationsInput | string | null
     coverAttachmentId?: NullableStringFieldUpdateOperationsInput | string | null
     coverSize?: StringFieldUpdateOperationsInput | string
@@ -39309,6 +39344,7 @@ export namespace Prisma {
     start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     due?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dueComplete?: BoolFieldUpdateOperationsInput | boolean
+    recurrence?: NullableStringFieldUpdateOperationsInput | string | null
     coverColor?: NullableStringFieldUpdateOperationsInput | string | null
     coverAttachmentId?: NullableStringFieldUpdateOperationsInput | string | null
     coverSize?: StringFieldUpdateOperationsInput | string
@@ -39360,6 +39396,7 @@ export namespace Prisma {
     start?: Date | string | null
     due?: Date | string | null
     dueComplete?: boolean
+    recurrence?: string | null
     coverColor?: string | null
     coverAttachmentId?: string | null
     coverSize?: string
@@ -39386,6 +39423,7 @@ export namespace Prisma {
     start?: Date | string | null
     due?: Date | string | null
     dueComplete?: boolean
+    recurrence?: string | null
     coverColor?: string | null
     coverAttachmentId?: string | null
     coverSize?: string
@@ -39483,6 +39521,7 @@ export namespace Prisma {
     start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     due?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dueComplete?: BoolFieldUpdateOperationsInput | boolean
+    recurrence?: NullableStringFieldUpdateOperationsInput | string | null
     coverColor?: NullableStringFieldUpdateOperationsInput | string | null
     coverAttachmentId?: NullableStringFieldUpdateOperationsInput | string | null
     coverSize?: StringFieldUpdateOperationsInput | string
@@ -39509,6 +39548,7 @@ export namespace Prisma {
     start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     due?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dueComplete?: BoolFieldUpdateOperationsInput | boolean
+    recurrence?: NullableStringFieldUpdateOperationsInput | string | null
     coverColor?: NullableStringFieldUpdateOperationsInput | string | null
     coverAttachmentId?: NullableStringFieldUpdateOperationsInput | string | null
     coverSize?: StringFieldUpdateOperationsInput | string
@@ -39596,6 +39636,7 @@ export namespace Prisma {
     start?: Date | string | null
     due?: Date | string | null
     dueComplete?: boolean
+    recurrence?: string | null
     coverColor?: string | null
     coverAttachmentId?: string | null
     coverSize?: string
@@ -39622,6 +39663,7 @@ export namespace Prisma {
     start?: Date | string | null
     due?: Date | string | null
     dueComplete?: boolean
+    recurrence?: string | null
     coverColor?: string | null
     coverAttachmentId?: string | null
     coverSize?: string
@@ -39692,6 +39734,7 @@ export namespace Prisma {
     start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     due?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dueComplete?: BoolFieldUpdateOperationsInput | boolean
+    recurrence?: NullableStringFieldUpdateOperationsInput | string | null
     coverColor?: NullableStringFieldUpdateOperationsInput | string | null
     coverAttachmentId?: NullableStringFieldUpdateOperationsInput | string | null
     coverSize?: StringFieldUpdateOperationsInput | string
@@ -39718,6 +39761,7 @@ export namespace Prisma {
     start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     due?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dueComplete?: BoolFieldUpdateOperationsInput | boolean
+    recurrence?: NullableStringFieldUpdateOperationsInput | string | null
     coverColor?: NullableStringFieldUpdateOperationsInput | string | null
     coverAttachmentId?: NullableStringFieldUpdateOperationsInput | string | null
     coverSize?: StringFieldUpdateOperationsInput | string
@@ -39926,6 +39970,7 @@ export namespace Prisma {
     start?: Date | string | null
     due?: Date | string | null
     dueComplete?: boolean
+    recurrence?: string | null
     coverColor?: string | null
     coverAttachmentId?: string | null
     coverSize?: string
@@ -39952,6 +39997,7 @@ export namespace Prisma {
     start?: Date | string | null
     due?: Date | string | null
     dueComplete?: boolean
+    recurrence?: string | null
     coverColor?: string | null
     coverAttachmentId?: string | null
     coverSize?: string
@@ -40049,6 +40095,7 @@ export namespace Prisma {
     start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     due?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dueComplete?: BoolFieldUpdateOperationsInput | boolean
+    recurrence?: NullableStringFieldUpdateOperationsInput | string | null
     coverColor?: NullableStringFieldUpdateOperationsInput | string | null
     coverAttachmentId?: NullableStringFieldUpdateOperationsInput | string | null
     coverSize?: StringFieldUpdateOperationsInput | string
@@ -40075,6 +40122,7 @@ export namespace Prisma {
     start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     due?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dueComplete?: BoolFieldUpdateOperationsInput | boolean
+    recurrence?: NullableStringFieldUpdateOperationsInput | string | null
     coverColor?: NullableStringFieldUpdateOperationsInput | string | null
     coverAttachmentId?: NullableStringFieldUpdateOperationsInput | string | null
     coverSize?: StringFieldUpdateOperationsInput | string
@@ -40162,6 +40210,7 @@ export namespace Prisma {
     start?: Date | string | null
     due?: Date | string | null
     dueComplete?: boolean
+    recurrence?: string | null
     coverColor?: string | null
     coverAttachmentId?: string | null
     coverSize?: string
@@ -40188,6 +40237,7 @@ export namespace Prisma {
     start?: Date | string | null
     due?: Date | string | null
     dueComplete?: boolean
+    recurrence?: string | null
     coverColor?: string | null
     coverAttachmentId?: string | null
     coverSize?: string
@@ -40285,6 +40335,7 @@ export namespace Prisma {
     start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     due?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dueComplete?: BoolFieldUpdateOperationsInput | boolean
+    recurrence?: NullableStringFieldUpdateOperationsInput | string | null
     coverColor?: NullableStringFieldUpdateOperationsInput | string | null
     coverAttachmentId?: NullableStringFieldUpdateOperationsInput | string | null
     coverSize?: StringFieldUpdateOperationsInput | string
@@ -40311,6 +40362,7 @@ export namespace Prisma {
     start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     due?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dueComplete?: BoolFieldUpdateOperationsInput | boolean
+    recurrence?: NullableStringFieldUpdateOperationsInput | string | null
     coverColor?: NullableStringFieldUpdateOperationsInput | string | null
     coverAttachmentId?: NullableStringFieldUpdateOperationsInput | string | null
     coverSize?: StringFieldUpdateOperationsInput | string
@@ -40445,6 +40497,7 @@ export namespace Prisma {
     start?: Date | string | null
     due?: Date | string | null
     dueComplete?: boolean
+    recurrence?: string | null
     coverColor?: string | null
     coverAttachmentId?: string | null
     coverSize?: string
@@ -40471,6 +40524,7 @@ export namespace Prisma {
     start?: Date | string | null
     due?: Date | string | null
     dueComplete?: boolean
+    recurrence?: string | null
     coverColor?: string | null
     coverAttachmentId?: string | null
     coverSize?: string
@@ -40621,6 +40675,7 @@ export namespace Prisma {
     start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     due?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dueComplete?: BoolFieldUpdateOperationsInput | boolean
+    recurrence?: NullableStringFieldUpdateOperationsInput | string | null
     coverColor?: NullableStringFieldUpdateOperationsInput | string | null
     coverAttachmentId?: NullableStringFieldUpdateOperationsInput | string | null
     coverSize?: StringFieldUpdateOperationsInput | string
@@ -40647,6 +40702,7 @@ export namespace Prisma {
     start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     due?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dueComplete?: BoolFieldUpdateOperationsInput | boolean
+    recurrence?: NullableStringFieldUpdateOperationsInput | string | null
     coverColor?: NullableStringFieldUpdateOperationsInput | string | null
     coverAttachmentId?: NullableStringFieldUpdateOperationsInput | string | null
     coverSize?: StringFieldUpdateOperationsInput | string
@@ -40838,6 +40894,7 @@ export namespace Prisma {
     start?: Date | string | null
     due?: Date | string | null
     dueComplete?: boolean
+    recurrence?: string | null
     coverColor?: string | null
     coverAttachmentId?: string | null
     coverSize?: string
@@ -40864,6 +40921,7 @@ export namespace Prisma {
     start?: Date | string | null
     due?: Date | string | null
     dueComplete?: boolean
+    recurrence?: string | null
     coverColor?: string | null
     coverAttachmentId?: string | null
     coverSize?: string
@@ -41020,6 +41078,7 @@ export namespace Prisma {
     start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     due?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dueComplete?: BoolFieldUpdateOperationsInput | boolean
+    recurrence?: NullableStringFieldUpdateOperationsInput | string | null
     coverColor?: NullableStringFieldUpdateOperationsInput | string | null
     coverAttachmentId?: NullableStringFieldUpdateOperationsInput | string | null
     coverSize?: StringFieldUpdateOperationsInput | string
@@ -41046,6 +41105,7 @@ export namespace Prisma {
     start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     due?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dueComplete?: BoolFieldUpdateOperationsInput | boolean
+    recurrence?: NullableStringFieldUpdateOperationsInput | string | null
     coverColor?: NullableStringFieldUpdateOperationsInput | string | null
     coverAttachmentId?: NullableStringFieldUpdateOperationsInput | string | null
     coverSize?: StringFieldUpdateOperationsInput | string
@@ -42054,6 +42114,7 @@ export namespace Prisma {
     start?: Date | string | null
     due?: Date | string | null
     dueComplete?: boolean
+    recurrence?: string | null
     coverColor?: string | null
     coverAttachmentId?: string | null
     coverSize?: string
@@ -42072,6 +42133,7 @@ export namespace Prisma {
     start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     due?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dueComplete?: BoolFieldUpdateOperationsInput | boolean
+    recurrence?: NullableStringFieldUpdateOperationsInput | string | null
     coverColor?: NullableStringFieldUpdateOperationsInput | string | null
     coverAttachmentId?: NullableStringFieldUpdateOperationsInput | string | null
     coverSize?: StringFieldUpdateOperationsInput | string
@@ -42097,6 +42159,7 @@ export namespace Prisma {
     start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     due?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dueComplete?: BoolFieldUpdateOperationsInput | boolean
+    recurrence?: NullableStringFieldUpdateOperationsInput | string | null
     coverColor?: NullableStringFieldUpdateOperationsInput | string | null
     coverAttachmentId?: NullableStringFieldUpdateOperationsInput | string | null
     coverSize?: StringFieldUpdateOperationsInput | string
@@ -42122,6 +42185,7 @@ export namespace Prisma {
     start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     due?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dueComplete?: BoolFieldUpdateOperationsInput | boolean
+    recurrence?: NullableStringFieldUpdateOperationsInput | string | null
     coverColor?: NullableStringFieldUpdateOperationsInput | string | null
     coverAttachmentId?: NullableStringFieldUpdateOperationsInput | string | null
     coverSize?: StringFieldUpdateOperationsInput | string

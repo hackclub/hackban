@@ -366,6 +366,7 @@ export function CardComposer({ listId, boardId, where, onClose }: { listId: stri
         checkDone: 0,
         coverUrl: null,
         watching: false,
+        recurrence: null,
       };
       utils.board.get.setData({ id: boardId }, (b) =>
         b && {

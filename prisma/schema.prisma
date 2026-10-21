@@ -190,6 +190,9 @@ model Card {
     start        DateTime?
     due          DateTime?
     dueComplete  Boolean   @default(false)
+    // Repeat: daily | weekdays | weekly | monthly | yearly (null = doesn't repeat).
+    // Completing a repeating card advances its dates and resets it.
+    recurrence   String?
     coverColor   String?
     coverAttachmentId String?
     coverSize    String    @default("normal") // normal | full
