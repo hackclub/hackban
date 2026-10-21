@@ -32,7 +32,8 @@ import { boardBg } from "../ui";
 import { BoardHeader } from "./board-header";
 import { BoardMenu } from "./board-menu";
 import { BoardCtx } from "./members";
-import { CardFront } from "./card-front";
+import { confetti } from "../confetti";
+import { CardFront, REPEAT_SHOW_DONE_MS } from "./card-front";
 import { CardModal } from "./card-modal";
 import { ListColumn, ListComposer } from "./list-column";
 import { QuickEdit } from "./quick-edit";
@@ -320,7 +321,11 @@ export function BoardView({
 
   // ----- keyboard shortcuts (Trello's) -----
   const update = api.card.update.useMutation({
-    onSettled: () => utils.board.get.invalidate({ id: boardId }),
+    onSettled: (_d, _e, vars) => {
+      // Repeating cards read as done for a beat before rolling to the next date.
+      const repeating = vars.dueComplete && board?.lists.some((l) => l.cards.some((c) => c.id === vars.id && c.recurrence));
+      setTimeout(() => void utils.board.get.invalidate({ id: boardId }), repeating ? REPEAT_SHOW_DONE_MS : 0);
+    },
   });
   const toggleMember = api.card.toggleMember.useMutation({
     onSettled: () => utils.board.get.invalidate({ id: boardId }),
@@ -387,7 +392,9 @@ export function BoardView({
           toggleMember.mutate({ id: card.id, userId: user.id, on });
           break;
         }
-        case "d":
+        case "d": {
+          const el = document.querySelector<HTMLElement>(`[data-card-id="${card.id}"]`);
+          if (!card.dueComplete && el) confetti(el);
           update.mutate({ id: card.id, dueComplete: !card.dueComplete });
           utils.board.get.setData(
             { id: boardId },
@@ -405,6 +412,7 @@ export function BoardView({
               },
           );
           break;
+        }
         case "e":
           if (!openCard) {
             const el = document.querySelector(`[data-card-id="${card.id}"]`);

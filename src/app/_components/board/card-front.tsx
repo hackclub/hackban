@@ -13,6 +13,7 @@ import {
   dueStyles,
   labelStyle,
 } from "../ui";
+import { confetti } from "../confetti";
 import { CardMemberAvatar } from "./members";
 import { type CardData } from "./types";
 
@@ -62,10 +63,7 @@ export const CardFront = memo(function CardFront({
   const [expanded, toggleLabels] = useLabelsExpanded();
   const utils = api.useUtils();
   const toggleDue = api.card.update.useMutation({
-    // A repeating card is rolled forward by the server rather than staying
-    // complete, so don't optimistically mark it done.
     onMutate: ({ dueComplete }) =>
-      !(dueComplete && card.recurrence) &&
       utils.board.get.setData(
         { id: boardId },
         (b) =>
@@ -79,9 +77,14 @@ export const CardFront = memo(function CardFront({
             })),
           },
       ),
-    onSettled: () => {
-      void utils.board.get.invalidate({ id: boardId });
-      void utils.card.get.invalidate({ id: card.id });
+    onSettled: (_d, _e, vars) => {
+      // A repeating card is rolled forward by the server; let it read as done
+      // for a beat before it jumps to its next date.
+      const delay = vars.dueComplete && card.recurrence ? REPEAT_SHOW_DONE_MS : 0;
+      setTimeout(() => {
+        void utils.board.get.invalidate({ id: boardId });
+        void utils.card.get.invalidate({ id: card.id });
+      }, delay);
     },
   });
   const setComplete = (v: boolean) =>
@@ -185,7 +188,9 @@ export const CardFront = memo(function CardFront({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                if (!readOnly) setComplete(!card.dueComplete);
+                if (readOnly) return;
+                if (!card.dueComplete) confetti(e.currentTarget);
+                setComplete(!card.dueComplete);
               }}
               className={`group/due flex h-6 items-center gap-1 rounded-[3px] px-1 ${due ? dueStyles[due] : ""} ${due === "later" ? "hover:bg-[var(--color-neutral)]" : ""} ${readOnly ? "pointer-events-none" : ""}`}
             >
@@ -259,6 +264,9 @@ export const CardFront = memo(function CardFront({
  * Trello's round "mark complete" check. On card fronts it's shown on hover or
  * once complete (see CardTitle); the card modal always shows it.
  */
+/** How long a just-completed repeating card shows as done before rolling over. */
+export const REPEAT_SHOW_DONE_MS = 1500;
+
 /**
  * Card title with the mark-complete circle on its left. The circle is
  * absolutely positioned and the title glides over with a transform (into the
@@ -311,7 +319,9 @@ export function CompleteCheck({
         onPointerDown={(e) => e.stopPropagation()}
         onClick={(e) => {
           e.stopPropagation();
-          onChange?.(!complete);
+          if (!onChange) return;
+          if (!complete) confetti(e.currentTarget);
+          onChange(!complete);
         }}
         className={`flex items-center justify-center rounded-full border-[1.5px] transition-colors ${
           complete

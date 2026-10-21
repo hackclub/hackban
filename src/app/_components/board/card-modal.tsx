@@ -20,7 +20,8 @@ import {
   labelStyle,
 } from "../ui";
 import { ActivityItem } from "./activity";
-import { CompleteCheck } from "./card-front";
+import { confetti } from "../confetti";
+import { CompleteCheck, REPEAT_SHOW_DONE_MS } from "./card-front";
 import {
   CardPopover,
   uploadFiles,
@@ -406,7 +407,10 @@ function Title({
           (c) => c && { ...c, dueComplete: d.dueComplete! },
         );
     },
-    onSettled: inv,
+    // Repeating cards read as done for a beat before showing the next date.
+    onSettled: (_d, _e, vars) => {
+      setTimeout(inv, vars.dueComplete && card.recurrence ? REPEAT_SHOW_DONE_MS : 0);
+    },
   });
   useEffect(() => setTitle(card.title), [card.title]);
   const save = () => {
@@ -555,7 +559,10 @@ function Badges({
         { id: card.id },
         (c) => c && { ...c, dueComplete: d.dueComplete ?? c.dueComplete },
       ),
-    onSettled: inv,
+    // Repeating cards read as done for a beat before showing the next date.
+    onSettled: (_d, _e, vars) => {
+      setTimeout(inv, vars.dueComplete && card.recurrence ? REPEAT_SHOW_DONE_MS : 0);
+    },
   });
   const due = dueState(card.due, card.dueComplete);
   if (!card.members.length && !card.labels.length && !card.due && !card.start)
@@ -627,9 +634,10 @@ function Badges({
                 disabled={readOnly}
                 className="h-4 w-4 accent-[var(--color-success)]"
                 checked={card.dueComplete}
-                onChange={(e) =>
-                  update.mutate({ id: card.id, dueComplete: e.target.checked })
-                }
+                onChange={(e) => {
+                  if (e.target.checked) confetti(e.currentTarget);
+                  update.mutate({ id: card.id, dueComplete: e.target.checked });
+                }}
               />
             )}
             <button
