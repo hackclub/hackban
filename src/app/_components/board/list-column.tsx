@@ -401,7 +401,12 @@ export function CardComposer({
   }, [title]);
   useEffect(() => {
     const onDown = (e: MouseEvent) => {
-      if (!ref.current?.contains(e.target as Node)) {
+      const t = e.target as HTMLElement;
+      // Clicks on composer companions (e.g. the "Assign to you?" nudge) must
+      // not close the composer: closing it on mousedown shifts the layout,
+      // so the button moves out from under the cursor before mouseup.
+      if (t.closest?.("[data-composer-safe]")) return;
+      if (!ref.current?.contains(t)) {
         submit(false);
         onClose();
       }

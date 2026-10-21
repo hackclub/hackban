@@ -30,7 +30,15 @@ export function AssignSuggestion({
   const patch = usePatchCard(boardId);
   const [assigned, setAssigned] = useState(false);
   const join = api.card.toggleMember.useMutation({
-    onMutate: ({ userId }) => patch(card!.id, memberPatch(board?.members.find((m) => m.userId === userId), userId, true)),
+    onMutate: ({ userId }) =>
+      patch(
+        card!.id,
+        memberPatch(
+          board?.members.find((m) => m.userId === userId),
+          userId,
+          true,
+        ),
+      ),
   });
 
   // Fresh card -> reset, then auto-dismiss.
@@ -41,47 +49,71 @@ export function AssignSuggestion({
     return () => clearTimeout(t);
   }, [card, onDone]);
 
-  const live = board?.lists.flatMap((l) => l.cards).find((c) => c.id === card?.id);
+  const live = board?.lists
+    .flatMap((l) => l.cards)
+    .find((c) => c.id === card?.id);
   const alreadyMine = !!live?.members.some((m) => m.userId === meId);
-  const show = !!card && !card.id.startsWith("temp-") && board?.myRole !== "observer" && (!alreadyMine || assigned);
+  const show =
+    !!card &&
+    !card.id.startsWith("temp-") &&
+    board?.myRole !== "observer" &&
+    (!alreadyMine || assigned);
 
   return (
     <AnimatePresence>
       {show && card && (
+        // Height animates too, so the list grows/shrinks smoothly instead of
+        // jumping when the nudge appears or goes away.
         <motion.div
           key={card.id}
-          initial={{ opacity: 0, y: 4, filter: "blur(2px)" }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          exit={{ opacity: 0, y: 2 }}
+          initial={{ opacity: 0, height: 0, filter: "blur(2px)" }}
+          animate={{ opacity: 1, height: "auto", filter: "blur(0px)" }}
+          exit={{ opacity: 0, height: 0 }}
           transition={{ duration: 0.22, ease: [0.2, 0.8, 0.3, 1] }}
-          className="ai-glow mx-2 mt-2 rounded-lg p-px"
+          className="shrink-0 overflow-hidden pb-1"
+          data-composer-safe
         >
-          <div className="flex items-center gap-2 rounded-[7px] bg-[var(--color-list)] px-2 py-1.5 text-xs">
-            <span className="ai-sparkle text-[#9f8fef]" aria-hidden>
-              ✦
-            </span>
-            {assigned ? (
-              <span className="flex-1 text-[var(--color-text-subtle)]">Assigned to you</span>
-            ) : (
-              <>
-                <span className="min-w-0 flex-1 truncate text-[var(--color-text-subtle)]" title={card.title}>
-                  Assign <span className="text-[var(--color-text)]">{card.title}</span> to you?
+          <div className="ai-glow mx-2 mt-2 rounded-lg p-px">
+            <div className="flex items-center gap-2 rounded-[7px] bg-[var(--color-list)] px-2 py-1.5 text-xs">
+              <span className="ai-sparkle text-[#9f8fef]" aria-hidden>
+                ✦
+              </span>
+              {assigned ? (
+                <span className="flex-1 text-[var(--color-text-subtle)]">
+                  Assigned to you
                 </span>
-                <button
-                  onClick={() => {
-                    setAssigned(true);
-                    join.mutate({ id: card.id, userId: meId, on: true });
-                    setTimeout(onDone, 1200);
-                  }}
-                  className="shrink-0 rounded-[4px] bg-[var(--color-neutral)] px-2 py-0.5 font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-neutral-hover)]"
-                >
-                  Assign me
-                </button>
-                <button onClick={onDone} className="shrink-0 rounded p-0.5 text-[var(--color-text-subtlest)] hover:bg-[var(--color-neutral)]" aria-label="Dismiss">
-                  <Icon name="close" size={12} />
-                </button>
-              </>
-            )}
+              ) : (
+                <>
+                  <span
+                    className="min-w-0 flex-1 truncate text-[var(--color-text-subtle)]"
+                    title={card.title}
+                  >
+                    Assign{" "}
+                    <span className="text-[var(--color-text)]">
+                      {card.title}
+                    </span>{" "}
+                    to you?
+                  </span>
+                  <button
+                    onClick={() => {
+                      setAssigned(true);
+                      join.mutate({ id: card.id, userId: meId, on: true });
+                      setTimeout(onDone, 1200);
+                    }}
+                    className="shrink-0 rounded-[4px] bg-[var(--color-neutral)] px-2 py-0.5 font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-neutral-hover)]"
+                  >
+                    Assign me
+                  </button>
+                  <button
+                    onClick={onDone}
+                    className="shrink-0 rounded p-0.5 text-[var(--color-text-subtlest)] hover:bg-[var(--color-neutral)]"
+                    aria-label="Dismiss"
+                  >
+                    <Icon name="close" size={12} />
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </motion.div>
       )}
