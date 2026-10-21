@@ -138,9 +138,9 @@ export function WorkspaceLogo({ ws, size = 32, className = "" }: { ws: { name: s
       style={{ width: size, height: size, fontSize: size * 0.5 }}
     >
       {ws.logo && !broken ? (
-        // eslint-disable-next-line @next/next/no-img-element
         // Transparent logos sit on a theme-aware neutral (not white, which hid
         // white artwork) and are contained, not cropped.
+        // eslint-disable-next-line @next/next/no-img-element
         <img
           src={ws.logo}
           alt=""
