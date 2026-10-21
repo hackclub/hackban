@@ -39,6 +39,7 @@ import { confetti } from "../confetti";
 import { CardFront, REPEAT_SHOW_DONE_MS } from "./card-front";
 import { CardModal } from "./card-modal";
 import { ListColumn, ListComposer } from "./list-column";
+import { memberPatch, usePatchCard } from "./optimistic";
 import { QuickEdit } from "./quick-edit";
 import {
   cardMatches,
@@ -359,6 +360,16 @@ export function BoardView({
   };
 
   // ----- keyboard shortcuts (Trello's) -----
+  const patchCard = usePatchCard(boardId);
+  // You, as a card member (works even if you're only in the workspace).
+  const selfMember = board?.members.find((m) => m.userId === user.id) ?? {
+    boardId,
+    userId: user.id,
+    role: "normal",
+    lastViewed: null,
+    guest: false,
+    user: { id: user.id, name: user.name ?? null, image: user.image ?? null, username: null, isGhost: false },
+  };
   const update = api.card.update.useMutation({
     onSettled: (_d, _e, vars) => {
       // Repeating cards read as done for a beat before rolling to the next date.
@@ -428,6 +439,7 @@ export function BoardView({
         case " ": {
           e.preventDefault();
           const on = !card.members.some((m) => m.userId === user.id);
+          patchCard(card.id, memberPatch(selfMember, user.id, on));
           toggleMember.mutate({ id: card.id, userId: user.id, on });
           break;
         }
@@ -465,12 +477,15 @@ export function BoardView({
           if (/^[0-9]$/.test(e.key) && board) {
             // 1..0 toggle the board's labels in order, like Trello
             const label = board.labels[(Number(e.key) + 9) % 10];
-            if (label)
-              toggleLabel.mutate({
-                id: card.id,
-                labelId: label.id,
-                on: !card.labels.some((l) => l.labelId === label.id),
+            if (label) {
+              const on = !card.labels.some((l) => l.labelId === label.id);
+              const withLabel = <T extends { id: string; labels: { cardId: string; labelId: string; label: typeof label }[] }>(c: T): T => ({
+                ...c,
+                labels: on ? [...c.labels, { cardId: c.id, labelId: label.id, label }] : c.labels.filter((x) => x.labelId !== label.id),
               });
+              patchCard(card.id, { front: withLabel, detail: withLabel });
+              toggleLabel.mutate({ id: card.id, labelId: label.id, on });
+            }
           }
       }
     };

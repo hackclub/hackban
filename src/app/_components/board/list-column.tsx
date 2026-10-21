@@ -9,6 +9,7 @@ import { api } from "~/trpc/react";
 
 import { AutoTextarea, Button, IconButton, Icon, MenuItem, MenuSep, Popover, inputCls, usePopoverState } from "../ui";
 import { rememberLocal, shouldAppear } from "./appear";
+import { AssignSuggestion } from "./assign-suggestion";
 import { CardFront } from "./card-front";
 import { type BoardData, type CardData, type ListData } from "./types";
 
@@ -87,6 +88,9 @@ export const ListColumn = memo(function ListColumn({
   });
   const [collapsed, setCollapsed] = useCollapsed(list.id);
   const setComposerAt = (where: "top" | "bottom" | null) => onComposer(list.id, where);
+  // Card just added from this list's composer -> offer "Assign to you?".
+  const [suggest, setSuggest] = useState<{ id: string; title: string } | null>(null);
+  const clearSuggest = useCallback(() => setSuggest(null), []);
   const [appear] = useState(() => shouldAppear(list.id, list.name, list.createdAt));
 
   if (isDragging) {
@@ -137,7 +141,7 @@ export const ListColumn = memo(function ListColumn({
       </div>
 
       <div className="list-scroll flex min-h-0 flex-1 flex-col gap-2 overflow-x-hidden overflow-y-auto px-2 pt-0.5 pb-0.5">
-        {composerAt === "top" && <CardComposer listId={list.id} boardId={board.id} where="top" onClose={() => setComposerAt(null)} />}
+        {composerAt === "top" && <CardComposer listId={list.id} boardId={board.id} where="top" onClose={() => setComposerAt(null)} onCreated={setSuggest} />}
         <SortableContext items={cards.map((c) => `card:${c.id}`)} strategy={verticalListSortingStrategy}>
           {cards.map((c) => (
             <SortableCard
@@ -152,9 +156,10 @@ export const ListColumn = memo(function ListColumn({
             />
           ))}
         </SortableContext>
-        {composerAt === "bottom" && <CardComposer listId={list.id} boardId={board.id} where="bottom" onClose={() => setComposerAt(null)} />}
+        {composerAt === "bottom" && <CardComposer listId={list.id} boardId={board.id} where="bottom" onClose={() => setComposerAt(null)} onCreated={setSuggest} />}
       </div>
 
+      <AssignSuggestion boardId={board.id} card={suggest} onDone={clearSuggest} />
       {composerAt !== "bottom" && !readOnly && (
         <div className="px-2 pt-2">
           <button
@@ -334,7 +339,20 @@ function ListMenu({ list, board, onAddCard }: { list: ListData; board: BoardData
   );
 }
 
-export function CardComposer({ listId, boardId, where, onClose }: { listId: string; boardId: string; where: "top" | "bottom"; onClose: () => void }) {
+export function CardComposer({
+  listId,
+  boardId,
+  where,
+  onClose,
+  onCreated,
+}: {
+  listId: string;
+  boardId: string;
+  where: "top" | "bottom";
+  onClose: () => void;
+  /** Called with the real card once the server creates it. */
+  onCreated?: (card: { id: string; title: string }) => void;
+}) {
   const [title, setTitle] = useState("");
   const ref = useRef<HTMLDivElement>(null);
   const utils = api.useUtils();
@@ -375,6 +393,7 @@ export function CardComposer({ listId, boardId, where, onClose }: { listId: stri
         },
       );
     },
+    onSuccess: (card) => onCreated?.({ id: card.id, title: card.title }),
     onSettled: () => utils.board.get.invalidate({ id: boardId }),
   });
   useEffect(() => {

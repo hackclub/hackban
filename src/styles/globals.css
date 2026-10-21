@@ -275,3 +275,29 @@ body {
     opacity: 0;
   }
 }
+
+/* "AI-ish" suggestion: a slowly shifting gradient hairline + soft sparkle. */
+@keyframes ai-shift {
+  to {
+    background-position: 300% 0;
+  }
+}
+@keyframes ai-twinkle {
+  0%, 100% { opacity: 0.55; transform: scale(0.9) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1.1) rotate(20deg); }
+}
+.ai-glow {
+  background: linear-gradient(90deg, #9f8fef, #579dff, #4bce97, #e774bb, #9f8fef) 0 0 / 300% 100%;
+  animation: ai-shift 6s linear infinite;
+  box-shadow: 0 0 12px -4px #9f8fef80;
+}
+.ai-sparkle {
+  display: inline-block;
+  animation: ai-twinkle 1.8s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ai-glow,
+  .ai-sparkle {
+    animation: none;
+  }
+}

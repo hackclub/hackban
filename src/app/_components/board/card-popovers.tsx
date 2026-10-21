@@ -19,6 +19,7 @@ import { api, clientId, type RouterOutputs } from "~/trpc/react";
 
 import { Avatar, Button, Icon, IconButton, MenuItem, Popover, coverColor, inputCls, usePopover } from "../ui";
 import { Labels } from "./board-menu";
+import { fieldsPatch, memberPatch, usePatchCard } from "./optimistic";
 import { type BoardData } from "./types";
 
 type Recurrence = "daily" | "weekdays" | "weekly" | "monthly" | "yearly";
@@ -89,15 +90,11 @@ export function CardPopover({
 
 function MembersPane({ card, board }: { card: CardDetail; board: BoardData }) {
   const [q, setQ] = useState("");
-  const utils = api.useUtils();
   const inv = useCardInvalidate(card.id, board.id);
+  const patch = usePatchCard(board.id);
+  // Instant on both the card back and the card front.
   const toggle = api.card.toggleMember.useMutation({
-    onMutate: ({ userId, on }) => {
-      const m = board.members.find((x) => x.userId === userId);
-      utils.card.get.setData({ id: card.id }, (c) =>
-        c && { ...c, members: on && m ? [...c.members, { cardId: c.id, userId, user: { ...m.user, username: m.user.username } }] : c.members.filter((x) => x.userId !== userId) },
-      );
-    },
+    onMutate: ({ userId, on }) => patch(card.id, memberPatch(board.members.find((x) => x.userId === userId), userId, on)),
     onSettled: inv,
   });
   const on = new Set(card.members.map((m) => m.userId));
@@ -209,7 +206,21 @@ function MiniCalendar({ value, onPick }: { value: Date | null; onPick: (d: Date)
 function DatesPane({ card, board }: { card: CardDetail; board: BoardData }) {
   const pop = usePopover();
   const inv = useCardInvalidate(card.id, board.id);
-  const update = api.card.update.useMutation({ onSettled: inv });
+  const patch = usePatchCard(board.id);
+  // Dates change instantly everywhere; the server confirms in the background.
+  const update = api.card.update.useMutation({
+    onMutate: ({ start, due, dueComplete, recurrence }) =>
+      patch(
+        card.id,
+        fieldsPatch({
+          ...(start !== undefined ? { start } : {}),
+          ...(due !== undefined ? { due } : {}),
+          ...(dueComplete !== undefined ? { dueComplete } : {}),
+          ...(recurrence !== undefined ? { recurrence } : {}),
+        }),
+      ),
+    onSettled: inv,
+  });
   const [startOn, setStartOn] = useState(!!card.start);
   const [dueOn, setDueOn] = useState(!!card.due || !card.start);
   const [start, setStart] = useState<Date>(card.start ?? new Date());

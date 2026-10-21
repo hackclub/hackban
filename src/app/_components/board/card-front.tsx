@@ -15,6 +15,7 @@ import {
 } from "../ui";
 import { confetti } from "../confetti";
 import { CardMemberAvatar } from "./members";
+import { fieldsPatch, usePatchCard } from "./optimistic";
 import { type CardData } from "./types";
 
 // Trello's label "collapse" toggle is global and remembered per browser.
@@ -62,21 +63,10 @@ export const CardFront = memo(function CardFront({
 }) {
   const [expanded, toggleLabels] = useLabelsExpanded();
   const utils = api.useUtils();
+  const patch = usePatchCard(boardId);
   const toggleDue = api.card.update.useMutation({
-    onMutate: ({ dueComplete }) =>
-      utils.board.get.setData(
-        { id: boardId },
-        (b) =>
-          b && {
-            ...b,
-            lists: b.lists.map((l) => ({
-              ...l,
-              cards: l.cards.map((c) =>
-                c.id === card.id ? { ...c, dueComplete: dueComplete! } : c,
-              ),
-            })),
-          },
-      ),
+    // Instant on the card front and, if it's open, the card back.
+    onMutate: ({ dueComplete }) => patch(card.id, fieldsPatch({ dueComplete: dueComplete! })),
     onSettled: (_d, _e, vars) => {
       // A repeating card is rolled forward by the server; let it read as done
       // for a beat before it jumps to its next date.

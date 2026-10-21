@@ -22,6 +22,7 @@ import {
 import { ActivityItem } from "./activity";
 import { confetti } from "../confetti";
 import { CompleteCheck, REPEAT_SHOW_DONE_MS } from "./card-front";
+import { fieldsPatch, usePatchCard } from "./optimistic";
 import {
   CardPopover,
   uploadFiles,
@@ -398,14 +399,10 @@ function Title({
 }) {
   const [title, setTitle] = useState(card.title);
   const inv = useCardInvalidate(card.id, boardId);
-  const utils = api.useUtils();
+  const patch = usePatchCard(boardId);
   const update = api.card.update.useMutation({
     onMutate: (d) => {
-      if (d.dueComplete !== undefined)
-        utils.card.get.setData(
-          { id: card.id },
-          (c) => c && { ...c, dueComplete: d.dueComplete! },
-        );
+      if (d.dueComplete !== undefined) patch(card.id, fieldsPatch({ dueComplete: d.dueComplete }));
     },
     // Repeating cards read as done for a beat before showing the next date.
     onSettled: (_d, _e, vars) => {
@@ -552,13 +549,11 @@ function Badges({
   readOnly: boolean;
 }) {
   const inv = useCardInvalidate(card.id, board.id);
-  const utils = api.useUtils();
+  const patch = usePatchCard(board.id);
   const update = api.card.update.useMutation({
-    onMutate: (d) =>
-      utils.card.get.setData(
-        { id: card.id },
-        (c) => c && { ...c, dueComplete: d.dueComplete ?? c.dueComplete },
-      ),
+    onMutate: (d) => {
+      if (d.dueComplete !== undefined) patch(card.id, fieldsPatch({ dueComplete: d.dueComplete }));
+    },
     // Repeating cards read as done for a beat before showing the next date.
     onSettled: (_d, _e, vars) => {
       setTimeout(inv, vars.dueComplete && card.recurrence ? REPEAT_SHOW_DONE_MS : 0);
