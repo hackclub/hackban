@@ -15,11 +15,17 @@ export const metadata: Metadata = {
 // use it if installed locally and fall back to self-hosted Inter.
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 
+const plausibleInit =
+  "window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};plausible.init()";
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={inter.variable} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        {/* Privacy-friendly analytics by Plausible */}
+        <script async src="https://plausible.io/js/pa-CpPjndI2Bwc0JqspJWHBc.js" />
+        <script dangerouslySetInnerHTML={{ __html: plausibleInit }} />
       </head>
       <body>
         <TRPCReactProvider>{children}</TRPCReactProvider>
