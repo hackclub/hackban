@@ -19,6 +19,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 # Regenerate the Prisma client for Linux (the committed one targets macOS).
 RUN npx prisma generate
+ARG SOURCE_COMMIT
 ENV SKIP_ENV_VALIDATION=1 NEXT_TELEMETRY_DISABLED=1
 RUN npx next build
 
