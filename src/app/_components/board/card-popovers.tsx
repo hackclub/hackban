@@ -203,6 +203,9 @@ function MiniCalendar({ value, onPick }: { value: Date | null; onPick: (d: Date)
   );
 }
 
+// New due dates default to the last time you picked.
+const DUE_TIME_KEY = "hackban:due-time";
+
 function DatesPane({ card, board }: { card: CardDetail; board: BoardData }) {
   const pop = usePopover();
   const inv = useCardInvalidate(card.id, board.id);
@@ -225,7 +228,14 @@ function DatesPane({ card, board }: { card: CardDetail; board: BoardData }) {
   const [dueOn, setDueOn] = useState(!!card.due || !card.start);
   const [start, setStart] = useState<Date>(card.start ?? new Date());
   const [due, setDue] = useState<Date>(card.due ?? (() => { const d = addDays(new Date(), 1); d.setHours(12, 0, 0, 0); return d; })());
-  const [time, setTime] = useState(format(card.due ?? due, "HH:mm"));
+  const [time, setTime] = useState(() => {
+    if (card.due) return format(card.due, "HH:mm");
+    try {
+      return localStorage.getItem(DUE_TIME_KEY) ?? format(due, "HH:mm");
+    } catch {
+      return format(due, "HH:mm");
+    }
+  });
   const [focus, setFocus] = useState<"start" | "due">(dueOn ? "due" : "start");
   const [repeat, setRepeat] = useState<Recurrence | "">((card.recurrence as Recurrence | null) ?? "");
   const withTime = (d: Date) => {
@@ -276,6 +286,11 @@ function DatesPane({ card, board }: { card: CardDetail; board: BoardData }) {
             // Repeating needs a due date to step from.
             recurrence: dueOn && repeat ? repeat : null,
           });
+          if (dueOn) {
+            try {
+              localStorage.setItem(DUE_TIME_KEY, time);
+            } catch {}
+          }
           pop.close();
         }}
       >
