@@ -64,7 +64,7 @@ export function CardMemberAvatar({ boardId, user }: { boardId: string; user: { i
           e.stopPropagation();
           setEl(e.currentTarget);
         }}
-        className="rounded-full transition-shadow hover:ring-2 hover:ring-[var(--color-focus)]"
+        className="block rounded-full transition-shadow hover:ring-2 hover:ring-[var(--color-focus)]"
         title={user.name ?? undefined}
         aria-label={`${user.name ?? "Member"} — member details`}
       >
