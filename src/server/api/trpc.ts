@@ -33,6 +33,8 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
     db,
     session,
     clientId: opts.headers.get("x-client-id") ?? undefined,
+    // Minutes behind UTC (Date#getTimezoneOffset); clamped since it's client-supplied.
+    tzOffset: Math.max(-840, Math.min(840, Number(opts.headers.get("x-tz-offset")) || 0)),
     ...opts,
   };
 };

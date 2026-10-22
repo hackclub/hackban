@@ -71,6 +71,7 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
               const headers = new Headers();
               headers.set("x-trpc-source", "nextjs-react");
               headers.set("x-client-id", clientId);
+              headers.set("x-tz-offset", String(new Date().getTimezoneOffset()));
               return headers;
             },
           }),

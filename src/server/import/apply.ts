@@ -1,5 +1,5 @@
 import { db } from "~/server/db";
-import { DEFAULT_LABEL_COLORS } from "~/server/api/routers/board";
+import { DEFAULT_LABEL_COLORS, httpsUrl } from "~/server/api/routers/board";
 import { sequentialKeys } from "~/server/api/pos";
 import { touch } from "~/server/api/access";
 import { saveFile } from "~/server/storage";
@@ -91,9 +91,11 @@ export async function applyBoard(opts: {
   for (const m of allMembers.values()) memberMap.set(m.id, await ensureUser(m, importerId, opts.importerTrelloId));
 
   const prefs = tb.prefs ?? {};
-  const bgImage = prefs.backgroundImageScaled?.length
+  const rawBg = prefs.backgroundImageScaled?.length
     ? [...prefs.backgroundImageScaled].sort((a, b) => b.width - a.width)[0]!.url
     : prefs.backgroundImage ?? null;
+  // Comes from user-supplied JSON and lands inside CSS url(""), so same check as board.update.
+  const bgImage = httpsUrl.safeParse(rawBg).success ? rawBg : null;
   const visibility = prefs.permissionLevel === "public" ? "public" : prefs.permissionLevel === "private" ? "private" : "workspace";
   const boardData = {
     name: tb.name,

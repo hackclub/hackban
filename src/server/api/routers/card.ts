@@ -4,6 +4,7 @@ import { z } from "zod";
 import { boardIdForList, logActivity, requireBoard, requireCard, touch } from "~/server/api/access";
 import { posAfter, posAtEnd } from "~/server/api/pos";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { removeStored, storedKeys } from "~/server/storage";
 import { RECURRENCES, nextDue, type Recurrence } from "~/server/recurrence";
 import { type db as Db } from "~/server/db";
 
@@ -70,7 +71,7 @@ export const cardRouter = createTRPCRouter({
       const card = await ctx.db.card.create({
         data: { listId: input.listId, title: input.title, pos },
       });
-      await logActivity(ctx.db, { boardId, cardId: card.id, actorId: ctx.session.user.id, type: "createCard", data: { title: card.title }, origin: ctx.clientId });
+      logActivity(ctx.db, { boardId, cardId: card.id, actorId: ctx.session.user.id, type: "createCard", data: { title: card.title }, origin: ctx.clientId });
       return card;
     }),
 
@@ -100,14 +101,14 @@ export const cardRouter = createTRPCRouter({
       // Repeating card marked complete: roll it to the next occurrence instead
       // of leaving it done (Trello's "Repeat"). Checklists reset for next time.
       if (input.dueComplete === true && card.recurrence && card.due) {
-        const next = nextDue(card.due, card.recurrence as Recurrence);
+        const next = nextDue(card.due, card.recurrence as Recurrence, new Date(), ctx.tzOffset);
         const shift = next.getTime() - card.due.getTime();
         card = await ctx.db.card.update({
           where: { id },
           data: { due: next, start: card.start ? new Date(card.start.getTime() + shift) : null, dueComplete: false },
         });
         await ctx.db.checkItem.updateMany({ where: { checklist: { cardId: id } }, data: { complete: false } });
-        await logActivity(ctx.db, {
+        logActivity(ctx.db, {
           boardId,
           cardId: id,
           actorId: ctx.session.user.id,
@@ -127,7 +128,7 @@ export const cardRouter = createTRPCRouter({
         : input.description !== undefined ? "updateDescription"
         : null;
       if (type) {
-        await logActivity(ctx.db, { boardId, cardId: id, actorId: ctx.session.user.id, type, data: { title: card.title, due: card.due, recurrence: card.recurrence }, origin: ctx.clientId });
+        logActivity(ctx.db, { boardId, cardId: id, actorId: ctx.session.user.id, type, data: { title: card.title, due: card.due, recurrence: card.recurrence }, origin: ctx.clientId });
       } else {
         touch(boardId, id, ctx.clientId);
       }
@@ -159,7 +160,7 @@ export const cardRouter = createTRPCRouter({
         touch(before.list.boardId, undefined, ctx.clientId);
       }
       if (before.listId !== input.listId) {
-        await logActivity(ctx.db, {
+        logActivity(ctx.db, {
           boardId: toBoard,
           cardId: card.id,
           actorId: ctx.session.user.id,
@@ -223,7 +224,7 @@ export const cardRouter = createTRPCRouter({
             : undefined,
         },
       });
-      await logActivity(ctx.db, { boardId: toBoard, cardId: card.id, actorId: ctx.session.user.id, type: "copyCard", data: { title: card.title, from: src.title }, origin: ctx.clientId });
+      logActivity(ctx.db, { boardId: toBoard, cardId: card.id, actorId: ctx.session.user.id, type: "copyCard", data: { title: card.title, from: src.title }, origin: ctx.clientId });
       return card;
     }),
 
@@ -231,8 +232,10 @@ export const cardRouter = createTRPCRouter({
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const boardId = await requireCard(ctx.db, ctx.session.user.id, input.id);
+      const keys = await storedKeys({ cardId: input.id });
       const card = await ctx.db.card.delete({ where: { id: input.id } });
-      await logActivity(ctx.db, { boardId, actorId: ctx.session.user.id, type: "deleteCard", data: { title: card.title }, origin: ctx.clientId });
+      keys.forEach((k) => void removeStored(k));
+      logActivity(ctx.db, { boardId, actorId: ctx.session.user.id, type: "deleteCard", data: { title: card.title }, origin: ctx.clientId });
     }),
 
   toggleLabel: protectedProcedure
@@ -277,7 +280,7 @@ export const cardRouter = createTRPCRouter({
       } else {
         await ctx.db.cardMember.deleteMany({ where: { cardId: input.id, userId: input.userId } });
       }
-      await logActivity(ctx.db, {
+      logActivity(ctx.db, {
         boardId,
         cardId: input.id,
         actorId: ctx.session.user.id,
@@ -345,7 +348,7 @@ export const cardRouter = createTRPCRouter({
           items: src ? { create: src.items.map((i) => ({ name: i.name, pos: i.pos })) } : undefined,
         },
       });
-      await logActivity(ctx.db, { boardId, cardId: input.id, actorId: ctx.session.user.id, type: "addChecklist", data: { name: input.name }, origin: ctx.clientId });
+      logActivity(ctx.db, { boardId, cardId: input.id, actorId: ctx.session.user.id, type: "addChecklist", data: { name: input.name }, origin: ctx.clientId });
     }),
 
   updateChecklist: protectedProcedure
@@ -363,7 +366,7 @@ export const cardRouter = createTRPCRouter({
       const cl = await ctx.db.checklist.findUniqueOrThrow({ where: { id: input.checklistId } });
       const boardId = await requireCard(ctx.db, ctx.session.user.id, cl.cardId);
       await ctx.db.checklist.delete({ where: { id: cl.id } });
-      await logActivity(ctx.db, { boardId, cardId: cl.cardId, actorId: ctx.session.user.id, type: "removeChecklist", data: { name: cl.name }, origin: ctx.clientId });
+      logActivity(ctx.db, { boardId, cardId: cl.cardId, actorId: ctx.session.user.id, type: "removeChecklist", data: { name: cl.name }, origin: ctx.clientId });
     }),
 
   addCheckItem: protectedProcedure
@@ -392,7 +395,7 @@ export const cardRouter = createTRPCRouter({
       const { itemId, ...data } = input;
       await ctx.db.checkItem.update({ where: { id: itemId }, data });
       if (input.complete !== undefined) {
-        await logActivity(ctx.db, {
+        logActivity(ctx.db, {
           boardId,
           cardId: item.checklist.cardId,
           actorId: ctx.session.user.id,
@@ -492,7 +495,7 @@ export const cardRouter = createTRPCRouter({
       await ctx.db.attachment.create({
         data: { cardId: input.id, uploaderId: ctx.session.user.id, url: input.url, name: input.name ?? input.url },
       });
-      await logActivity(ctx.db, { boardId, cardId: input.id, actorId: ctx.session.user.id, type: "addAttachment", data: { name: input.name ?? input.url }, origin: ctx.clientId });
+      logActivity(ctx.db, { boardId, cardId: input.id, actorId: ctx.session.user.id, type: "addAttachment", data: { name: input.name ?? input.url }, origin: ctx.clientId });
     }),
 
   updateAttachment: protectedProcedure
@@ -510,6 +513,7 @@ export const cardRouter = createTRPCRouter({
       const a = await ctx.db.attachment.findUniqueOrThrow({ where: { id: input.attachmentId } });
       const boardId = await requireCard(ctx.db, ctx.session.user.id, a.cardId);
       await ctx.db.attachment.delete({ where: { id: a.id } });
+      void removeStored(a.storageKey);
       await ctx.db.card.updateMany({ where: { id: a.cardId, coverAttachmentId: a.id }, data: { coverAttachmentId: null } });
       touch(boardId, a.cardId, ctx.clientId);
     }),

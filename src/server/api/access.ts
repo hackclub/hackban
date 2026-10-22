@@ -74,7 +74,7 @@ export function logActivity(
     data?: Record<string, unknown>;
     origin?: string;
   },
-): Promise<void> {
+) {
   void db.activity
     .create({
       data: {
@@ -87,7 +87,6 @@ export function logActivity(
     })
     .catch((e: unknown) => console.error("[activity] insert failed", a.type, e))
     .finally(() => touch(a.boardId, a.cardId ?? undefined, a.origin));
-  return Promise.resolve();
 }
 
 /** Notify subscribers that a board (and optionally a card) changed. */

@@ -6,6 +6,7 @@ import { z } from "zod";
 
 import { logActivity, requireBoard, touch } from "~/server/api/access";
 import { sequentialKeys } from "~/server/api/pos";
+import { removeStored, storedKeys } from "~/server/storage";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { type db as Db } from "~/server/db";
 import { boardBus, type BoardEvent } from "~/server/realtime";
@@ -15,7 +16,7 @@ const background = z
   .string()
   .max(200)
   .regex(/^(#[0-9a-fA-F]{3,8}|linear-gradient\([#0-9a-zA-Z%,.\s-]+\))$/, "Invalid background");
-const httpsUrl = z.string().max(2048).url().refine((u) => u.startsWith("https://"), "Must be an https URL");
+export const httpsUrl = z.string().max(2048).url().refine((u) => u.startsWith("https://"), "Must be an https URL");
 
 export const DEFAULT_LABEL_COLORS = ["green", "yellow", "orange", "red", "purple", "blue"];
 
@@ -130,7 +131,7 @@ export const boardRouter = createTRPCRouter({
           lists: { create: listNames.map((name, i) => ({ name, pos: keys[i]! })) },
         },
       });
-      await logActivity(ctx.db, { boardId: board.id, actorId: userId, type: "createBoard", data: { name: board.name } });
+      logActivity(ctx.db, { boardId: board.id, actorId: userId, type: "createBoard", data: { name: board.name } });
       return board;
     }),
 
@@ -155,11 +156,10 @@ export const boardRouter = createTRPCRouter({
       }
       const board = await ctx.db.board.update({ where: { id }, data });
       const type = input.closed === true ? "closeBoard" : input.closed === false ? "reopenBoard" : input.name ? "renameBoard" : "updateBoard";
-      await logActivity(ctx.db, { boardId: id, actorId: ctx.session.user.id, type, data: { name: board.name }, origin: ctx.clientId });
+      logActivity(ctx.db, { boardId: id, actorId: ctx.session.user.id, type, data: { name: board.name }, origin: ctx.clientId });
       return board;
     }),
 
-  /** Move a board to another workspace (board admins who belong to the target). */
   /**
    * Move a board to another workspace. Board admins can move into any workspace
    * they belong to; site admins can move any board anywhere. Board members keep
@@ -184,7 +184,7 @@ export const boardRouter = createTRPCRouter({
       if (!to) throw new TRPCError({ code: "NOT_FOUND", message: "That workspace doesn't exist." });
       if (board.workspaceId === input.workspaceId) return;
       await ctx.db.board.update({ where: { id: input.id }, data: { workspaceId: input.workspaceId } });
-      await logActivity(ctx.db, {
+      logActivity(ctx.db, {
         boardId: input.id,
         actorId: userId,
         type: "moveBoard",
@@ -265,7 +265,7 @@ export const boardRouter = createTRPCRouter({
         }
         return b;
       });
-      await logActivity(ctx.db, { boardId: board.id, actorId: userId, type: "createBoard", data: { name: board.name } });
+      logActivity(ctx.db, { boardId: board.id, actorId: userId, type: "createBoard", data: { name: board.name } });
       return board;
     }),
 
@@ -274,7 +274,9 @@ export const boardRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const board = await requireBoard(ctx.db, ctx.session.user.id, input.id);
       if (board.members[0]?.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      const keys = await storedKeys({ card: { list: { boardId: input.id } } });
       await ctx.db.board.delete({ where: { id: input.id } });
+      keys.forEach((k) => void removeStored(k));
       touch(input.id);
     }),
 
@@ -357,7 +359,7 @@ export const boardRouter = createTRPCRouter({
       });
       // Board-only membership: people added here are guests of this board and
       // are NOT added to the workspace (so they can't see its other boards).
-      await logActivity(ctx.db, { boardId: input.id, actorId: ctx.session.user.id, type: "addMemberToBoard", data: { userId: input.userId }, origin: ctx.clientId });
+      logActivity(ctx.db, { boardId: input.id, actorId: ctx.session.user.id, type: "addMemberToBoard", data: { userId: input.userId }, origin: ctx.clientId });
     }),
 
   // ----- Invite links (board-only guests) -----
@@ -412,7 +414,7 @@ export const boardRouter = createTRPCRouter({
       create: { boardId: board.id, userId: ctx.session.user.id, role: board.inviteRole === "observer" ? "observer" : "normal" },
       update: {},
     });
-    await logActivity(ctx.db, { boardId: board.id, actorId: ctx.session.user.id, type: "joinBoard" });
+    logActivity(ctx.db, { boardId: board.id, actorId: ctx.session.user.id, type: "joinBoard" });
     return { boardId: board.id };
   }),
 

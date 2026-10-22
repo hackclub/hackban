@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { boardIdForList, logActivity, requireBoard } from "~/server/api/access";
 import { posAfter, posAtEnd } from "~/server/api/pos";
+import { removeStored, storedKeys } from "~/server/storage";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 export const listRouter = createTRPCRouter({
@@ -17,7 +18,7 @@ export const listRouter = createTRPCRouter({
       const list = await ctx.db.list.create({
         data: { boardId: input.boardId, name: input.name, pos: posAtEnd(siblings) },
       });
-      await logActivity(ctx.db, { boardId: input.boardId, actorId: ctx.session.user.id, type: "createList", data: { name: list.name }, origin: ctx.clientId });
+      logActivity(ctx.db, { boardId: input.boardId, actorId: ctx.session.user.id, type: "createList", data: { name: list.name }, origin: ctx.clientId });
       return list;
     }),
 
@@ -29,7 +30,7 @@ export const listRouter = createTRPCRouter({
       const { id, ...data } = input;
       const list = await ctx.db.list.update({ where: { id }, data });
       const type = input.closed === true ? "archiveList" : input.closed === false ? "restoreList" : "renameList";
-      await logActivity(ctx.db, { boardId, actorId: ctx.session.user.id, type, data: { name: list.name }, origin: ctx.clientId });
+      logActivity(ctx.db, { boardId, actorId: ctx.session.user.id, type, data: { name: list.name }, origin: ctx.clientId });
       return list;
     }),
 
@@ -53,9 +54,9 @@ export const listRouter = createTRPCRouter({
       if (toBoard !== fromBoard) {
         // Labels are board-scoped, so drop links to the old board's labels.
         await ctx.db.cardLabel.deleteMany({ where: { card: { listId: input.id }, label: { boardId: fromBoard } } });
-        await logActivity(ctx.db, { boardId: fromBoard, actorId: ctx.session.user.id, type: "moveListFromBoard", data: { name: list.name }, origin: ctx.clientId });
+        logActivity(ctx.db, { boardId: fromBoard, actorId: ctx.session.user.id, type: "moveListFromBoard", data: { name: list.name }, origin: ctx.clientId });
       }
-      await logActivity(ctx.db, { boardId: toBoard, actorId: ctx.session.user.id, type: "moveList", data: { name: list.name }, origin: ctx.clientId });
+      logActivity(ctx.db, { boardId: toBoard, actorId: ctx.session.user.id, type: "moveList", data: { name: list.name }, origin: ctx.clientId });
       return list;
     }),
 
@@ -104,7 +105,7 @@ export const listRouter = createTRPCRouter({
           },
         },
       });
-      await logActivity(ctx.db, { boardId: src.boardId, actorId: ctx.session.user.id, type: "createList", data: { name: list.name }, origin: ctx.clientId });
+      logActivity(ctx.db, { boardId: src.boardId, actorId: ctx.session.user.id, type: "createList", data: { name: list.name }, origin: ctx.clientId });
       return list;
     }),
 
@@ -126,7 +127,7 @@ export const listRouter = createTRPCRouter({
         await ctx.db.card.update({ where: { id: c.id }, data: { listId: input.toListId, pos } });
         tail = [...tail, { id: c.id, pos }];
       }
-      await logActivity(ctx.db, { boardId, actorId: ctx.session.user.id, type: "moveAllCards", data: { count: cards.length }, origin: ctx.clientId });
+      logActivity(ctx.db, { boardId, actorId: ctx.session.user.id, type: "moveAllCards", data: { count: cards.length }, origin: ctx.clientId });
     }),
 
   archiveAllCards: protectedProcedure
@@ -135,7 +136,7 @@ export const listRouter = createTRPCRouter({
       const boardId = await boardIdForList(ctx.db, input.id);
       await requireBoard(ctx.db, ctx.session.user.id, boardId);
       await ctx.db.card.updateMany({ where: { listId: input.id }, data: { closed: true } });
-      await logActivity(ctx.db, { boardId, actorId: ctx.session.user.id, type: "archiveAllCards", origin: ctx.clientId });
+      logActivity(ctx.db, { boardId, actorId: ctx.session.user.id, type: "archiveAllCards", origin: ctx.clientId });
     }),
 
   delete: protectedProcedure
@@ -143,7 +144,9 @@ export const listRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const boardId = await boardIdForList(ctx.db, input.id);
       await requireBoard(ctx.db, ctx.session.user.id, boardId);
+      const keys = await storedKeys({ card: { listId: input.id } });
       await ctx.db.list.delete({ where: { id: input.id } });
-      await logActivity(ctx.db, { boardId, actorId: ctx.session.user.id, type: "deleteList", origin: ctx.clientId });
+      keys.forEach((k) => void removeStored(k));
+      logActivity(ctx.db, { boardId, actorId: ctx.session.user.id, type: "deleteList", origin: ctx.clientId });
     }),
 });

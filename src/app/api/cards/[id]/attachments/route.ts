@@ -3,7 +3,7 @@ import { auth } from "~/server/auth";
 import { db } from "~/server/db";
 import { saveFile } from "~/server/storage";
 
-const MAX_BYTES = 100 * 1024 * 1024;
+const MAX_BYTES = 100 * 1024 * 1024; // per request: the whole body is held in memory
 const MAX_FILES = 20;
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -20,10 +20,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const files = form.getAll("file").filter((f): f is File => f instanceof File);
   if (files.length === 0) return new Response("No files", { status: 400 });
   if (files.length > MAX_FILES) return new Response(`Up to ${MAX_FILES} files at a time`, { status: 413 });
-  if (files.some((f) => f.size > MAX_BYTES)) return new Response("Files must be under 100 MB", { status: 413 });
+  if (files.reduce((n, f) => n + f.size, 0) > MAX_BYTES) return new Response("Uploads must total under 100 MB", { status: 413 });
   const created = [];
   for (const file of files) {
-    if (file.size > MAX_BYTES) return new Response("File too large", { status: 413 });
     const storageKey = await saveFile(new Uint8Array(await file.arrayBuffer()));
     const a = await db.attachment.create({
       data: {
@@ -48,7 +47,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
     created.push({ ...a, url });
   }
-  await logActivity(db, {
+  logActivity(db, {
     boardId,
     cardId,
     actorId: session.user.id,

@@ -1,6 +1,6 @@
 import { auth } from "~/server/auth";
 import { db } from "~/server/db";
-import { readStored, saveFile } from "~/server/storage";
+import { readStored, removeStored, saveFile } from "~/server/storage";
 
 const MAX_BYTES = 2 * 1024 * 1024;
 const TYPES = new Set(["image/png", "image/jpeg", "image/gif", "image/webp"]);
@@ -9,6 +9,13 @@ async function membership(workspaceId: string) {
   const session = await auth();
   if (!session?.user) return null;
   return db.workspaceMember.findUnique({ where: { workspaceId_userId: { workspaceId, userId: session.user.id } } });
+}
+
+/** Swap the logo, then delete the old file from disk. */
+async function replaceLogo(id: string, logoKey: string | null) {
+  const old = await db.workspace.findUnique({ where: { id }, select: { logoKey: true } });
+  await db.workspace.update({ where: { id }, data: { logoKey } });
+  await removeStored(old?.logoKey?.split(":")[0]);
 }
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -37,7 +44,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (!TYPES.has(file.type)) return new Response("Use a PNG, JPEG, GIF or WebP image.", { status: 415 });
   if (file.size > MAX_BYTES) return new Response("Logos must be under 2 MB.", { status: 413 });
   const key = await saveFile(new Uint8Array(await file.arrayBuffer()));
-  await db.workspace.update({ where: { id }, data: { logoKey: `${key}:${file.type}` } });
+  await replaceLogo(id, `${key}:${file.type}`);
   return new Response(null, { status: 204 });
 }
 
@@ -45,6 +52,6 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
   const { id } = await params;
   const m = await membership(id);
   if (m?.role !== "admin") return new Response("Forbidden", { status: 403 });
-  await db.workspace.update({ where: { id }, data: { logoKey: null } });
+  await replaceLogo(id, null);
   return new Response(null, { status: 204 });
 }

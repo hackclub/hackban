@@ -72,9 +72,8 @@ export const authConfig = {
         });
         // Domain auto-join rules (e.g. everyone @hackclub.com joins Hack Club).
         await applyAutoJoinForUser(user.id, user.email);
-        if (user.email && adminEmails().has(user.email.toLowerCase())) {
-          await db.user.update({ where: { id: user.id }, data: { isAdmin: true } });
-        }
+        // Written both ways so removing an email from ADMIN_EMAILS revokes admin.
+        await db.user.update({ where: { id: user.id }, data: { isAdmin: !!user.email && adminEmails().has(user.email.toLowerCase()) } });
       }
     },
   },
