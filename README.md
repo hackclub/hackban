@@ -47,6 +47,7 @@ src/
     _components/board/     board view, cards, lists, card modal, popovers
   server/
     api/routers/           tRPC: board, list, card, workspace, admin, import, me, …
+    mcp.ts, oauth.ts       MCP server tools + its OAuth 2.1 provider
     api/access.ts          permission checks + activity logging
     realtime.ts            in-process event bus behind the live-update stream
     import/                Trello client, JSON shape, idempotent apply
@@ -161,6 +162,25 @@ Imports can't touch other people's data: re-importing a Trello board only
 updates it if you're already an admin of that Hackban board, rows are matched
 only within the board being imported, and attachment downloads only go to
 Trello's own hosts.
+
+## MCP (Claude, Cursor, …)
+
+Hackban is an MCP server at `https://hackban.hackclub.com/api/mcp`. Add that URL
+as a custom connector in Claude (or with `claude mcp add --transport http hackban <url>`
+in Claude Code, or in any MCP client). The client signs in with OAuth: you approve
+it once on a Hackban consent page, and it then acts as you, with your permissions.
+Revoke an app any time under **Settings → Connected apps** (`/me/settings`).
+
+Tools: `whoami`, `list_workspaces`, `search`, `get_board`, `get_card`, `my_cards`,
+`create_board`, `create_list`, `update_list`, `create_card`, `update_card`,
+`move_card`, `add_comment`, `set_card_label`, `set_card_member`, `add_checklist`,
+`update_check_item`. They call the same tRPC procedures as the web app, so access
+checks, activity and live updates match. Nothing is permanently deleted: cards and
+lists can only be archived. Site-admin powers aren't available over MCP.
+
+Code: `src/server/mcp.ts` (tools), `src/server/oauth.ts` (OAuth 2.1: PKCE,
+dynamic client registration, rotating refresh tokens), `src/app/oauth/authorize`
+(consent page), and `src/app/api/{mcp,oauth}`.
 
 ## Deploying
 

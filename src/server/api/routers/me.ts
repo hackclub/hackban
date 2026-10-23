@@ -62,4 +62,19 @@ export const meRouter = createTRPCRouter({
       },
     }),
   ),
+
+  /** Apps connected over MCP that still hold a live refresh token. */
+  apps: protectedProcedure.query(async ({ ctx }) => {
+    const rows = await ctx.db.oAuthToken.findMany({
+      where: { userId: ctx.session.user.id, kind: "refresh", usedAt: null, expiresAt: { gt: new Date() } },
+      distinct: ["clientId"],
+      orderBy: { createdAt: "desc" },
+      select: { createdAt: true, client: { select: { id: true, name: true } } },
+    });
+    return rows.map((r) => ({ ...r.client, lastActive: r.createdAt }));
+  }),
+
+  revokeApp: protectedProcedure.input(z.object({ id: z.string() })).mutation(({ ctx, input }) =>
+    ctx.db.oAuthToken.deleteMany({ where: { userId: ctx.session.user.id, clientId: input.id } }),
+  ),
 });

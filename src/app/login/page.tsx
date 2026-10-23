@@ -1,11 +1,14 @@
 import { redirect } from "next/navigation";
 
+import { Logo } from "~/app/_components/ui";
 import { auth, signIn } from "~/server/auth";
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ callbackUrl?: string }> }) {
   const session = await auth();
-  const { callbackUrl } = await searchParams;
-  if (session?.user) redirect(callbackUrl ?? "/");
+  const { callbackUrl: raw } = await searchParams;
+  // Same-origin paths only ("//x" and "/\x" are other hosts to a browser).
+  const callbackUrl = raw && /^\/(?![/\\])/.test(raw) ? raw : "/";
+  if (session?.user) redirect(callbackUrl);
   return (
     <main className="flex min-h-full flex-col items-center justify-center bg-[var(--color-modal)] px-4">
       <div className="w-full max-w-[400px] rounded-[3px] bg-[var(--color-surface)] px-10 py-8 text-center shadow-[var(--shadow-overlay)]">
@@ -17,7 +20,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         <form
           action={async () => {
             "use server";
-            await signIn("hackclub", { redirectTo: callbackUrl ?? "/" });
+            await signIn("hackclub", { redirectTo: callbackUrl });
           }}
         >
           <button className="flex h-10 w-full items-center justify-center gap-2 rounded-[3px] bg-[#ec3750] font-semibold text-white shadow-[0_1px_1px_#091e4240] transition-colors hover:bg-[#d62a42]">
@@ -27,15 +30,5 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         <p className="mt-6 text-xs text-[var(--color-text-subtle)]">Trello, but it&apos;s ours.</p>
       </div>
     </main>
-  );
-}
-
-function Logo() {
-  return (
-    <svg width="32" height="32" viewBox="0 0 32 32" aria-hidden>
-      <rect width="32" height="32" rx="6" fill="#ec3750" />
-      <rect x="6" y="6" width="8.5" height="18" rx="2" fill="#fff" />
-      <rect x="17.5" y="6" width="8.5" height="11" rx="2" fill="#fff" />
-    </svg>
   );
 }

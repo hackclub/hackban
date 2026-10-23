@@ -450,3 +450,13 @@ export const dueStyles = {
   soon: "bg-[var(--t-due-soon-bg)] text-[var(--t-due-soon-fg)]",
   later: "",
 } as const;
+
+export function Logo() {
+  return (
+    <svg width="32" height="32" viewBox="0 0 32 32" aria-hidden>
+      <rect width="32" height="32" rx="6" fill="#ec3750" />
+      <rect x="6" y="6" width="8.5" height="18" rx="2" fill="#fff" />
+      <rect x="17.5" y="6" width="8.5" height="11" rx="2" fill="#fff" />
+    </svg>
+  );
+}

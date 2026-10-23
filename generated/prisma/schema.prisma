@@ -78,6 +78,7 @@ model User {
   imports          TrelloImport[]
   watches          Watch[]
   autoJoinsCreated WorkspaceAutoJoin[] @relation("autoJoinCreator")
+  oauthTokens      OAuthToken[]
 }
 
 // ---------- Workspaces & boards ----------
@@ -343,4 +344,34 @@ model TrelloImport {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ---------- MCP (OAuth 2.1) ----------
+
+// Apps that registered themselves via dynamic client registration (Claude, Cursor, …).
+model OAuthClient {
+  id           String       @id @default(cuid())
+  name         String
+  redirectUris String[]
+  secretHash   String? // null = public client (PKCE only)
+  createdAt    DateTime     @default(now())
+  tokens       OAuthToken[]
+}
+
+// Authorization codes, access tokens and refresh tokens. Only hashes are stored.
+model OAuthToken {
+  hash        String      @id // sha256 of the token
+  kind        String // code | access | refresh
+  clientId    String
+  userId      String
+  redirectUri String? // code only
+  challenge   String? // code only: PKCE S256 challenge
+  usedAt      DateTime? // codes and refresh tokens are single-use; kept until expiry to catch replays
+  expiresAt   DateTime
+  createdAt   DateTime    @default(now())
+  client      OAuthClient @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, clientId])
+  @@index([expiresAt])
 }

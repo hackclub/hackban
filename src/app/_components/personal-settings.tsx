@@ -170,6 +170,7 @@ function Settings() {
       <PageTitle>Settings</PageTitle>
       <h2 className="mb-2 font-semibold">Theme</h2>
       <div className="w-72"><ThemePicker /></div>
+      <ConnectedApps />
       <h2 className="mt-8 mb-2 font-semibold">Keyboard shortcuts</h2>
       <table className="text-sm">
         <tbody>
@@ -194,5 +195,33 @@ function Settings() {
         </tbody>
       </table>
     </div>
+  );
+}
+
+function ConnectedApps() {
+  const utils = api.useUtils();
+  const { data: apps } = api.me.apps.useQuery();
+  const revoke = api.me.revokeApp.useMutation({ onSuccess: () => void utils.me.apps.invalidate() });
+  const [url, setUrl] = useState("");
+  useEffect(() => setUrl(`${location.origin}/api/mcp`), []);
+  return (
+    <>
+      <h2 className="mt-8 mb-2 font-semibold">Connected apps</h2>
+      <p className="mb-2 text-sm text-[var(--color-text-subtle)]">
+        Add this URL as an MCP server (a custom connector) in Claude, Cursor or any MCP client to let it work with your boards.
+      </p>
+      <input className={`${inputCls} font-mono text-xs`} value={url} readOnly onFocus={(e) => e.target.select()} aria-label="MCP server URL" />
+      {apps?.map((a) => (
+        <div key={a.id} className="mt-2 flex items-center justify-between gap-3 rounded-[3px] bg-[var(--color-neutral)] px-3 py-2 text-sm">
+          <div className="min-w-0">
+            <div className="truncate font-medium">{a.name}</div>
+            <div className="text-xs text-[var(--color-text-subtlest)]">Last active {format(a.lastActive, "MMM d, yyyy")}</div>
+          </div>
+          <Button variant="danger" disabled={revoke.isPending} onClick={() => revoke.mutate({ id: a.id })}>
+            Revoke
+          </Button>
+        </div>
+      ))}
+    </>
   );
 }

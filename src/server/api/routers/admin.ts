@@ -70,10 +70,14 @@ export const adminRouter = createTRPCRouter({
       await ctx.db.user.update({ where: { id: input.userId }, data: { isAdmin: input.isAdmin } });
     }),
 
-  /** Signs a user out everywhere. */
-  revokeSessions: adminProcedure.input(z.object({ userId: z.string() })).mutation(({ ctx, input }) =>
-    ctx.db.session.deleteMany({ where: { userId: input.userId } }),
-  ),
+  /** Signs a user out everywhere, including apps connected over MCP. */
+  revokeSessions: adminProcedure.input(z.object({ userId: z.string() })).mutation(async ({ ctx, input }) => {
+    const [sessions] = await ctx.db.$transaction([
+      ctx.db.session.deleteMany({ where: { userId: input.userId } }),
+      ctx.db.oAuthToken.deleteMany({ where: { userId: input.userId } }),
+    ]);
+    return sessions;
+  }),
 
   deleteUser: adminProcedure.input(z.object({ userId: z.string() })).mutation(async ({ ctx, input }) => {
     if (input.userId === ctx.session.user.id) throw new TRPCError({ code: "BAD_REQUEST", message: "You can't delete yourself." });

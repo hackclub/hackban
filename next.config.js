@@ -16,6 +16,21 @@ const config = {
   // Self-contained server bundle for the Docker image.
   output: "standalone",
   env: { BUILD_COMMIT: commit, BUILD_TIME: new Date().toISOString() },
+  // The OAuth consent page must never be framed (clickjacking an "Allow").
+  headers: async () => [
+    {
+      source: "/oauth/:path*",
+      headers: [
+        { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+        { key: "X-Frame-Options", value: "DENY" },
+      ],
+    },
+  ],
+  // OAuth discovery for MCP clients, including path-suffixed lookups (…/api/mcp).
+  rewrites: async () => [
+    { source: "/.well-known/oauth-authorization-server/:path*", destination: "/api/oauth/metadata" },
+    { source: "/.well-known/oauth-protected-resource/:path*", destination: "/api/oauth/resource" },
+  ],
 };
 
 export default config;

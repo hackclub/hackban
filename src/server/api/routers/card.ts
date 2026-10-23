@@ -340,7 +340,7 @@ export const cardRouter = createTRPCRouter({
       const src = input.copyFrom
         ? await ctx.db.checklist.findFirst({ where: { id: input.copyFrom, cardId: input.id }, include: { items: true } })
         : null;
-      await ctx.db.checklist.create({
+      const checklist = await ctx.db.checklist.create({
         data: {
           cardId: input.id,
           name: input.name,
@@ -349,6 +349,7 @@ export const cardRouter = createTRPCRouter({
         },
       });
       logActivity(ctx.db, { boardId, cardId: input.id, actorId: ctx.session.user.id, type: "addChecklist", data: { name: input.name }, origin: ctx.clientId });
+      return checklist;
     }),
 
   updateChecklist: protectedProcedure

@@ -343,6 +343,26 @@ exports.Prisma.TrelloImportScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.OAuthClientScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  redirectUris: 'redirectUris',
+  secretHash: 'secretHash',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.OAuthTokenScalarFieldEnum = {
+  hash: 'hash',
+  kind: 'kind',
+  clientId: 'clientId',
+  userId: 'userId',
+  redirectUri: 'redirectUri',
+  challenge: 'challenge',
+  usedAt: 'usedAt',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -382,7 +402,9 @@ exports.Prisma.ModelName = {
   Activity: 'Activity',
   Watch: 'Watch',
   Notification: 'Notification',
-  TrelloImport: 'TrelloImport'
+  TrelloImport: 'TrelloImport',
+  OAuthClient: 'OAuthClient',
+  OAuthToken: 'OAuthToken'
 };
 
 /**
