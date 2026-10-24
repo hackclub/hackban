@@ -53,6 +53,7 @@ function describe(a: Act, onCard: boolean) {
     case "addMemberToBoard": return <>added a member to this board</>;
     case "joinBoard": return <>joined this board via invite link</>;
     case "archiveAllCards": return <>archived all cards in a list</>;
+    case "sortList": return <>sorted a list</>;
     case "moveAllCards": return <>moved {String(d.count)} cards</>;
     default: return <>{a.type}</>;
   }

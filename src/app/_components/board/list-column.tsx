@@ -11,7 +11,7 @@ import { AutoTextarea, Button, IconButton, Icon, MenuItem, MenuSep, Popover, inp
 import { rememberLocal, shouldAppear } from "./appear";
 import { AssignSuggestion } from "./assign-suggestion";
 import { CardFront } from "./card-front";
-import { type BoardData, type CardData, type ListData } from "./types";
+import { SORTS, type BoardData, type CardData, type ListData } from "./types";
 
 export const SortableCard = memo(function SortableCard({
   card,
@@ -129,6 +129,7 @@ export const ListColumn = memo(function ListColumn({
       <div {...attributes} {...listeners} className="flex cursor-pointer items-start gap-1 px-2 pt-2 pb-1 outline-none">
         <ListTitle list={list} boardId={board.id} readOnly={readOnly} />
         <span className="flex h-8 items-center px-1 text-sm text-[var(--color-text-subtle)] tabular-nums">{cards.length}</span>
+        {!readOnly && cards.length > 1 && <ListSort list={list} boardId={board.id} cards={cards} />}
         <IconButton
           className="text-[var(--color-text-subtle)]"
           onClick={() => setCollapsed(true)}
@@ -238,6 +239,31 @@ function ListTitle({ list, boardId, readOnly }: { list: ListData; boardId: strin
     >
       {list.name}
     </h2>
+  );
+}
+
+function ListSort({ list, boardId, cards }: { list: ListData; boardId: string; cards: CardData[] }) {
+  const p = usePopoverState();
+  const utils = api.useUtils();
+  const sort = api.list.sortCards.useMutation({ onSettled: () => utils.board.get.invalidate({ id: boardId }) });
+  const apply = (cmp: (a: CardData, b: CardData) => number) => {
+    p.close();
+    // Optimistic cards (temp ids) don't exist server-side yet; the server appends anything it wasn't told about.
+    const sorted = [...cards].sort(cmp);
+    utils.board.get.setData({ id: boardId }, (b) => b && { ...b, lists: b.lists.map((l) => (l.id === list.id ? { ...l, cards: sorted } : l)) });
+    sort.mutate({ id: list.id, ids: sorted.filter((c) => !c.id.startsWith("temp-")).map((c) => c.id) });
+  };
+  return (
+    <>
+      <IconButton onClick={p.toggle} className="text-[var(--color-text-subtle)]" aria-label="Sort list" title="Sort list">
+        <Icon name="sort" />
+      </IconButton>
+      <Popover anchor={p.anchor} open={p.open} onClose={p.close} title="Sort list">
+        {SORTS.map(([label, cmp]) => (
+          <MenuItem key={label} onClick={() => apply(cmp)}>{label}</MenuItem>
+        ))}
+      </Popover>
+    </>
   );
 }
 

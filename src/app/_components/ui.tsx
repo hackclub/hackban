@@ -421,6 +421,7 @@ const PATHS: Record<string, string> = {
   repeat: "M17 2l4 4-4 4V7H7a2 2 0 0 0-2 2v3H3V9a4 4 0 0 1 4-4h10zM7 22l-4-4 4-4v3h10a2 2 0 0 0 2-2v-3h2v3a4 4 0 0 1-4 4H7z",
   collapseIn: "M2 11h7.2L6.6 8.4 8 7l5 5-5 5-1.4-1.4 2.6-2.6H2zm20 2h-7.2l2.6 2.6L16 17l-5-5 5-5 1.4 1.4-2.6 2.6H22z",
   collapse: "M8 5h2v14H8zm6 0h2v14h-2z",
+  sort: "M7 3l4 4H8v11H6V7H3zm10 18-4-4h3V6h2v11h3z",
 };
 
 export function Icon({ name, size = 16, className = "" }: { name: string; size?: number; className?: string }) {

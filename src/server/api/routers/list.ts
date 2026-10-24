@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { boardIdForList, logActivity, requireBoard } from "~/server/api/access";
-import { posAfter, posAtEnd } from "~/server/api/pos";
+import { posAfter, posAtEnd, sequentialKeys } from "~/server/api/pos";
 import { removeStored, storedKeys } from "~/server/storage";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
@@ -128,6 +128,21 @@ export const listRouter = createTRPCRouter({
         tail = [...tail, { id: c.id, pos }];
       }
       logActivity(ctx.db, { boardId, actorId: ctx.session.user.id, type: "moveAllCards", data: { count: cards.length }, origin: ctx.clientId });
+    }),
+
+  /** Reorder a list's cards to match `ids` (the client computes the sort). */
+  sortCards: protectedProcedure
+    .input(z.object({ id: z.string(), ids: z.array(z.string()).max(5000) }))
+    .mutation(async ({ ctx, input }) => {
+      const boardId = await boardIdForList(ctx.db, input.id);
+      await requireBoard(ctx.db, ctx.session.user.id, boardId);
+      const cards = await ctx.db.card.findMany({ where: { listId: input.id, closed: false }, orderBy: { pos: "asc" }, select: { id: true } });
+      const rank = new Map(input.ids.map((id, i) => [id, i]));
+      // Cards the client didn't know about (added mid-sort) keep their relative order at the end.
+      const order = [...cards].sort((a, b) => (rank.get(a.id) ?? rank.size) - (rank.get(b.id) ?? rank.size));
+      const keys = sequentialKeys(order.length);
+      await ctx.db.$transaction(order.map((c, i) => ctx.db.card.update({ where: { id: c.id }, data: { pos: keys[i]! } })));
+      logActivity(ctx.db, { boardId, actorId: ctx.session.user.id, type: "sortList", origin: ctx.clientId });
     }),
 
   archiveAllCards: protectedProcedure

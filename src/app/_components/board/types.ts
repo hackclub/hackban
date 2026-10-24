@@ -42,3 +42,13 @@ export function cardMatches(c: CardData, f: Filters) {
   }
   return true;
 }
+
+const byTitle = (a: CardData, b: CardData) => a.title.localeCompare(b.title, undefined, { numeric: true, sensitivity: "base" });
+export const SORTS: [string, (a: CardData, b: CardData) => number][] = [
+  ["Due date (soonest first)", (a, b) => (a.due?.getTime() ?? Infinity) - (b.due?.getTime() ?? Infinity) || byTitle(a, b)],
+  ["Name (A–Z)", byTitle],
+  ["Name (Z–A)", (a, b) => byTitle(b, a)],
+  ["Newest first", (a, b) => b.createdAt.getTime() - a.createdAt.getTime()],
+  ["Oldest first", (a, b) => a.createdAt.getTime() - b.createdAt.getTime()],
+  ["Most members first", (a, b) => b.members.length - a.members.length],
+];
