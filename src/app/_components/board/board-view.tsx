@@ -555,7 +555,17 @@ export function BoardView({
               setFilters={setFilters}
               onMenu={() => setMenuOpen((m) => !m)}
             />
-            <div className="relative flex min-h-0 flex-1">
+            <div
+              className="relative flex min-h-0 flex-1"
+              // start fetching card details on mousedown so the modal has
+              // data by the time the click opens it
+              onMouseDownCapture={(e) => {
+                const id = (e.target as HTMLElement).closest<HTMLElement>(
+                  "[data-card-id]",
+                )?.dataset.cardId;
+                if (id) void utils.card.get.prefetch({ id });
+              }}
+            >
               <DndContext
                 sensors={sensors}
                 collisionDetection={collision}
@@ -595,6 +605,8 @@ export function BoardView({
                 {typeof document !== "undefined" &&
                   createPortal(
                     <DragOverlay
+                      // let wheel events reach the list under the cursor
+                      style={{ pointerEvents: "none" }}
                       dropAnimation={{
                         duration: 180,
                         easing: "cubic-bezier(.2,1,.1,1)",
