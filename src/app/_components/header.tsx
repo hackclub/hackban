@@ -1,6 +1,6 @@
 "use client";
 
-import { formatDistanceToNow } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -8,9 +8,12 @@ import { useEffect, useRef, useState } from "react";
 
 import { api } from "~/trpc/react";
 
+import { ANNOUNCEMENTS } from "./announcements";
 import { CreateBoardPopover } from "./create-board";
 import { ThemePicker } from "./theme";
 import { Avatar, Icon, MenuItem, MenuSep, Popover, boardBg, usePopoverState } from "./ui";
+
+const SEEN_KEY = "hackban:announcements-seen";
 
 type User = { id: string; name?: string | null; image?: string | null; email?: string | null; isAdmin?: boolean };
 
@@ -20,6 +23,21 @@ export function Header({ user, translucent = false }: { user: User; translucent?
   const create = usePopoverState();
   const account = usePopoverState();
   const bell = usePopoverState();
+  const news = usePopoverState();
+  const [seen, setSeen] = useState<string | null>(ANNOUNCEMENTS[0]?.id ?? null);
+  useEffect(() => {
+    try {
+      setSeen(localStorage.getItem(SEEN_KEY));
+    } catch {}
+  }, []);
+  const openNews = (e: React.MouseEvent) => {
+    news.toggle(e);
+    const latest = ANNOUNCEMENTS[0]?.id ?? null;
+    setSeen(latest);
+    try {
+      if (latest) localStorage.setItem(SEEN_KEY, latest);
+    } catch {}
+  };
   const btn = translucent
     ? "text-white hover:bg-white/20"
     : "text-[var(--color-text-subtle)] hover:bg-[var(--color-neutral-hover)]";
@@ -49,6 +67,10 @@ export function Header({ user, translucent = false }: { user: User; translucent?
       </button>
       <div className="flex-1" />
       <SearchBox translucent={translucent} />
+      <button onClick={openNews} className={`relative flex h-8 w-8 items-center justify-center rounded-full ${btn}`} aria-label="What's new" title="What's new">
+        <Icon name="megaphone" />
+        {seen !== (ANNOUNCEMENTS[0]?.id ?? null) && <span className="absolute top-0.5 right-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-[var(--color-brand)]" />}
+      </button>
       <button onClick={bell.toggle} className={`relative flex h-8 w-8 items-center justify-center rounded-full ${btn}`} aria-label="Notifications">
         <Icon name="bell" />
         <UnreadDot />
@@ -66,6 +88,15 @@ export function Header({ user, translucent = false }: { user: User; translucent?
       <CreateBoardPopover anchor={create.anchor} onClose={create.close} />
       <Popover anchor={bell.anchor} open={bell.open} onClose={bell.close} title="Notifications" width={432}>
         <Notifications onPick={bell.close} />
+      </Popover>
+      <Popover anchor={news.anchor} open={news.open} onClose={news.close} title="What's new" width={432}>
+        {ANNOUNCEMENTS.map((a) => (
+          <div key={a.id} className="mb-2 rounded-lg border border-[var(--color-border)] p-3">
+            <div className="text-sm font-medium">{a.title}</div>
+            <div className="mt-1 text-sm text-[var(--color-text-subtle)]">{a.body}</div>
+            <div className="mt-1 text-xs text-[var(--color-text-subtlest)]">{format(new Date(`${a.date}T00:00`), "MMM d, yyyy")}</div>
+          </div>
+        ))}
       </Popover>
       <Popover anchor={account.anchor} open={account.open} onClose={account.close} title="Account">
         <div className="flex items-center gap-3 py-2">
