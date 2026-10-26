@@ -49,6 +49,7 @@ export const adminRouter = createTRPCRouter({
         image: true,
         isAdmin: true,
         isGhost: true,
+        invitedEmail: true,
         createdAt: true,
         _count: { select: { boards: true, workspaces: true, comments: true } },
       },

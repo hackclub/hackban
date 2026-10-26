@@ -7,7 +7,7 @@ import { createPortal } from "react-dom";
 
 import { api } from "~/trpc/react";
 
-import { Avatar, Button, Icon, IconButton, Popover, inputCls, usePopover } from "../ui";
+import { Avatar, Button, Icon, IconButton, Popover, ghostNote, inputCls, looksLikeEmail, usePopover } from "../ui";
 import { type BoardData } from "./types";
 
 type Member = BoardData["members"][number];
@@ -225,7 +225,7 @@ export function MemberCard({ board, member, meId, onFilter }: { board: BoardData
             {member.guest && <GuestTag />}
           </div>
           <div className="truncate text-xs opacity-80">
-            {member.user.isGhost ? "Imported from Trello" : member.user.username ? `@${member.user.username}` : roleLabel(member.role)}
+            {member.user.isGhost ? ghostNote(member.user) : member.user.username ? `@${member.user.username}` : roleLabel(member.role)}
           </div>
         </div>
       </div>
@@ -358,7 +358,7 @@ function InviteLink({ board }: { board: BoardData }) {
 /** Trello's centered "Share board" dialog. */
 export function ShareDialog({ board, meId, open, onClose }: { board: BoardData; meId: string; open: boolean; onClose: () => void }) {
   const [q, setQ] = useState("");
-  const [picked, setPicked] = useState<{ id: string; name: string | null; image: string | null }[]>([]);
+  const [picked, setPicked] = useState<{ id: string; name: string | null; image: string | null; invite?: string }[]>([]);
   const [role, setNewRole] = useState<Role>("normal");
   const [roleFor, setRoleFor] = useState<{ userId: string; el: HTMLElement } | null>(null);
   const utils = api.useUtils();
@@ -378,7 +378,7 @@ export function ShareDialog({ board, meId, open, onClose }: { board: BoardData; 
   }, [open, onClose]);
 
   const share = async () => {
-    for (const p of picked) await add.mutateAsync({ id: board.id, userId: p.id, role: isAdmin ? role : "normal" });
+    for (const p of picked) await add.mutateAsync({ id: board.id, ...(p.invite ? { email: p.invite } : { userId: p.id }), role: isAdmin ? role : "normal" });
     setPicked([]);
     setQ("");
   };
@@ -452,10 +452,26 @@ export function ShareDialog({ board, meId, open, onClose }: { board: BoardData; 
                         </span>
                       </button>
                     ))}
-                    {found && candidates.length === 0 && (
-                      <p className="px-3 py-2 text-sm text-[var(--color-text-subtlest)]">
-                        Nobody found. People need to log in to Hackban once before you can add them.
-                      </p>
+                    {found?.length === 0 && looksLikeEmail(q) ? (
+                      <button
+                        onClick={() => {
+                          const email = q.trim().toLowerCase();
+                          if (!picked.some((p) => p.invite === email)) setPicked([...picked, { id: `email:${email}`, name: email, image: null, invite: email }]);
+                          setQ("");
+                        }}
+                        className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm hover:bg-[var(--color-neutral)]"
+                      >
+                        <Avatar user={{ name: q }} size={28} />
+                        <span className="min-w-0">
+                          <span className="block truncate">Invite {q.trim()}</span>
+                          <span className="block truncate text-xs text-[var(--color-text-subtlest)]">They join this board when they first log in</span>
+                        </span>
+                      </button>
+                    ) : (
+                      found &&
+                      candidates.length === 0 && (
+                        <p className="px-3 py-2 text-sm text-[var(--color-text-subtlest)]">Nobody found. Enter their email to invite them.</p>
+                      )
                     )}
                   </div>
                 )}
@@ -481,7 +497,7 @@ export function ShareDialog({ board, meId, open, onClose }: { board: BoardData; 
                         {m.guest && <GuestTag />}
                       </div>
                       <div className="truncate text-xs text-[var(--color-text-subtle)]">
-                        {m.user.isGhost ? "Imported from Trello" : m.user.username ? `@${m.user.username}` : ""}
+                        {m.user.isGhost ? ghostNote(m.user) : m.user.username ? `@${m.user.username}` : ""}
                         {m.role === "admin" && `${m.user.isGhost || m.user.username ? " • " : ""}Board admin`}
                       </div>
                     </div>

@@ -1,6 +1,6 @@
 import { auth } from "~/server/auth";
 import { db } from "~/server/db";
-import { imageType, readStored, removeStored, saveFile } from "~/server/storage";
+import { bodyTooBig, imageType, readStored, removeStored, saveFile } from "~/server/storage";
 
 const MAX_BYTES = 2 * 1024 * 1024;
 
@@ -45,8 +45,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const id = await self((await params).id);
   if (!id) return new Response("Forbidden", { status: 403 });
-  // Reject oversized bodies before buffering them; the multipart overhead is well under 64 KB.
-  if (Number(req.headers.get("content-length") ?? 0) > MAX_BYTES + 64 * 1024) return new Response("Pictures must be under 2 MB.", { status: 413 });
+  // Reject oversized bodies before buffering them.
+  if (bodyTooBig(req, MAX_BYTES)) return new Response("Pictures must be under 2 MB.", { status: 413 });
   const file = (await req.formData()).get("file");
   if (!(file instanceof File)) return new Response("No file", { status: 400 });
   if (file.size > MAX_BYTES) return new Response("Pictures must be under 2 MB.", { status: 413 });

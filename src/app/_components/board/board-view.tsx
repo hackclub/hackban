@@ -39,7 +39,7 @@ import { confetti } from "../confetti";
 import { CardFront, REPEAT_SHOW_DONE_MS } from "./card-front";
 import { CardModal } from "./card-modal";
 import { ListColumn, ListComposer } from "./list-column";
-import { memberPatch, usePatchCard } from "./optimistic";
+import { memberPatch, realIds, usePatchCard } from "./optimistic";
 import { QuickEdit } from "./quick-edit";
 import {
   cardMatches,
@@ -148,6 +148,17 @@ export function BoardView({
     window.addEventListener("popstate", onPop);
     return () => window.removeEventListener("popstate", onPop);
   }, []);
+  // A card opened while still optimistic swaps to its real id once created.
+  // Board refetches wait for the create to settle, so a temp card only goes
+  // missing without a real id if the create failed.
+  useEffect(() => {
+    if (!board || !openCard?.startsWith("temp-")) return;
+    const real = realIds.get(openCard);
+    if (real) {
+      setOpenCard(real);
+      window.history.replaceState(null, "", `/c/${real}`);
+    } else if (!board.lists.some((l) => l.cards.some((c) => c.id === openCard))) open(null);
+  }, [board, openCard, open]);
   useEffect(() => {
     if (board) document.title = `${board.name} | Hackban`;
   }, [board]);
@@ -368,7 +379,7 @@ export function BoardView({
     role: "normal",
     lastViewed: null,
     guest: false,
-    user: { id: user.id, name: user.name ?? null, image: user.image ?? null, username: null, isGhost: false },
+    user: { id: user.id, name: user.name ?? null, image: user.image ?? null, username: null, isGhost: false, invitedEmail: null },
   };
   const update = api.card.update.useMutation({
     onSettled: (_d, _e, vars) => {

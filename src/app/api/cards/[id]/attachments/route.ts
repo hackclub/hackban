@@ -1,7 +1,7 @@
 import { logActivity, requireCard } from "~/server/api/access";
 import { auth } from "~/server/auth";
 import { db } from "~/server/db";
-import { saveFile } from "~/server/storage";
+import { bodyTooBig, saveFile } from "~/server/storage";
 
 const MAX_BYTES = 100 * 1024 * 1024; // per request: the whole body is held in memory
 const MAX_FILES = 20;
@@ -16,6 +16,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   } catch {
     return new Response("Forbidden", { status: 403 });
   }
+  if (bodyTooBig(req, MAX_BYTES)) return new Response("Uploads must total under 100 MB", { status: 413 });
   const form = await req.formData();
   const files = form.getAll("file").filter((f): f is File => f instanceof File);
   if (files.length === 0) return new Response("No files", { status: 400 });

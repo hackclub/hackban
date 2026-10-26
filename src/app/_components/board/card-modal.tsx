@@ -95,7 +95,8 @@ function CardBody({
   onOpenCard: (id: string | null) => void;
   user: User;
 }) {
-  const { data: card, error } = api.card.get.useQuery({ id: cardId });
+  // Optimistic cards show the skeleton until BoardView swaps in the real id.
+  const { data: card, error } = api.card.get.useQuery({ id: cardId }, { enabled: !cardId.startsWith("temp-") });
   const [pop, setPop] = useState<{ kind: PopKind; el: HTMLElement } | null>(
     null,
   );

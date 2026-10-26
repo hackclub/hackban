@@ -103,7 +103,7 @@ function Users({ meId }: { meId: string }) {
             <div className="flex items-center gap-1.5 truncate text-sm font-medium">
               {u.name ?? "(no name)"}
               {u.isAdmin && <span className="rounded bg-[var(--color-brand)] px-1.5 text-[11px] text-[var(--color-on-brand)]">ADMIN</span>}
-              {u.isGhost && <span className="rounded bg-[var(--color-neutral-bold)] px-1.5 text-[11px]">IMPORTED</span>}
+              {u.isGhost && <span className="rounded bg-[var(--color-neutral-bold)] px-1.5 text-[11px]">{u.invitedEmail ? "INVITED" : "IMPORTED"}</span>}
               {u.id === meId && <span className="text-xs text-[var(--color-text-subtlest)]">(you)</span>}
             </div>
             <div className="truncate text-xs text-[var(--color-text-subtlest)]">

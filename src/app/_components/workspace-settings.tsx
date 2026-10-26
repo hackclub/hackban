@@ -8,7 +8,7 @@ import { api, type RouterOutputs } from "~/trpc/react";
 import { CreateBoardPopover } from "./create-board";
 import { BoardTile } from "./home";
 import { PageTitle } from "./settings-shell";
-import { AutoTextarea, Avatar, Button, Icon, MenuItem, Popover, boardBg, inputCls, usePopoverState, WorkspaceLogo } from "./ui";
+import { AutoTextarea, Avatar, Button, Icon, MenuItem, Popover, boardBg, inputCls, looksLikeEmail, usePopoverState, WorkspaceLogo } from "./ui";
 
 type Page = "boards" | "members" | "settings" | "export";
 
@@ -176,7 +176,7 @@ function Members({ ws, meId, isAdmin }: { ws: WS; meId: string; isAdmin: boolean
     <div>
       <section className="mb-8">
         <h2 className="mb-1 font-semibold">Invite members</h2>
-        <p className="mb-2 text-sm text-[var(--color-text-subtle)]">People need to have logged in to Hackban once before you can add them.</p>
+        <p className="mb-2 text-sm text-[var(--color-text-subtle)]">Search by name, or enter an email to invite someone who hasn&apos;t logged in yet. They join when they first log in.</p>
         <div className="relative max-w-md">
           <input className={inputCls} placeholder="Name or email" value={q} onChange={(e) => setQ(e.target.value)} />
           {found && q.length >= 2 && (
@@ -189,8 +189,12 @@ function Members({ ws, meId, isAdmin }: { ws: WS; meId: string; isAdmin: boolean
                   </span>
                 </MenuItem>
               ))}
-              {found.filter((u) => !ws.members.some((m) => m.userId === u.id)).length === 0 && (
-                <p className="py-1 text-sm text-[var(--color-text-subtlest)]">No one new found.</p>
+              {found.length === 0 && looksLikeEmail(q) ? (
+                <MenuItem onClick={() => { add.mutate({ id: ws.id, email: q.trim() }); setQ(""); }}>Invite {q.trim()}</MenuItem>
+              ) : (
+                found.filter((u) => !ws.members.some((m) => m.userId === u.id)).length === 0 && (
+                  <p className="py-1 text-sm text-[var(--color-text-subtlest)]">No one new found.</p>
+                )
               )}
             </div>
           )}
@@ -212,7 +216,7 @@ function Members({ ws, meId, isAdmin }: { ws: WS; meId: string; isAdmin: boolean
                 <div className="truncate text-sm font-medium">
                   {m.user.name} {self && <span className="text-xs text-[var(--color-text-subtlest)]">(you)</span>}
                 </div>
-                <div className="truncate text-xs text-[var(--color-text-subtlest)]">{m.user.isGhost ? "Imported from Trello, hasn't logged in yet" : m.user.email}</div>
+                <div className="truncate text-xs text-[var(--color-text-subtlest)]">{m.user.invitedEmail ? `Invited as ${m.user.invitedEmail}, hasn't logged in yet` : m.user.isGhost ? "Imported from Trello, hasn't logged in yet" : m.user.email}</div>
               </div>
               {isAdmin ? (
                 <select
@@ -226,7 +230,7 @@ function Members({ ws, meId, isAdmin }: { ws: WS; meId: string; isAdmin: boolean
               ) : (
                 <span className="text-sm text-[var(--color-text-subtle)]">{m.role === "admin" ? "Admin" : "Member"}</span>
               )}
-              {siteAdmin && m.user.isGhost && <LinkGhost wsId={ws.id} ghost={m.user} />}
+              {siteAdmin && m.user.isGhost && !m.user.invitedEmail && <LinkGhost wsId={ws.id} ghost={m.user} />}
               {(isAdmin || self) &&
                 (confirm === m.userId ? (
                   <Button variant="danger" onClick={() => remove.mutate({ id: ws.id, userId: m.userId })}>

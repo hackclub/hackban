@@ -84,7 +84,7 @@ export const cardRouter = createTRPCRouter({
         start: z.date().nullable().optional(),
         due: z.date().nullable().optional(),
         dueComplete: z.boolean().optional(),
-        coverColor: z.string().nullable().optional(),
+        coverColor: z.string().regex(/^[a-z]{1,16}$/).nullable().optional(),
         coverAttachmentId: z.string().nullable().optional(),
         coverSize: z.enum(["normal", "full"]).optional(),
         closed: z.boolean().optional(),

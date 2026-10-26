@@ -5,6 +5,9 @@ import { api, type RouterOutputs } from "~/trpc/react";
 import { type BoardData, type CardData } from "./types";
 
 type CardDetail = RouterOutputs["card"]["get"];
+
+/** Optimistic card id -> the real id, once the server has created it. */
+export const realIds = new Map<string, string>();
 type Member = BoardData["members"][number];
 
 /**

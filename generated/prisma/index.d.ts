@@ -6769,6 +6769,7 @@ export namespace Prisma {
     avatarKey: string | null
     providerImage: string | null
     isGhost: boolean | null
+    invitedEmail: string | null
     isAdmin: boolean | null
     trelloId: string | null
     createdAt: Date | null
@@ -6784,6 +6785,7 @@ export namespace Prisma {
     avatarKey: string | null
     providerImage: string | null
     isGhost: boolean | null
+    invitedEmail: string | null
     isAdmin: boolean | null
     trelloId: string | null
     createdAt: Date | null
@@ -6799,6 +6801,7 @@ export namespace Prisma {
     avatarKey: number
     providerImage: number
     isGhost: number
+    invitedEmail: number
     isAdmin: number
     trelloId: number
     createdAt: number
@@ -6816,6 +6819,7 @@ export namespace Prisma {
     avatarKey?: true
     providerImage?: true
     isGhost?: true
+    invitedEmail?: true
     isAdmin?: true
     trelloId?: true
     createdAt?: true
@@ -6831,6 +6835,7 @@ export namespace Prisma {
     avatarKey?: true
     providerImage?: true
     isGhost?: true
+    invitedEmail?: true
     isAdmin?: true
     trelloId?: true
     createdAt?: true
@@ -6846,6 +6851,7 @@ export namespace Prisma {
     avatarKey?: true
     providerImage?: true
     isGhost?: true
+    invitedEmail?: true
     isAdmin?: true
     trelloId?: true
     createdAt?: true
@@ -6934,6 +6940,7 @@ export namespace Prisma {
     avatarKey: string | null
     providerImage: string | null
     isGhost: boolean
+    invitedEmail: string | null
     isAdmin: boolean
     trelloId: string | null
     createdAt: Date
@@ -6966,6 +6973,7 @@ export namespace Prisma {
     avatarKey?: boolean
     providerImage?: boolean
     isGhost?: boolean
+    invitedEmail?: boolean
     isAdmin?: boolean
     trelloId?: boolean
     createdAt?: boolean
@@ -6997,6 +7005,7 @@ export namespace Prisma {
     avatarKey?: boolean
     providerImage?: boolean
     isGhost?: boolean
+    invitedEmail?: boolean
     isAdmin?: boolean
     trelloId?: boolean
     createdAt?: boolean
@@ -7012,6 +7021,7 @@ export namespace Prisma {
     avatarKey?: boolean
     providerImage?: boolean
     isGhost?: boolean
+    invitedEmail?: boolean
     isAdmin?: boolean
     trelloId?: boolean
     createdAt?: boolean
@@ -7027,12 +7037,13 @@ export namespace Prisma {
     avatarKey?: boolean
     providerImage?: boolean
     isGhost?: boolean
+    invitedEmail?: boolean
     isAdmin?: boolean
     trelloId?: boolean
     createdAt?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "username" | "email" | "emailVerified" | "image" | "avatarKey" | "providerImage" | "isGhost" | "isAdmin" | "trelloId" | "createdAt", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "username" | "email" | "emailVerified" | "image" | "avatarKey" | "providerImage" | "isGhost" | "invitedEmail" | "isAdmin" | "trelloId" | "createdAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     accounts?: boolean | User$accountsArgs<ExtArgs>
     sessions?: boolean | User$sessionsArgs<ExtArgs>
@@ -7083,6 +7094,7 @@ export namespace Prisma {
       avatarKey: string | null
       providerImage: string | null
       isGhost: boolean
+      invitedEmail: string | null
       isAdmin: boolean
       trelloId: string | null
       createdAt: Date
@@ -7533,6 +7545,7 @@ export namespace Prisma {
     readonly avatarKey: FieldRef<"User", 'String'>
     readonly providerImage: FieldRef<"User", 'String'>
     readonly isGhost: FieldRef<"User", 'Boolean'>
+    readonly invitedEmail: FieldRef<"User", 'String'>
     readonly isAdmin: FieldRef<"User", 'Boolean'>
     readonly trelloId: FieldRef<"User", 'String'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
@@ -31839,6 +31852,7 @@ export namespace Prisma {
     avatarKey: 'avatarKey',
     providerImage: 'providerImage',
     isGhost: 'isGhost',
+    invitedEmail: 'invitedEmail',
     isAdmin: 'isAdmin',
     trelloId: 'trelloId',
     createdAt: 'createdAt'
@@ -32410,6 +32424,7 @@ export namespace Prisma {
     avatarKey?: StringNullableFilter<"User"> | string | null
     providerImage?: StringNullableFilter<"User"> | string | null
     isGhost?: BoolFilter<"User"> | boolean
+    invitedEmail?: StringNullableFilter<"User"> | string | null
     isAdmin?: BoolFilter<"User"> | boolean
     trelloId?: StringNullableFilter<"User"> | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
@@ -32440,6 +32455,7 @@ export namespace Prisma {
     avatarKey?: SortOrderInput | SortOrder
     providerImage?: SortOrderInput | SortOrder
     isGhost?: SortOrder
+    invitedEmail?: SortOrderInput | SortOrder
     isAdmin?: SortOrder
     trelloId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -32464,6 +32480,7 @@ export namespace Prisma {
     id?: string
     username?: string
     email?: string
+    invitedEmail?: string
     trelloId?: string
     AND?: UserWhereInput | UserWhereInput[]
     OR?: UserWhereInput[]
@@ -32491,7 +32508,7 @@ export namespace Prisma {
     watches?: WatchListRelationFilter
     autoJoinsCreated?: WorkspaceAutoJoinListRelationFilter
     oauthTokens?: OAuthTokenListRelationFilter
-  }, "id" | "username" | "email" | "trelloId">
+  }, "id" | "username" | "email" | "invitedEmail" | "trelloId">
 
   export type UserOrderByWithAggregationInput = {
     id?: SortOrder
@@ -32503,6 +32520,7 @@ export namespace Prisma {
     avatarKey?: SortOrderInput | SortOrder
     providerImage?: SortOrderInput | SortOrder
     isGhost?: SortOrder
+    invitedEmail?: SortOrderInput | SortOrder
     isAdmin?: SortOrder
     trelloId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -32524,6 +32542,7 @@ export namespace Prisma {
     avatarKey?: StringNullableWithAggregatesFilter<"User"> | string | null
     providerImage?: StringNullableWithAggregatesFilter<"User"> | string | null
     isGhost?: BoolWithAggregatesFilter<"User"> | boolean
+    invitedEmail?: StringNullableWithAggregatesFilter<"User"> | string | null
     isAdmin?: BoolWithAggregatesFilter<"User"> | boolean
     trelloId?: StringNullableWithAggregatesFilter<"User"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
@@ -34167,6 +34186,7 @@ export namespace Prisma {
     avatarKey?: string | null
     providerImage?: string | null
     isGhost?: boolean
+    invitedEmail?: string | null
     isAdmin?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -34197,6 +34217,7 @@ export namespace Prisma {
     avatarKey?: string | null
     providerImage?: string | null
     isGhost?: boolean
+    invitedEmail?: string | null
     isAdmin?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -34227,6 +34248,7 @@ export namespace Prisma {
     avatarKey?: NullableStringFieldUpdateOperationsInput | string | null
     providerImage?: NullableStringFieldUpdateOperationsInput | string | null
     isGhost?: BoolFieldUpdateOperationsInput | boolean
+    invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -34257,6 +34279,7 @@ export namespace Prisma {
     avatarKey?: NullableStringFieldUpdateOperationsInput | string | null
     providerImage?: NullableStringFieldUpdateOperationsInput | string | null
     isGhost?: BoolFieldUpdateOperationsInput | boolean
+    invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -34287,6 +34310,7 @@ export namespace Prisma {
     avatarKey?: string | null
     providerImage?: string | null
     isGhost?: boolean
+    invitedEmail?: string | null
     isAdmin?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -34302,6 +34326,7 @@ export namespace Prisma {
     avatarKey?: NullableStringFieldUpdateOperationsInput | string | null
     providerImage?: NullableStringFieldUpdateOperationsInput | string | null
     isGhost?: BoolFieldUpdateOperationsInput | boolean
+    invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -34317,6 +34342,7 @@ export namespace Prisma {
     avatarKey?: NullableStringFieldUpdateOperationsInput | string | null
     providerImage?: NullableStringFieldUpdateOperationsInput | string | null
     isGhost?: BoolFieldUpdateOperationsInput | boolean
+    invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -36190,6 +36216,7 @@ export namespace Prisma {
     avatarKey?: SortOrder
     providerImage?: SortOrder
     isGhost?: SortOrder
+    invitedEmail?: SortOrder
     isAdmin?: SortOrder
     trelloId?: SortOrder
     createdAt?: SortOrder
@@ -36205,6 +36232,7 @@ export namespace Prisma {
     avatarKey?: SortOrder
     providerImage?: SortOrder
     isGhost?: SortOrder
+    invitedEmail?: SortOrder
     isAdmin?: SortOrder
     trelloId?: SortOrder
     createdAt?: SortOrder
@@ -36220,6 +36248,7 @@ export namespace Prisma {
     avatarKey?: SortOrder
     providerImage?: SortOrder
     isGhost?: SortOrder
+    invitedEmail?: SortOrder
     isAdmin?: SortOrder
     trelloId?: SortOrder
     createdAt?: SortOrder
@@ -39273,6 +39302,7 @@ export namespace Prisma {
     avatarKey?: string | null
     providerImage?: string | null
     isGhost?: boolean
+    invitedEmail?: string | null
     isAdmin?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -39302,6 +39332,7 @@ export namespace Prisma {
     avatarKey?: string | null
     providerImage?: string | null
     isGhost?: boolean
+    invitedEmail?: string | null
     isAdmin?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -39347,6 +39378,7 @@ export namespace Prisma {
     avatarKey?: NullableStringFieldUpdateOperationsInput | string | null
     providerImage?: NullableStringFieldUpdateOperationsInput | string | null
     isGhost?: BoolFieldUpdateOperationsInput | boolean
+    invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -39376,6 +39408,7 @@ export namespace Prisma {
     avatarKey?: NullableStringFieldUpdateOperationsInput | string | null
     providerImage?: NullableStringFieldUpdateOperationsInput | string | null
     isGhost?: BoolFieldUpdateOperationsInput | boolean
+    invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -39405,6 +39438,7 @@ export namespace Prisma {
     avatarKey?: string | null
     providerImage?: string | null
     isGhost?: boolean
+    invitedEmail?: string | null
     isAdmin?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -39434,6 +39468,7 @@ export namespace Prisma {
     avatarKey?: string | null
     providerImage?: string | null
     isGhost?: boolean
+    invitedEmail?: string | null
     isAdmin?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -39479,6 +39514,7 @@ export namespace Prisma {
     avatarKey?: NullableStringFieldUpdateOperationsInput | string | null
     providerImage?: NullableStringFieldUpdateOperationsInput | string | null
     isGhost?: BoolFieldUpdateOperationsInput | boolean
+    invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -39508,6 +39544,7 @@ export namespace Prisma {
     avatarKey?: NullableStringFieldUpdateOperationsInput | string | null
     providerImage?: NullableStringFieldUpdateOperationsInput | string | null
     isGhost?: BoolFieldUpdateOperationsInput | boolean
+    invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40551,6 +40588,7 @@ export namespace Prisma {
     avatarKey?: string | null
     providerImage?: string | null
     isGhost?: boolean
+    invitedEmail?: string | null
     isAdmin?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -40580,6 +40618,7 @@ export namespace Prisma {
     avatarKey?: string | null
     providerImage?: string | null
     isGhost?: boolean
+    invitedEmail?: string | null
     isAdmin?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -40658,6 +40697,7 @@ export namespace Prisma {
     avatarKey?: NullableStringFieldUpdateOperationsInput | string | null
     providerImage?: NullableStringFieldUpdateOperationsInput | string | null
     isGhost?: BoolFieldUpdateOperationsInput | boolean
+    invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40687,6 +40727,7 @@ export namespace Prisma {
     avatarKey?: NullableStringFieldUpdateOperationsInput | string | null
     providerImage?: NullableStringFieldUpdateOperationsInput | string | null
     isGhost?: BoolFieldUpdateOperationsInput | boolean
+    invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40743,6 +40784,7 @@ export namespace Prisma {
     avatarKey?: string | null
     providerImage?: string | null
     isGhost?: boolean
+    invitedEmail?: string | null
     isAdmin?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -40772,6 +40814,7 @@ export namespace Prisma {
     avatarKey?: string | null
     providerImage?: string | null
     isGhost?: boolean
+    invitedEmail?: string | null
     isAdmin?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -40850,6 +40893,7 @@ export namespace Prisma {
     avatarKey?: NullableStringFieldUpdateOperationsInput | string | null
     providerImage?: NullableStringFieldUpdateOperationsInput | string | null
     isGhost?: BoolFieldUpdateOperationsInput | boolean
+    invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40879,6 +40923,7 @@ export namespace Prisma {
     avatarKey?: NullableStringFieldUpdateOperationsInput | string | null
     providerImage?: NullableStringFieldUpdateOperationsInput | string | null
     isGhost?: BoolFieldUpdateOperationsInput | boolean
+    invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41284,6 +41329,7 @@ export namespace Prisma {
     avatarKey?: string | null
     providerImage?: string | null
     isGhost?: boolean
+    invitedEmail?: string | null
     isAdmin?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -41313,6 +41359,7 @@ export namespace Prisma {
     avatarKey?: string | null
     providerImage?: string | null
     isGhost?: boolean
+    invitedEmail?: string | null
     isAdmin?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -41411,6 +41458,7 @@ export namespace Prisma {
     avatarKey?: NullableStringFieldUpdateOperationsInput | string | null
     providerImage?: NullableStringFieldUpdateOperationsInput | string | null
     isGhost?: BoolFieldUpdateOperationsInput | boolean
+    invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41440,6 +41488,7 @@ export namespace Prisma {
     avatarKey?: NullableStringFieldUpdateOperationsInput | string | null
     providerImage?: NullableStringFieldUpdateOperationsInput | string | null
     isGhost?: BoolFieldUpdateOperationsInput | boolean
+    invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41516,6 +41565,7 @@ export namespace Prisma {
     avatarKey?: string | null
     providerImage?: string | null
     isGhost?: boolean
+    invitedEmail?: string | null
     isAdmin?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -41545,6 +41595,7 @@ export namespace Prisma {
     avatarKey?: string | null
     providerImage?: string | null
     isGhost?: boolean
+    invitedEmail?: string | null
     isAdmin?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -41643,6 +41694,7 @@ export namespace Prisma {
     avatarKey?: NullableStringFieldUpdateOperationsInput | string | null
     providerImage?: NullableStringFieldUpdateOperationsInput | string | null
     isGhost?: BoolFieldUpdateOperationsInput | boolean
+    invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41672,6 +41724,7 @@ export namespace Prisma {
     avatarKey?: NullableStringFieldUpdateOperationsInput | string | null
     providerImage?: NullableStringFieldUpdateOperationsInput | string | null
     isGhost?: BoolFieldUpdateOperationsInput | boolean
+    invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42628,6 +42681,7 @@ export namespace Prisma {
     avatarKey?: string | null
     providerImage?: string | null
     isGhost?: boolean
+    invitedEmail?: string | null
     isAdmin?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -42657,6 +42711,7 @@ export namespace Prisma {
     avatarKey?: string | null
     providerImage?: string | null
     isGhost?: boolean
+    invitedEmail?: string | null
     isAdmin?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -42765,6 +42820,7 @@ export namespace Prisma {
     avatarKey?: NullableStringFieldUpdateOperationsInput | string | null
     providerImage?: NullableStringFieldUpdateOperationsInput | string | null
     isGhost?: BoolFieldUpdateOperationsInput | boolean
+    invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42794,6 +42850,7 @@ export namespace Prisma {
     avatarKey?: NullableStringFieldUpdateOperationsInput | string | null
     providerImage?: NullableStringFieldUpdateOperationsInput | string | null
     isGhost?: BoolFieldUpdateOperationsInput | boolean
+    invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -43010,6 +43067,7 @@ export namespace Prisma {
     avatarKey?: string | null
     providerImage?: string | null
     isGhost?: boolean
+    invitedEmail?: string | null
     isAdmin?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -43039,6 +43097,7 @@ export namespace Prisma {
     avatarKey?: string | null
     providerImage?: string | null
     isGhost?: boolean
+    invitedEmail?: string | null
     isAdmin?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -43111,6 +43170,7 @@ export namespace Prisma {
     avatarKey?: NullableStringFieldUpdateOperationsInput | string | null
     providerImage?: NullableStringFieldUpdateOperationsInput | string | null
     isGhost?: BoolFieldUpdateOperationsInput | boolean
+    invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -43140,6 +43200,7 @@ export namespace Prisma {
     avatarKey?: NullableStringFieldUpdateOperationsInput | string | null
     providerImage?: NullableStringFieldUpdateOperationsInput | string | null
     isGhost?: BoolFieldUpdateOperationsInput | boolean
+    invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -43226,6 +43287,7 @@ export namespace Prisma {
     avatarKey?: string | null
     providerImage?: string | null
     isGhost?: boolean
+    invitedEmail?: string | null
     isAdmin?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -43255,6 +43317,7 @@ export namespace Prisma {
     avatarKey?: string | null
     providerImage?: string | null
     isGhost?: boolean
+    invitedEmail?: string | null
     isAdmin?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -43363,6 +43426,7 @@ export namespace Prisma {
     avatarKey?: NullableStringFieldUpdateOperationsInput | string | null
     providerImage?: NullableStringFieldUpdateOperationsInput | string | null
     isGhost?: BoolFieldUpdateOperationsInput | boolean
+    invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -43392,6 +43456,7 @@ export namespace Prisma {
     avatarKey?: NullableStringFieldUpdateOperationsInput | string | null
     providerImage?: NullableStringFieldUpdateOperationsInput | string | null
     isGhost?: BoolFieldUpdateOperationsInput | boolean
+    invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -43478,6 +43543,7 @@ export namespace Prisma {
     avatarKey?: string | null
     providerImage?: string | null
     isGhost?: boolean
+    invitedEmail?: string | null
     isAdmin?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -43507,6 +43573,7 @@ export namespace Prisma {
     avatarKey?: string | null
     providerImage?: string | null
     isGhost?: boolean
+    invitedEmail?: string | null
     isAdmin?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -43615,6 +43682,7 @@ export namespace Prisma {
     avatarKey?: NullableStringFieldUpdateOperationsInput | string | null
     providerImage?: NullableStringFieldUpdateOperationsInput | string | null
     isGhost?: BoolFieldUpdateOperationsInput | boolean
+    invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -43644,6 +43712,7 @@ export namespace Prisma {
     avatarKey?: NullableStringFieldUpdateOperationsInput | string | null
     providerImage?: NullableStringFieldUpdateOperationsInput | string | null
     isGhost?: BoolFieldUpdateOperationsInput | boolean
+    invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -43777,6 +43846,7 @@ export namespace Prisma {
     avatarKey?: string | null
     providerImage?: string | null
     isGhost?: boolean
+    invitedEmail?: string | null
     isAdmin?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -43806,6 +43876,7 @@ export namespace Prisma {
     avatarKey?: string | null
     providerImage?: string | null
     isGhost?: boolean
+    invitedEmail?: string | null
     isAdmin?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -43967,6 +44038,7 @@ export namespace Prisma {
     avatarKey?: NullableStringFieldUpdateOperationsInput | string | null
     providerImage?: NullableStringFieldUpdateOperationsInput | string | null
     isGhost?: BoolFieldUpdateOperationsInput | boolean
+    invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -43996,6 +44068,7 @@ export namespace Prisma {
     avatarKey?: NullableStringFieldUpdateOperationsInput | string | null
     providerImage?: NullableStringFieldUpdateOperationsInput | string | null
     isGhost?: BoolFieldUpdateOperationsInput | boolean
+    invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -44025,6 +44098,7 @@ export namespace Prisma {
     avatarKey?: string | null
     providerImage?: string | null
     isGhost?: boolean
+    invitedEmail?: string | null
     isAdmin?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -44054,6 +44128,7 @@ export namespace Prisma {
     avatarKey?: string | null
     providerImage?: string | null
     isGhost?: boolean
+    invitedEmail?: string | null
     isAdmin?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -44203,6 +44278,7 @@ export namespace Prisma {
     avatarKey?: NullableStringFieldUpdateOperationsInput | string | null
     providerImage?: NullableStringFieldUpdateOperationsInput | string | null
     isGhost?: BoolFieldUpdateOperationsInput | boolean
+    invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -44232,6 +44308,7 @@ export namespace Prisma {
     avatarKey?: NullableStringFieldUpdateOperationsInput | string | null
     providerImage?: NullableStringFieldUpdateOperationsInput | string | null
     isGhost?: BoolFieldUpdateOperationsInput | boolean
+    invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -44377,6 +44454,7 @@ export namespace Prisma {
     avatarKey?: string | null
     providerImage?: string | null
     isGhost?: boolean
+    invitedEmail?: string | null
     isAdmin?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -44406,6 +44484,7 @@ export namespace Prisma {
     avatarKey?: string | null
     providerImage?: string | null
     isGhost?: boolean
+    invitedEmail?: string | null
     isAdmin?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -44451,6 +44530,7 @@ export namespace Prisma {
     avatarKey?: NullableStringFieldUpdateOperationsInput | string | null
     providerImage?: NullableStringFieldUpdateOperationsInput | string | null
     isGhost?: BoolFieldUpdateOperationsInput | boolean
+    invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -44480,6 +44560,7 @@ export namespace Prisma {
     avatarKey?: NullableStringFieldUpdateOperationsInput | string | null
     providerImage?: NullableStringFieldUpdateOperationsInput | string | null
     isGhost?: BoolFieldUpdateOperationsInput | boolean
+    invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -44509,6 +44590,7 @@ export namespace Prisma {
     avatarKey?: string | null
     providerImage?: string | null
     isGhost?: boolean
+    invitedEmail?: string | null
     isAdmin?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -44538,6 +44620,7 @@ export namespace Prisma {
     avatarKey?: string | null
     providerImage?: string | null
     isGhost?: boolean
+    invitedEmail?: string | null
     isAdmin?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -44583,6 +44666,7 @@ export namespace Prisma {
     avatarKey?: NullableStringFieldUpdateOperationsInput | string | null
     providerImage?: NullableStringFieldUpdateOperationsInput | string | null
     isGhost?: BoolFieldUpdateOperationsInput | boolean
+    invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -44612,6 +44696,7 @@ export namespace Prisma {
     avatarKey?: NullableStringFieldUpdateOperationsInput | string | null
     providerImage?: NullableStringFieldUpdateOperationsInput | string | null
     isGhost?: BoolFieldUpdateOperationsInput | boolean
+    invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -44710,6 +44795,7 @@ export namespace Prisma {
     avatarKey?: string | null
     providerImage?: string | null
     isGhost?: boolean
+    invitedEmail?: string | null
     isAdmin?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -44739,6 +44825,7 @@ export namespace Prisma {
     avatarKey?: string | null
     providerImage?: string | null
     isGhost?: boolean
+    invitedEmail?: string | null
     isAdmin?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -44811,6 +44898,7 @@ export namespace Prisma {
     avatarKey?: NullableStringFieldUpdateOperationsInput | string | null
     providerImage?: NullableStringFieldUpdateOperationsInput | string | null
     isGhost?: BoolFieldUpdateOperationsInput | boolean
+    invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -44840,6 +44928,7 @@ export namespace Prisma {
     avatarKey?: NullableStringFieldUpdateOperationsInput | string | null
     providerImage?: NullableStringFieldUpdateOperationsInput | string | null
     isGhost?: BoolFieldUpdateOperationsInput | boolean
+    invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string

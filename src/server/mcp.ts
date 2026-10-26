@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 
 import { createCaller } from "~/server/api/root";
+import { RECURRENCES } from "~/server/recurrence";
 import { db } from "~/server/db";
 
 type User = { id: string; name: string | null; email: string | null; image: string | null };
@@ -33,7 +34,8 @@ export function hackbanMcp(user: User, base: string) {
       instructions:
         "Hackban is Hack Club's Trello: workspaces contain boards, boards contain lists, lists contain cards. " +
         "Find things with list_workspaces or search, then get_board for list, label and member IDs. " +
-        "Every board and card has a url; link to it when telling the user about it.",
+        "Every board and card has a url; link to it when telling the user about it. " +
+        "Nothing can be deleted here; archive cards, lists and boards instead.",
     },
   );
 
@@ -84,7 +86,13 @@ export function hackbanMcp(user: User, base: string) {
         workspace: b.workspace,
         myRole: b.myRole,
         labels: b.labels.map(({ id, name, color }) => ({ id, name, color })),
-        members: b.members.map((m) => ({ id: m.user.id, name: m.user.name, username: m.user.username, role: m.role })),
+        members: b.members.map((m) => ({
+          id: m.user.id,
+          name: m.user.name,
+          username: m.user.username,
+          role: m.role,
+          pending: m.user.isGhost ? (m.user.invitedEmail ? "invited, hasn't logged in" : "imported from Trello") : undefined,
+        })),
         lists: b.lists.map((l) => ({
           id: l.id,
           name: l.name,
@@ -224,6 +232,7 @@ export function hackbanMcp(user: User, base: string) {
         start: when.nullable().optional(),
         due: when.nullable().optional(),
         dueComplete: z.boolean().optional().describe("Mark the due date done. Repeating cards roll to their next due date instead."),
+        recurrence: z.enum(RECURRENCES).nullable().optional().describe("Repeat the card's dates on this schedule; null stops repeating"),
         archived: z.boolean().optional(),
       },
       annotations: write,
@@ -311,12 +320,262 @@ export function hackbanMcp(user: User, base: string) {
     {
       title: "Update checklist item",
       description: "Tick/untick or rename a checklist item (IDs from get_card).",
-      inputSchema: { itemId: z.string(), complete: z.boolean().optional(), name: z.string().min(1).max(16384).optional() },
+      inputSchema: {
+        itemId: z.string(),
+        complete: z.boolean().optional(),
+        name: z.string().min(1).max(16384).optional(),
+        due: when.nullable().optional(),
+        memberId: z.string().nullable().optional().describe("Board member to assign (IDs from get_board); null unassigns"),
+      },
       annotations: { ...write, idempotentHint: true },
     },
-    async ({ itemId, ...rest }) => {
-      await api.card.updateCheckItem({ itemId, ...rest });
+    async ({ itemId, due, ...rest }) => {
+      await api.card.updateCheckItem({ itemId, ...rest, due: toDate(due) });
       return text({ ok: true });
+    },
+  );
+
+  server.registerTool(
+    "add_check_item",
+    {
+      title: "Add checklist item",
+      description: "Add an item to the end of an existing checklist (IDs from get_card).",
+      inputSchema: { checklistId: z.string(), name: z.string().min(1).max(16384) },
+      annotations: write,
+    },
+    async (input) => {
+      await api.card.addCheckItem(input);
+      return text({ ok: true });
+    },
+  );
+
+  server.registerTool(
+    "rename_checklist",
+    { title: "Rename checklist", description: "Rename a checklist (IDs from get_card).", inputSchema: { checklistId: z.string(), name: z.string().min(1).max(512) }, annotations: { ...write, idempotentHint: true } },
+    async (input) => {
+      await api.card.updateChecklist(input);
+      return text({ ok: true });
+    },
+  );
+
+  server.registerTool(
+    "edit_comment",
+    { title: "Edit comment", description: "Edit one of your own comments (IDs from get_card).", inputSchema: { commentId: z.string(), text: z.string().min(1).max(16384) }, annotations: { ...write, idempotentHint: true } },
+    async (input) => {
+      await api.card.editComment(input);
+      return text({ ok: true });
+    },
+  );
+
+  server.registerTool(
+    "add_link",
+    {
+      title: "Attach link",
+      description: "Attach an http(s) link to a card.",
+      inputSchema: { cardId: z.string(), url: z.string().max(2048), name: z.string().max(256).optional() },
+      annotations: write,
+    },
+    async ({ cardId, url, name }) => {
+      await api.card.addLink({ id: cardId, url, name });
+      return text({ ok: true });
+    },
+  );
+
+  server.registerTool(
+    "copy_card",
+    {
+      title: "Copy card",
+      description: "Copy a card into a list (on this board or another). Labels only carry over within the same board.",
+      inputSchema: {
+        cardId: z.string(),
+        listId: z.string(),
+        title: z.string().min(1).max(16384).optional().describe("Defaults to the original title"),
+        position: z.enum(["top", "bottom"]).default("bottom"),
+        keepChecklists: z.boolean().default(true),
+        keepLabels: z.boolean().default(true),
+        keepMembers: z.boolean().default(true),
+        keepAttachments: z.boolean().default(true),
+      },
+      annotations: write,
+    },
+    async ({ cardId, listId, title, position, keepChecklists, keepLabels, keepMembers, keepAttachments }) => {
+      const c = await api.card.copy({
+        id: cardId,
+        listId,
+        title: title ?? (await api.card.get({ id: cardId })).title,
+        afterId: position === "top" ? null : undefined,
+        keep: { checklists: keepChecklists, labels: keepLabels, members: keepMembers, attachments: keepAttachments },
+      });
+      return text({ id: c.id, url: `${base}/c/${c.id}` });
+    },
+  );
+
+  server.registerTool(
+    "watch_card",
+    { title: "Watch card", description: "Get (or stop getting) notifications for comments on a card.", inputSchema: { cardId: z.string(), on: z.boolean() }, annotations: { ...write, idempotentHint: true } },
+    async ({ cardId, on }) => {
+      await api.card.watch({ id: cardId, on });
+      return text({ ok: true });
+    },
+  );
+
+  server.registerTool(
+    "move_list",
+    {
+      title: "Move list",
+      description: "Reorder a list on its board, or move it (with its cards) to another board. Moving boards drops the cards' labels.",
+      inputSchema: {
+        listId: z.string(),
+        boardId: z.string().optional().describe("Target board; omit to stay on this board"),
+        afterListId: z.string().nullable().optional().describe("Place after this list; null = first; omit = last"),
+      },
+      annotations: write,
+    },
+    async ({ listId, boardId, afterListId }) => {
+      // list.move checks access to both boards; this only picks the default slot.
+      const to = boardId ?? (await db.list.findUniqueOrThrow({ where: { id: listId }, select: { boardId: true } })).boardId;
+      const afterId =
+        afterListId !== undefined
+          ? afterListId
+          : ((await db.list.findFirst({ where: { boardId: to, closed: false, id: { not: listId } }, orderBy: { pos: "desc" }, select: { id: true } }))?.id ?? null);
+      const l = await api.list.move({ id: listId, boardId, afterId });
+      return text({ id: l.id, boardId: l.boardId });
+    },
+  );
+
+  server.registerTool(
+    "save_label",
+    {
+      title: "Create or edit label",
+      description: "Create a board label, or rename/recolor one (pass labelId). Colors: green, yellow, orange, red, purple, blue, sky, lime, pink, black, each optionally with _light or _dark; null = no color.",
+      inputSchema: { boardId: z.string(), labelId: z.string().optional(), name: z.string().max(100).default(""), color: z.string().max(32).nullable() },
+      annotations: write,
+    },
+    async ({ boardId, labelId, name, color }) => {
+      if (labelId) {
+        await api.card.updateLabel({ id: labelId, name, color });
+        return text({ id: labelId });
+      }
+      return text({ id: (await api.card.createLabel({ boardId, name, color })).id });
+    },
+  );
+
+  server.registerTool(
+    "update_board",
+    {
+      title: "Update board",
+      description: "Rename a board, change its description or visibility, or archive (close)/reopen it. Visibility and closing need board admin.",
+      inputSchema: {
+        boardId: z.string(),
+        name: z.string().min(1).max(200).optional(),
+        description: z.string().max(16384).optional().describe("Markdown"),
+        visibility: z.enum(["private", "workspace", "public"]).optional(),
+        archived: z.boolean().optional(),
+      },
+      annotations: write,
+    },
+    async ({ boardId, archived, ...rest }) => {
+      const b = await api.board.update({ id: boardId, ...rest, closed: archived });
+      return text({ id: b.id, name: b.name, visibility: b.visibility, archived: b.closed, url: `${base}/b/${b.id}` });
+    },
+  );
+
+  server.registerTool(
+    "get_archived",
+    { title: "Archived items", description: "A board's archived cards and lists (restore them with update_card / update_list).", inputSchema: { boardId: z.string() }, annotations: read },
+    async ({ boardId }) => {
+      const { cards, lists } = await api.board.archived({ id: boardId });
+      return text({
+        cards: cards.map((c) => ({ id: c.id, title: c.title, list: c.list.name, url: `${base}/c/${c.id}` })),
+        lists: lists.map((l) => ({ id: l.id, name: l.name })),
+      });
+    },
+  );
+
+  server.registerTool(
+    "board_activity",
+    {
+      title: "Board activity",
+      description: "Recent activity on a board, newest first (30 per page).",
+      inputSchema: { boardId: z.string(), cursor: z.string().optional().describe("`next` from the previous page") },
+      annotations: read,
+    },
+    async ({ boardId, cursor }) => {
+      const { items, next } = await api.board.activity({ id: boardId, cursor });
+      return text({
+        items: items.map((a) => ({ type: a.type, by: a.actor.name, card: a.card?.title, data: a.data, at: a.createdAt })),
+        next,
+      });
+    },
+  );
+
+  server.registerTool(
+    "get_workspace",
+    { title: "Get workspace", description: "A workspace's members (with IDs and roles) and boards, including closed ones.", inputSchema: { workspaceId: z.string() }, annotations: read },
+    async ({ workspaceId }) => {
+      const w = await api.workspace.get({ id: workspaceId });
+      return text({
+        id: w.id,
+        name: w.name,
+        description: w.description,
+        myRole: w.myRole,
+        members: w.members.map((m) => ({
+          id: m.user.id,
+          name: m.user.name,
+          email: m.user.invitedEmail ?? m.user.email,
+          role: m.role,
+          pending: m.user.isGhost ? (m.user.invitedEmail ? "invited, hasn't logged in" : "imported from Trello") : undefined,
+        })),
+        boards: w.boards.map((b) => ({ id: b.id, name: b.name, visibility: b.visibility, archived: b.closed, url: `${base}/b/${b.id}` })),
+      });
+    },
+  );
+
+  const invitee = {
+    userId: z.string().optional().describe("Someone who has logged in (IDs from get_board or get_workspace)"),
+    email: z.string().optional().describe("Or an email: they're added now and join for real when they first log in"),
+  };
+
+  server.registerTool(
+    "add_board_member",
+    {
+      title: "Add board member",
+      description: "Add someone to a board by user ID or email, or change a member's role (board admins only). Board-only: it doesn't add them to the workspace.",
+      inputSchema: { boardId: z.string(), ...invitee, role: z.enum(["admin", "normal", "observer"]).default("normal") },
+      annotations: { ...write, idempotentHint: true },
+    },
+    async ({ boardId, ...rest }) => {
+      await api.board.addMember({ id: boardId, ...rest });
+      return text({ ok: true });
+    },
+  );
+
+  server.registerTool(
+    "add_workspace_member",
+    {
+      title: "Add workspace member",
+      description: "Add someone to a workspace by user ID or email, or change a member's role (workspace admins only).",
+      inputSchema: { workspaceId: z.string(), ...invitee, role: z.enum(["admin", "normal"]).default("normal") },
+      annotations: { ...write, idempotentHint: true },
+    },
+    async ({ workspaceId, ...rest }) => {
+      await api.workspace.addMember({ id: workspaceId, ...rest });
+      return text({ ok: true });
+    },
+  );
+
+  server.registerTool(
+    "notifications",
+    {
+      title: "Notifications",
+      description: "Your latest 50 notifications (assignments, comments on watched cards). Pass markRead to mark them all read.",
+      inputSchema: { markRead: z.boolean().default(false) },
+      annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
+    },
+    async ({ markRead }) => {
+      const list = await api.notification.list();
+      if (markRead) await api.notification.markAllRead();
+      return text(list.map((n) => ({ type: n.type, read: n.read, at: n.createdAt, ...n.data, url: n.data.cardId ? `${base}/c/${n.data.cardId}` : undefined })));
     },
   );
 

@@ -2,7 +2,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { type DefaultSession, type NextAuthConfig } from "next-auth";
 
 import { env } from "~/env";
-import { applyAutoJoinForUser } from "~/server/autojoin";
+import { applyAutoJoinForUser, claimInvite } from "~/server/autojoin";
 import { db } from "~/server/db";
 
 declare module "next-auth" {
@@ -70,10 +70,13 @@ export const authConfig = {
           where: { id: user.id, isGhost: true },
           data: { isGhost: false },
         });
+        // Boards and workspaces they were invited to by email.
+        await claimInvite(user.id, user.email);
         // Domain auto-join rules (e.g. everyone @hackclub.com joins Hack Club).
         await applyAutoJoinForUser(user.id, user.email);
-        // Written both ways so removing an email from ADMIN_EMAILS revokes admin.
-        await db.user.update({ where: { id: user.id }, data: { isAdmin: !!user.email && adminEmails().has(user.email.toLowerCase()) } });
+        // Only ever grants: admins promoted in /admin must keep it across logins.
+        // To demote a former ADMIN_EMAILS admin, drop them from the env, then use /admin.
+        if (user.email && adminEmails().has(user.email.toLowerCase())) await db.user.update({ where: { id: user.id }, data: { isAdmin: true } });
       }
     },
   },

@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
 
 import { db } from "~/server/db";
+import { mergeUsers } from "~/server/import/apply";
 
 const DOMAIN_RE = /^(?=.{3,253}$)([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/;
 
@@ -29,6 +30,13 @@ export async function applyAutoJoinForUser(userId: string, email: string | null 
       update: {},
     });
   }
+}
+
+/** Called on every login: take over the ghost someone invited this email as. */
+export async function claimInvite(userId: string, email: string | null | undefined) {
+  if (!email) return;
+  const ghost = await db.user.findUnique({ where: { invitedEmail: email.toLowerCase() }, select: { id: true } });
+  if (ghost && ghost.id !== userId) await mergeUsers(ghost.id, userId);
 }
 
 /** Backfill a new rule: add everyone who already has an account on the domain. Returns how many joined. */

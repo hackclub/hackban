@@ -120,8 +120,9 @@ any board from **/admin → Boards**. Board members keep their access.
 
 ## Admins and auto-join
 
-- **Site admins** are anyone in `ADMIN_EMAILS` (applied on login), plus anyone
-  promoted from **/admin → Users**. Site admins can see every board and
+- **Site admins** are anyone in `ADMIN_EMAILS` (granted on login), plus anyone
+  promoted from **/admin → Users**. Logging in never removes admin; to demote
+  someone, remove them from `ADMIN_EMAILS` (if listed), then use **/admin → Users**. Site admins can see every board and
   workspace, "join as admin" to rescue a board whose admins have left, and
   manage auto-join for any workspace.
 - **Auto-join:** add a rule like `@hackclub.com → Hack Club (as Member)` under
@@ -137,7 +138,7 @@ any board from **/admin → Boards**. Board members keep their access.
 
 ## Importing from Trello
 
-Go to **/import**:
+Imports are site-admin only (the account menu → **Import from Trello**, or **/import**). Everyone else is asked to request one in #hackban. Admins:
 
 1. **Connect your Trello account** (recommended): create a Power-Up at
    [trello.com/power-ups/admin](https://trello.com/power-ups/admin), paste its
@@ -171,12 +172,16 @@ in Claude Code, or in any MCP client). The client signs in with OAuth: you appro
 it once on a Hackban consent page, and it then acts as you, with your permissions.
 Revoke an app any time under **Settings → Connected apps** (`/me/settings`).
 
-Tools: `whoami`, `list_workspaces`, `search`, `get_board`, `get_card`, `my_cards`,
-`create_board`, `create_list`, `update_list`, `create_card`, `update_card`,
-`move_card`, `add_comment`, `set_card_label`, `set_card_member`, `add_checklist`,
-`update_check_item`. They call the same tRPC procedures as the web app, so access
-checks, activity and live updates match. Nothing is permanently deleted: cards and
-lists can only be archived. Site-admin powers aren't available over MCP.
+Tools: `whoami`, `list_workspaces`, `get_workspace`, `search`, `get_board`,
+`get_archived`, `board_activity`, `get_card`, `my_cards`, `notifications`,
+`create_board`, `update_board`, `add_board_member`, `add_workspace_member`,
+`create_list`, `update_list`, `move_list`, `save_label`, `create_card`, `update_card`,
+`move_card`, `copy_card`, `watch_card`, `add_comment`, `edit_comment`, `add_link`,
+`set_card_label`, `set_card_member`, `add_checklist`, `rename_checklist`,
+`add_check_item`, `update_check_item`. They call the same tRPC procedures as the web
+app, so access checks, activity and live updates match. Nothing is permanently
+deleted: cards, lists and boards can only be archived, and members can be added
+(by user or email invite) but not removed. Site-admin powers aren't available over MCP.
 
 Code: `src/server/mcp.ts` (tools), `src/server/oauth.ts` (OAuth 2.1: PKCE,
 dynamic client registration, rotating refresh tokens), `src/app/oauth/authorize`

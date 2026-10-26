@@ -6,6 +6,7 @@ import { z } from "zod";
 
 import { logActivity, requireBoard, touch } from "~/server/api/access";
 import { sequentialKeys } from "~/server/api/pos";
+import { memberInput, userForInvite } from "~/server/invite";
 import { removeStored, storedKeys } from "~/server/storage";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { type db as Db } from "~/server/db";
@@ -45,7 +46,7 @@ export const boardRouter = createTRPCRouter({
         include: {
           workspace: { select: { id: true, name: true } },
           members: {
-            include: { user: { select: { id: true, name: true, image: true, username: true, isGhost: true } } },
+            include: { user: { select: { id: true, name: true, image: true, username: true, isGhost: true, invitedEmail: true } } },
           },
           stars: { where: { userId } },
           labels: { orderBy: { color: "asc" } },
@@ -330,6 +331,8 @@ export const boardRouter = createTRPCRouter({
             { username: { contains: q, mode: "insensitive" } },
             { email: { equals: q, mode: "insensitive" } },
           ],
+          // Invited ghosts are named after their email; keep them out of search so it can't reveal who was invited.
+          invitedEmail: null,
         },
         select: { id: true, name: true, image: true, email: true, username: true, isGhost: true },
         take: 8,
@@ -339,27 +342,28 @@ export const boardRouter = createTRPCRouter({
     }),
 
   addMember: protectedProcedure
-    .input(z.object({ id: z.string(), userId: z.string(), role: z.enum(["admin", "normal", "observer"]).default("normal") }))
+    .input(memberInput(z.enum(["admin", "normal", "observer"]).default("normal")))
     .mutation(async ({ ctx, input }) => {
       const board = await requireBoard(ctx.db, ctx.session.user.id, input.id);
       // Inviting needs board membership (not just workspace access to a
       // workspace-visible board); changing roles needs board admin.
       if (!board.members[0]) throw new TRPCError({ code: "FORBIDDEN", message: "Join the board to invite people." });
       const isAdmin = board.members[0].role === "admin";
+      const userId = input.userId ?? (await userForInvite(ctx.db, input.email!));
       const existing = await ctx.db.boardMember.findUnique({
-        where: { boardId_userId: { boardId: input.id, userId: input.userId } },
+        where: { boardId_userId: { boardId: input.id, userId } },
       });
       // Non-admins may invite people as normal members, but not change roles.
       if (!isAdmin && (existing || input.role !== "normal")) throw new TRPCError({ code: "FORBIDDEN" });
-      if (existing?.role === "admin" && input.role !== "admin") await assertAnotherAdmin(ctx.db, input.id, input.userId);
+      if (existing?.role === "admin" && input.role !== "admin") await assertAnotherAdmin(ctx.db, input.id, userId);
       await ctx.db.boardMember.upsert({
-        where: { boardId_userId: { boardId: input.id, userId: input.userId } },
-        create: { boardId: input.id, userId: input.userId, role: input.role },
+        where: { boardId_userId: { boardId: input.id, userId } },
+        create: { boardId: input.id, userId, role: input.role },
         update: { role: input.role },
       });
       // Board-only membership: people added here are guests of this board and
       // are NOT added to the workspace (so they can't see its other boards).
-      logActivity(ctx.db, { boardId: input.id, actorId: ctx.session.user.id, type: "addMemberToBoard", data: { userId: input.userId }, origin: ctx.clientId });
+      logActivity(ctx.db, { boardId: input.id, actorId: ctx.session.user.id, type: "addMemberToBoard", data: { userId }, origin: ctx.clientId });
     }),
 
   // ----- Invite links (board-only guests) -----

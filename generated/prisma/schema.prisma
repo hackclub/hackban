@@ -63,6 +63,9 @@ model User {
   // Ghost users are created by the Trello importer for members who haven't
   // signed in yet; they are merged into the real account on first login.
   isGhost       Boolean   @default(false)
+  // Set on ghosts invited by email (lowercase); merged into whoever first
+  // logs in with that email.
+  invitedEmail  String?   @unique
   // Site-wide admin (the /admin panel). Seeded from ADMIN_EMAILS on login.
   isAdmin       Boolean   @default(false)
   trelloId      String?   @unique

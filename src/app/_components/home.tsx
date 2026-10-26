@@ -244,9 +244,6 @@ export function Home() {
         <a className="flex h-8 items-center gap-2 rounded-[3px] bg-[var(--color-brand-subtle)] px-2 font-medium text-[var(--color-brand)]">
           <Icon name="grid" /> Boards
         </a>
-        <Link href="/import" className="mt-1 flex h-8 items-center gap-2 rounded-[3px] px-2 font-medium hover:bg-[var(--color-neutral)]">
-          <Icon name="download" /> Import from Trello
-        </Link>
         <div className="mt-4 mb-1 flex items-center justify-between px-2 text-xs font-semibold text-[var(--color-text-subtle)]">
           Workspaces
           <button onClick={() => setNewWs("")} className="rounded p-1 hover:bg-[var(--color-neutral)]" aria-label="Create workspace">

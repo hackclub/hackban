@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "bun:test";
 
-import { imageType } from "~/server/storage";
+import { bodyTooBig, imageType } from "~/server/storage";
 
 const bytes = (...parts: (string | number[])[]) =>
   new Uint8Array(parts.flatMap((p) => (typeof p === "string" ? [...p].map((c) => c.charCodeAt(0)) : p)));
@@ -14,4 +14,11 @@ test("imageType trusts magic bytes, not names or claims", () => {
   assert.equal(imageType(bytes("<svg xmlns=")), null);
   assert.equal(imageType(bytes("<html><script>")), null);
   assert.equal(imageType(new Uint8Array()), null);
+});
+
+test("bodyTooBig rejects oversized and length-less uploads", () => {
+  const req = (len?: number) => new Request("http://x", { method: "POST", headers: len === undefined ? {} : { "content-length": String(len) } });
+  assert.equal(bodyTooBig(req(1000), 2000), false);
+  assert.equal(bodyTooBig(req(2000 + 64 * 1024 + 1), 2000), true);
+  assert.equal(bodyTooBig(req(), 2000), true);
 });

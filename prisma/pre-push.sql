@@ -7,3 +7,7 @@
 ALTER TABLE "Board" ADD COLUMN IF NOT EXISTS "inviteToken" TEXT;
 ALTER TABLE "Board" ADD COLUMN IF NOT EXISTS "inviteRole" TEXT NOT NULL DEFAULT 'normal';
 CREATE UNIQUE INDEX IF NOT EXISTS "Board_inviteToken_key" ON "Board"("inviteToken");
+
+-- Email invites (unique index on a new, all-NULL column).
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "invitedEmail" TEXT;
+CREATE UNIQUE INDEX IF NOT EXISTS "User_invitedEmail_key" ON "User"("invitedEmail");

@@ -5,6 +5,7 @@ import { removeStored, storedKeys } from "~/server/storage";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { type db as Db } from "~/server/db";
 import { emailDomain, normalizeDomain, upsertAutoJoin } from "~/server/autojoin";
+import { memberInput, userForInvite } from "~/server/invite";
 import { mergeUsers } from "~/server/import/apply";
 
 /** Versioned URL for a workspace's logo, or null to fall back to its initial. */
@@ -77,7 +78,7 @@ export const workspaceRouter = createTRPCRouter({
         where: { id: input.id },
         include: {
           members: {
-            include: { user: { select: { id: true, name: true, email: true, image: true, isGhost: true } } },
+            include: { user: { select: { id: true, name: true, email: true, image: true, isGhost: true, invitedEmail: true } } },
             orderBy: { role: "asc" },
           },
           boards: {
@@ -122,19 +123,20 @@ export const workspaceRouter = createTRPCRouter({
       return ctx.db.workspace.update({ where: { id }, data });
     }),
 
-  /** Admins add anyone; members can invite as normal members only. */
+  /** Admins add anyone; members can invite as normal members only. An email adds people who haven't logged in yet. */
   addMember: protectedProcedure
-    .input(z.object({ id: z.string(), userId: z.string(), role: z.enum(["admin", "normal"]).default("normal") }))
+    .input(memberInput(z.enum(["admin", "normal"]).default("normal")))
     .mutation(async ({ ctx, input }) => {
       const me = await requireWorkspace(ctx.db, ctx.session.user.id, input.id);
+      const userId = input.userId ?? (await userForInvite(ctx.db, input.email!));
       const existing = await ctx.db.workspaceMember.findUnique({
-        where: { workspaceId_userId: { workspaceId: input.id, userId: input.userId } },
+        where: { workspaceId_userId: { workspaceId: input.id, userId } },
       });
       if (me.role !== "admin" && (existing || input.role !== "normal")) throw new TRPCError({ code: "FORBIDDEN" });
-      if (existing?.role === "admin" && input.role !== "admin") await assertAnotherAdmin(ctx.db, input.id, input.userId);
+      if (existing?.role === "admin" && input.role !== "admin") await assertAnotherAdmin(ctx.db, input.id, userId);
       await ctx.db.workspaceMember.upsert({
-        where: { workspaceId_userId: { workspaceId: input.id, userId: input.userId } },
-        create: { workspaceId: input.id, userId: input.userId, role: input.role },
+        where: { workspaceId_userId: { workspaceId: input.id, userId } },
+        create: { workspaceId: input.id, userId, role: input.role },
         update: { role: input.role },
       });
     }),

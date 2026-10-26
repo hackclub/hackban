@@ -11,6 +11,7 @@ import { AutoTextarea, Button, IconButton, Icon, MenuItem, MenuSep, Popover, inp
 import { rememberLocal, shouldAppear } from "./appear";
 import { AssignSuggestion } from "./assign-suggestion";
 import { CardFront } from "./card-front";
+import { realIds } from "./optimistic";
 import { COVER_COLORS } from "./card-popovers";
 import { SORTS, type BoardData, type CardData, type ListData } from "./types";
 
@@ -456,8 +457,12 @@ export function CardComposer({
           lists: b.lists.map((l) => (l.id === listId ? { ...l, cards: where === "top" ? [temp, ...l.cards] : [...l.cards, temp] } : l)),
         },
       );
+      return { tempId: temp.id };
     },
-    onSuccess: (card) => onCreated?.({ id: card.id, title: card.title }),
+    onSuccess: (card, _input, ctx) => {
+      if (ctx) realIds.set(ctx.tempId, card.id);
+      onCreated?.({ id: card.id, title: card.title });
+    },
     onSettled: () => utils.board.get.invalidate({ id: boardId }),
   });
   useEffect(() => {

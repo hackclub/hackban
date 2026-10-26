@@ -1,6 +1,6 @@
 import { auth } from "~/server/auth";
 import { db } from "~/server/db";
-import { imageType, readStored, removeStored, saveFile } from "~/server/storage";
+import { bodyTooBig, imageType, readStored, removeStored, saveFile } from "~/server/storage";
 
 const MAX_BYTES = 2 * 1024 * 1024;
 
@@ -38,6 +38,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const { id } = await params;
   const m = await membership(id);
   if (m?.role !== "admin") return new Response("Forbidden", { status: 403 });
+  if (bodyTooBig(req, MAX_BYTES)) return new Response("Logos must be under 2 MB.", { status: 413 });
   const file = (await req.formData()).get("file");
   if (!(file instanceof File)) return new Response("No file", { status: 400 });
   if (file.size > MAX_BYTES) return new Response("Logos must be under 2 MB.", { status: 413 });

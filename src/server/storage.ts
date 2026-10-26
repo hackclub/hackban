@@ -37,7 +37,18 @@ export function imageType(b: Uint8Array) {
 /** Best-effort delete; a missing file is fine. */
 export async function removeStored(key: string | null | undefined) {
   if (!key || !/^[\w-]+$/.test(key)) return;
+  // Copied cards share their attachments' files; keep it while any row still uses it.
+  if (await db.attachment.count({ where: { storageKey: key } })) return;
   await unlink(path.join(root(), key)).catch(() => undefined);
+}
+
+/**
+ * Whether a multipart body is too big to buffer. A missing length (chunked
+ * upload) counts as too big: browsers always send one for FormData.
+ */
+export function bodyTooBig(req: Request, maxBytes: number) {
+  const len = req.headers.get("content-length");
+  return len === null || Number(len) > maxBytes + 64 * 1024; // multipart overhead is well under 64 KB
 }
 
 /** Files of attachments matching `where`; call before a cascading delete, remove after. */

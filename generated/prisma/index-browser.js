@@ -160,6 +160,7 @@ exports.Prisma.UserScalarFieldEnum = {
   avatarKey: 'avatarKey',
   providerImage: 'providerImage',
   isGhost: 'isGhost',
+  invitedEmail: 'invitedEmail',
   isAdmin: 'isAdmin',
   trelloId: 'trelloId',
   createdAt: 'createdAt'

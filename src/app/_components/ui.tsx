@@ -61,7 +61,8 @@ export function labelStyle(color: string | null | undefined) {
 }
 
 export function coverColor(color: string) {
-  return LABEL_BASE[color]?.[1] ?? color;
+  // Never pass the stored string through: it lands in a CSS `background` (e.g. url(...) would load for every viewer).
+  return LABEL_BASE[color]?.[1] ?? "var(--color-neutral-bold)";
 }
 
 export const BOARD_COLORS = [
@@ -90,6 +91,11 @@ export function boardBg(b: { background: string; bgImage?: string | null }) {
 }
 
 // ---------- Avatar ----------
+
+export const looksLikeEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.trim());
+
+/** Sub-line for a placeholder member who hasn't logged in yet. */
+export const ghostNote = (u: { invitedEmail?: string | null }) => (u.invitedEmail ? "Invited, hasn't logged in yet" : "Imported from Trello");
 
 export function initials(name?: string | null) {
   if (!name) return "?";
