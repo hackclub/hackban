@@ -220,6 +220,7 @@ exports.Prisma.ListScalarFieldEnum = {
   boardId: 'boardId',
   name: 'name',
   pos: 'pos',
+  color: 'color',
   closed: 'closed',
   trelloId: 'trelloId',
   createdAt: 'createdAt'

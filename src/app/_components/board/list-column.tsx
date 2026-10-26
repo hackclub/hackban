@@ -7,10 +7,11 @@ import { memo, useCallback, useEffect, useRef, useState } from "react";
 
 import { api } from "~/trpc/react";
 
-import { AutoTextarea, Button, IconButton, Icon, MenuItem, MenuSep, Popover, inputCls, usePopoverState } from "../ui";
+import { AutoTextarea, Button, IconButton, Icon, MenuItem, MenuSep, Popover, inputCls, labelStyle, usePopoverState } from "../ui";
 import { rememberLocal, shouldAppear } from "./appear";
 import { AssignSuggestion } from "./assign-suggestion";
 import { CardFront } from "./card-front";
+import { COVER_COLORS } from "./card-popovers";
 import { SORTS, type BoardData, type CardData, type ListData } from "./types";
 
 export const SortableCard = memo(function SortableCard({
@@ -111,8 +112,9 @@ export const ListColumn = memo(function ListColumn({
         {...attributes}
         {...listeners}
         onClick={() => setCollapsed(false)}
-        className="flex w-12 shrink-0 cursor-pointer flex-col items-center gap-2 self-start rounded-xl bg-[var(--color-list)] py-3 shadow-[var(--shadow-card)] hover:bg-[var(--color-neutral-bold)]"
+        className="flex w-12 shrink-0 cursor-pointer flex-col items-center gap-2 self-start overflow-hidden rounded-xl bg-[var(--color-list)] pb-3 shadow-[var(--shadow-card)] hover:bg-[var(--color-neutral-bold)]"
       >
+        <ListStrip color={list.color} />
         <Icon name="collapse" size={14} className="text-[var(--color-text-subtle)]" />
         <span className="text-sm font-semibold [writing-mode:vertical-rl]">{list.name}</span>
         <span className="text-xs text-[var(--color-text-subtle)] [writing-mode:vertical-rl]">{cards.length}</span>
@@ -124,9 +126,18 @@ export const ListColumn = memo(function ListColumn({
     <div
       ref={setNodeRef}
       style={{ transform: CSS.Translate.toString(transform), transition }}
-      className={`flex max-h-full w-[272px] shrink-0 flex-col self-start rounded-xl bg-[var(--color-list)] pb-2 shadow-[var(--shadow-card)] ${appear ? "animate-pop-in" : ""}`}
+      className={`flex max-h-full w-[272px] shrink-0 flex-col self-start overflow-hidden rounded-xl bg-[var(--color-list)] pb-2 shadow-[var(--shadow-card)] ${appear ? "animate-pop-in" : ""}`}
     >
-      <div {...attributes} {...listeners} className="flex cursor-pointer items-start gap-1 px-2 pt-2 pb-1 outline-none">
+      <ListStrip color={list.color} />
+      <div
+        {...attributes}
+        {...listeners}
+        // Keys typed in the title or a list popover (portals bubble through React) must not start a keyboard drag.
+        onKeyDown={(e) => {
+          if (!(e.target as HTMLElement).matches("input, textarea, select")) listeners?.onKeyDown?.(e);
+        }}
+        className="flex cursor-pointer items-start gap-1 px-2 pt-0.5 pb-1 outline-none"
+      >
         <ListTitle list={list} boardId={board.id} readOnly={readOnly} />
         <span className="flex h-8 items-center px-1 text-sm text-[var(--color-text-subtle)] tabular-nums">{cards.length}</span>
         {!readOnly && cards.length > 1 && <ListSort list={list} boardId={board.id} cards={cards} />}
@@ -174,6 +185,11 @@ export const ListColumn = memo(function ListColumn({
     </div>
   );
 });
+
+function ListStrip({ color }: { color: string | null }) {
+  // Collapsed lists start their content at the strip, so keep the same top gap without a color.
+  return <div className="h-1.5 w-full shrink-0" style={color ? { background: labelStyle(color).background } : undefined} />;
+}
 
 function useCollapsed(listId: string) {
   const key = `hackban:collapsed:${listId}`;
@@ -269,7 +285,7 @@ function ListSort({ list, boardId, cards }: { list: ListData; boardId: string; c
 
 function ListMenu({ list, board, onAddCard }: { list: ListData; board: BoardData; onAddCard: () => void }) {
   const p = usePopoverState();
-  const [pane, setPane] = useState<"main" | "copy" | "move" | "moveCards" | "archiveCards">("main");
+  const [pane, setPane] = useState<"main" | "color" | "copy" | "move" | "moveCards" | "archiveCards">("main");
   const utils = api.useUtils();
   const inv = () => utils.board.get.invalidate({ id: board.id });
   const update = api.list.update.useMutation({
@@ -292,7 +308,11 @@ function ListMenu({ list, board, onAddCard }: { list: ListData; board: BoardData
     p.close();
     setPane("main");
   };
-  const titles = { main: "List actions", copy: "Copy list", move: "Move list", moveCards: "Move all cards in list", archiveCards: "Archive all cards in this list?" };
+  const recolor = (color: string | null) => {
+    utils.board.get.setData({ id: board.id }, (b) => b && { ...b, lists: b.lists.map((l) => (l.id === list.id ? { ...l, color } : l)) });
+    update.mutate({ id: list.id, color });
+  };
+  const titles = { main: "List actions", color: "Change list color", copy: "Copy list", move: "Move list", moveCards: "Move all cards in list", archiveCards: "Archive all cards in this list?" };
 
   return (
     <>
@@ -303,12 +323,30 @@ function ListMenu({ list, board, onAddCard }: { list: ListData; board: BoardData
         {pane === "main" && (
           <>
             <MenuItem onClick={() => { onAddCard(); close(); }}>Add card</MenuItem>
+            <MenuItem onClick={() => setPane("color")}>Change list color</MenuItem>
             <MenuItem onClick={() => setPane("copy")}>Copy list</MenuItem>
             <MenuItem onClick={() => setPane("move")}>Move list</MenuItem>
             <MenuItem onClick={() => setPane("moveCards")}>Move all cards in this list</MenuItem>
             <MenuSep />
             <MenuItem onClick={() => setPane("archiveCards")}>Archive all cards in this list</MenuItem>
             <MenuItem onClick={() => { update.mutate({ id: list.id, closed: true }); close(); }}>Archive this list</MenuItem>
+          </>
+        )}
+        {pane === "color" && (
+          <>
+            <div className="grid grid-cols-5 gap-2">
+              {COVER_COLORS.map((c) => (
+                <button
+                  key={c}
+                  onClick={() => recolor(c)}
+                  className={`h-8 rounded-[3px] ${list.color === c ? "ring-2 ring-[var(--color-focus)] ring-offset-1" : ""}`}
+                  style={{ background: labelStyle(c).background }}
+                  aria-label={c}
+                  title={c}
+                />
+              ))}
+            </div>
+            {list.color && <Button className="mt-3 w-full" onClick={() => recolor(null)}>Remove color</Button>}
           </>
         )}
         {pane === "copy" && (
@@ -480,7 +518,7 @@ export function ListComposer({ boardId }: { boardId: string }) {
       rememberLocal(name);
       await utils.board.get.cancel({ id: boardId });
       utils.board.get.setData({ id: boardId }, (b) =>
-        b && { ...b, lists: [...b.lists, { id: `temp-${Math.random()}`, boardId, name, pos: "", closed: false, trelloId: null, createdAt: new Date(), cards: [] }] },
+        b && { ...b, lists: [...b.lists, { id: `temp-${Math.random()}`, boardId, name, pos: "", color: null, closed: false, trelloId: null, createdAt: new Date(), cards: [] }] },
       );
     },
     onSettled: () => utils.board.get.invalidate({ id: boardId }),

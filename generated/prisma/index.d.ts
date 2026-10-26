@@ -14980,6 +14980,7 @@ export namespace Prisma {
     boardId: string | null
     name: string | null
     pos: string | null
+    color: string | null
     closed: boolean | null
     trelloId: string | null
     createdAt: Date | null
@@ -14990,6 +14991,7 @@ export namespace Prisma {
     boardId: string | null
     name: string | null
     pos: string | null
+    color: string | null
     closed: boolean | null
     trelloId: string | null
     createdAt: Date | null
@@ -15000,6 +15002,7 @@ export namespace Prisma {
     boardId: number
     name: number
     pos: number
+    color: number
     closed: number
     trelloId: number
     createdAt: number
@@ -15012,6 +15015,7 @@ export namespace Prisma {
     boardId?: true
     name?: true
     pos?: true
+    color?: true
     closed?: true
     trelloId?: true
     createdAt?: true
@@ -15022,6 +15026,7 @@ export namespace Prisma {
     boardId?: true
     name?: true
     pos?: true
+    color?: true
     closed?: true
     trelloId?: true
     createdAt?: true
@@ -15032,6 +15037,7 @@ export namespace Prisma {
     boardId?: true
     name?: true
     pos?: true
+    color?: true
     closed?: true
     trelloId?: true
     createdAt?: true
@@ -15115,6 +15121,7 @@ export namespace Prisma {
     boardId: string
     name: string
     pos: string
+    color: string | null
     closed: boolean
     trelloId: string | null
     createdAt: Date
@@ -15142,6 +15149,7 @@ export namespace Prisma {
     boardId?: boolean
     name?: boolean
     pos?: boolean
+    color?: boolean
     closed?: boolean
     trelloId?: boolean
     createdAt?: boolean
@@ -15155,6 +15163,7 @@ export namespace Prisma {
     boardId?: boolean
     name?: boolean
     pos?: boolean
+    color?: boolean
     closed?: boolean
     trelloId?: boolean
     createdAt?: boolean
@@ -15166,6 +15175,7 @@ export namespace Prisma {
     boardId?: boolean
     name?: boolean
     pos?: boolean
+    color?: boolean
     closed?: boolean
     trelloId?: boolean
     createdAt?: boolean
@@ -15177,12 +15187,13 @@ export namespace Prisma {
     boardId?: boolean
     name?: boolean
     pos?: boolean
+    color?: boolean
     closed?: boolean
     trelloId?: boolean
     createdAt?: boolean
   }
 
-  export type ListOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "boardId" | "name" | "pos" | "closed" | "trelloId" | "createdAt", ExtArgs["result"]["list"]>
+  export type ListOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "boardId" | "name" | "pos" | "color" | "closed" | "trelloId" | "createdAt", ExtArgs["result"]["list"]>
   export type ListInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     board?: boolean | BoardDefaultArgs<ExtArgs>
     cards?: boolean | List$cardsArgs<ExtArgs>
@@ -15206,6 +15217,7 @@ export namespace Prisma {
       boardId: string
       name: string
       pos: string
+      color: string | null
       closed: boolean
       trelloId: string | null
       createdAt: Date
@@ -15638,6 +15650,7 @@ export namespace Prisma {
     readonly boardId: FieldRef<"List", 'String'>
     readonly name: FieldRef<"List", 'String'>
     readonly pos: FieldRef<"List", 'String'>
+    readonly color: FieldRef<"List", 'String'>
     readonly closed: FieldRef<"List", 'Boolean'>
     readonly trelloId: FieldRef<"List", 'String'>
     readonly createdAt: FieldRef<"List", 'DateTime'>
@@ -31881,6 +31894,7 @@ export namespace Prisma {
     boardId: 'boardId',
     name: 'name',
     pos: 'pos',
+    color: 'color',
     closed: 'closed',
     trelloId: 'trelloId',
     createdAt: 'createdAt'
@@ -32875,6 +32889,7 @@ export namespace Prisma {
     boardId?: StringFilter<"List"> | string
     name?: StringFilter<"List"> | string
     pos?: StringFilter<"List"> | string
+    color?: StringNullableFilter<"List"> | string | null
     closed?: BoolFilter<"List"> | boolean
     trelloId?: StringNullableFilter<"List"> | string | null
     createdAt?: DateTimeFilter<"List"> | Date | string
@@ -32887,6 +32902,7 @@ export namespace Prisma {
     boardId?: SortOrder
     name?: SortOrder
     pos?: SortOrder
+    color?: SortOrderInput | SortOrder
     closed?: SortOrder
     trelloId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -32903,6 +32919,7 @@ export namespace Prisma {
     boardId?: StringFilter<"List"> | string
     name?: StringFilter<"List"> | string
     pos?: StringFilter<"List"> | string
+    color?: StringNullableFilter<"List"> | string | null
     closed?: BoolFilter<"List"> | boolean
     createdAt?: DateTimeFilter<"List"> | Date | string
     board?: XOR<BoardScalarRelationFilter, BoardWhereInput>
@@ -32914,6 +32931,7 @@ export namespace Prisma {
     boardId?: SortOrder
     name?: SortOrder
     pos?: SortOrder
+    color?: SortOrderInput | SortOrder
     closed?: SortOrder
     trelloId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -32930,6 +32948,7 @@ export namespace Prisma {
     boardId?: StringWithAggregatesFilter<"List"> | string
     name?: StringWithAggregatesFilter<"List"> | string
     pos?: StringWithAggregatesFilter<"List"> | string
+    color?: StringNullableWithAggregatesFilter<"List"> | string | null
     closed?: BoolWithAggregatesFilter<"List"> | boolean
     trelloId?: StringNullableWithAggregatesFilter<"List"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"List"> | Date | string
@@ -34647,6 +34666,7 @@ export namespace Prisma {
     id?: string
     name: string
     pos: string
+    color?: string | null
     closed?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -34659,6 +34679,7 @@ export namespace Prisma {
     boardId: string
     name: string
     pos: string
+    color?: string | null
     closed?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -34669,6 +34690,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     pos?: StringFieldUpdateOperationsInput | string
+    color?: NullableStringFieldUpdateOperationsInput | string | null
     closed?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -34681,6 +34703,7 @@ export namespace Prisma {
     boardId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     pos?: StringFieldUpdateOperationsInput | string
+    color?: NullableStringFieldUpdateOperationsInput | string | null
     closed?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -34692,6 +34715,7 @@ export namespace Prisma {
     boardId: string
     name: string
     pos: string
+    color?: string | null
     closed?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -34701,6 +34725,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     pos?: StringFieldUpdateOperationsInput | string
+    color?: NullableStringFieldUpdateOperationsInput | string | null
     closed?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -34711,6 +34736,7 @@ export namespace Prisma {
     boardId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     pos?: StringFieldUpdateOperationsInput | string
+    color?: NullableStringFieldUpdateOperationsInput | string | null
     closed?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -36399,6 +36425,7 @@ export namespace Prisma {
     boardId?: SortOrder
     name?: SortOrder
     pos?: SortOrder
+    color?: SortOrder
     closed?: SortOrder
     trelloId?: SortOrder
     createdAt?: SortOrder
@@ -36409,6 +36436,7 @@ export namespace Prisma {
     boardId?: SortOrder
     name?: SortOrder
     pos?: SortOrder
+    color?: SortOrder
     closed?: SortOrder
     trelloId?: SortOrder
     createdAt?: SortOrder
@@ -36419,6 +36447,7 @@ export namespace Prisma {
     boardId?: SortOrder
     name?: SortOrder
     pos?: SortOrder
+    color?: SortOrder
     closed?: SortOrder
     trelloId?: SortOrder
     createdAt?: SortOrder
@@ -40850,6 +40879,7 @@ export namespace Prisma {
     id?: string
     name: string
     pos: string
+    color?: string | null
     closed?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -40860,6 +40890,7 @@ export namespace Prisma {
     id?: string
     name: string
     pos: string
+    color?: string | null
     closed?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -41041,6 +41072,7 @@ export namespace Prisma {
     boardId?: StringFilter<"List"> | string
     name?: StringFilter<"List"> | string
     pos?: StringFilter<"List"> | string
+    color?: StringNullableFilter<"List"> | string | null
     closed?: BoolFilter<"List"> | boolean
     trelloId?: StringNullableFilter<"List"> | string | null
     createdAt?: DateTimeFilter<"List"> | Date | string
@@ -41758,6 +41790,7 @@ export namespace Prisma {
     id?: string
     name: string
     pos: string
+    color?: string | null
     closed?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -41769,6 +41802,7 @@ export namespace Prisma {
     boardId: string
     name: string
     pos: string
+    color?: string | null
     closed?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -41970,6 +42004,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     pos?: StringFieldUpdateOperationsInput | string
+    color?: NullableStringFieldUpdateOperationsInput | string | null
     closed?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41981,6 +42016,7 @@ export namespace Prisma {
     boardId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     pos?: StringFieldUpdateOperationsInput | string
+    color?: NullableStringFieldUpdateOperationsInput | string | null
     closed?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -45279,6 +45315,7 @@ export namespace Prisma {
     id?: string
     name: string
     pos: string
+    color?: string | null
     closed?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -45340,6 +45377,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     pos?: StringFieldUpdateOperationsInput | string
+    color?: NullableStringFieldUpdateOperationsInput | string | null
     closed?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -45350,6 +45388,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     pos?: StringFieldUpdateOperationsInput | string
+    color?: NullableStringFieldUpdateOperationsInput | string | null
     closed?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -45360,6 +45399,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     pos?: StringFieldUpdateOperationsInput | string
+    color?: NullableStringFieldUpdateOperationsInput | string | null
     closed?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string

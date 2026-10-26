@@ -364,7 +364,7 @@ function AttachPane({ card, board }: { card: CardDetail; board: BoardData }) {
   );
 }
 
-const COVER_COLORS = ["green", "yellow", "orange", "red", "purple", "blue", "sky", "lime", "pink", "black"];
+export const COVER_COLORS = ["green", "yellow", "orange", "red", "purple", "blue", "sky", "lime", "pink", "black"];
 
 function CoverPane({ card, board }: { card: CardDetail; board: BoardData }) {
   const utils = api.useUtils();

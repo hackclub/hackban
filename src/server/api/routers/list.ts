@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { boardIdForList, logActivity, requireBoard } from "~/server/api/access";
+import { boardIdForList, logActivity, requireBoard, touch } from "~/server/api/access";
 import { posAfter, posAtEnd, sequentialKeys } from "~/server/api/pos";
 import { removeStored, storedKeys } from "~/server/storage";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
@@ -23,12 +23,17 @@ export const listRouter = createTRPCRouter({
     }),
 
   update: protectedProcedure
-    .input(z.object({ id: z.string(), name: z.string().min(1).max(512).optional(), closed: z.boolean().optional() }))
+    .input(z.object({ id: z.string(), name: z.string().min(1).max(512).optional(), color: z.string().max(32).nullable().optional(), closed: z.boolean().optional() }))
     .mutation(async ({ ctx, input }) => {
       const boardId = await boardIdForList(ctx.db, input.id);
       await requireBoard(ctx.db, ctx.session.user.id, boardId);
       const { id, ...data } = input;
       const list = await ctx.db.list.update({ where: { id }, data });
+      // A color-only change has no activity entry.
+      if (input.name === undefined && input.closed === undefined) {
+        touch(boardId, undefined, ctx.clientId);
+        return list;
+      }
       const type = input.closed === true ? "archiveList" : input.closed === false ? "restoreList" : "renameList";
       logActivity(ctx.db, { boardId, actorId: ctx.session.user.id, type, data: { name: list.name }, origin: ctx.clientId });
       return list;
@@ -82,6 +87,7 @@ export const listRouter = createTRPCRouter({
         data: {
           boardId: src.boardId,
           name: input.name,
+          color: src.color,
           pos: posAfter(siblings, src.id),
           cards: {
             create: src.cards.map((c) => ({

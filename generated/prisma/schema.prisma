@@ -173,6 +173,7 @@ model List {
   boardId   String
   name      String
   pos       String // fractional index
+  color     String? // label color name, null = no color
   closed    Boolean  @default(false)
   trelloId  String?  @unique
   createdAt DateTime @default(now())
