@@ -56,6 +56,10 @@ model User {
     email         String?   @unique
     emailVerified DateTime?
     image         String?
+    // Uploaded avatar ("storageKey:mime"). While set, `image` points at it and
+    // the original (Slack) URL waits in `providerImage` for when it's removed.
+    avatarKey     String?
+    providerImage String?
     // Ghost users are created by the Trello importer for members who haven't
     // signed in yet; they are merged into the real account on first login.
     isGhost       Boolean   @default(false)

@@ -1,9 +1,8 @@
 import { auth } from "~/server/auth";
 import { db } from "~/server/db";
-import { readStored, removeStored, saveFile } from "~/server/storage";
+import { imageType, readStored, removeStored, saveFile } from "~/server/storage";
 
 const MAX_BYTES = 2 * 1024 * 1024;
-const TYPES = new Set(["image/png", "image/jpeg", "image/gif", "image/webp"]);
 
 async function membership(workspaceId: string) {
   const session = await auth();
@@ -41,10 +40,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (m?.role !== "admin") return new Response("Forbidden", { status: 403 });
   const file = (await req.formData()).get("file");
   if (!(file instanceof File)) return new Response("No file", { status: 400 });
-  if (!TYPES.has(file.type)) return new Response("Use a PNG, JPEG, GIF or WebP image.", { status: 415 });
   if (file.size > MAX_BYTES) return new Response("Logos must be under 2 MB.", { status: 413 });
-  const key = await saveFile(new Uint8Array(await file.arrayBuffer()));
-  await replaceLogo(id, `${key}:${file.type}`);
+  const data = new Uint8Array(await file.arrayBuffer());
+  const type = imageType(data);
+  if (!type) return new Response("Use a PNG, JPEG, GIF or WebP image.", { status: 415 });
+  const key = await saveFile(data);
+  await replaceLogo(id, `${key}:${type}`);
   return new Response(null, { status: 204 });
 }
 

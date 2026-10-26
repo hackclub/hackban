@@ -81,7 +81,8 @@ export const adminRouter = createTRPCRouter({
 
   deleteUser: adminProcedure.input(z.object({ userId: z.string() })).mutation(async ({ ctx, input }) => {
     if (input.userId === ctx.session.user.id) throw new TRPCError({ code: "BAD_REQUEST", message: "You can't delete yourself." });
-    await ctx.db.user.delete({ where: { id: input.userId } });
+    const { avatarKey } = await ctx.db.user.delete({ where: { id: input.userId } });
+    await removeStored(avatarKey?.split(":")[0]);
   }),
 
   boards: adminProcedure.input(q).query(({ ctx, input }) =>

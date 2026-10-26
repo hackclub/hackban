@@ -2,9 +2,10 @@
 
 import { format } from "date-fns";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
-import { api } from "~/trpc/react";
+import { api, type RouterOutputs } from "~/trpc/react";
 
 import { ActivityItem } from "./board/activity";
 import { PageTitle } from "./settings-shell";
@@ -16,6 +17,62 @@ export function PersonalPage({ page }: { page: "profile" | "activity" | "cards" 
   if (page === "cards") return <Cards />;
   if (page === "settings") return <Settings />;
   return <Profile />;
+}
+
+type Me = RouterOutputs["me"]["profile"];
+
+function AvatarEditor({ me }: { me: Me }) {
+  const utils = api.useUtils();
+  const router = useRouter();
+  const input = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const send = async (method: "POST" | "DELETE", file?: File) => {
+    setBusy(true);
+    setErr(null);
+    const body = file ? new FormData() : undefined;
+    if (file) body!.append("file", file);
+    const res = await fetch(`/api/users/${me.id}/avatar`, { method, body });
+    if (!res.ok) setErr(await res.text());
+    await utils.me.profile.invalidate();
+    // The header's avatar comes from the server session.
+    router.refresh();
+    setBusy(false);
+  };
+  return (
+    <div className="shrink-0 text-center">
+      <button
+        type="button"
+        disabled={busy}
+        onClick={() => input.current?.click()}
+        className="group relative block rounded-full"
+        aria-label="Change profile picture"
+      >
+        <Avatar user={me} size={72} className={`ring-4 ring-white/40 transition-opacity ${busy ? "opacity-50" : ""}`} />
+        <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 text-xs font-medium text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+          Change
+        </span>
+      </button>
+      <input
+        ref={input}
+        type="file"
+        accept="image/png,image/jpeg,image/gif,image/webp"
+        hidden
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          e.target.value = "";
+          if (f && f.size > 2 * 1024 * 1024) setErr("Pictures must be under 2 MB.");
+          else if (f) void send("POST", f);
+        }}
+      />
+      {me.avatarKey && (
+        <button className="mt-1 text-xs underline opacity-80" disabled={busy} onClick={() => void send("DELETE")}>
+          Use Slack photo
+        </button>
+      )}
+      {err && <p className="mt-1 w-24 text-xs">{err}</p>}
+    </div>
+  );
 }
 
 function Profile() {
@@ -41,13 +98,13 @@ function Profile() {
   return (
     <div className="max-w-[560px]">
       <div className="-mx-6 mb-8 flex items-end gap-4 rounded-lg bg-gradient-to-r from-[#0c66e4] to-[#6e5dc6] px-6 pt-10 pb-5 text-white md:-mx-0">
-        <Avatar user={me} size={72} className="ring-4 ring-white/40" />
+        <AvatarEditor me={me} />
         <div className="pb-1">
           <div className="text-xl font-semibold">{me.name}</div>
           <div className="text-sm opacity-80">{me.username ? `@${me.username}` : me.email}</div>
         </div>
       </div>
-      <PageTitle sub="Your avatar comes from your Hack Club Slack profile.">Manage your personal information</PageTitle>
+      <PageTitle sub="Your avatar comes from your Hack Club Slack profile unless you upload your own.">Manage your personal information</PageTitle>
       <label className="mb-1 block text-xs font-bold text-[var(--color-text-subtle)]">Full name</label>
       <input className={inputCls} value={name} onChange={(e) => setName(e.target.value)} />
       <label className="mt-4 mb-1 block text-xs font-bold text-[var(--color-text-subtle)]">Username</label>

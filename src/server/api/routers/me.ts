@@ -6,7 +6,7 @@ export const meRouter = createTRPCRouter({
   profile: protectedProcedure.query(({ ctx }) =>
     ctx.db.user.findUniqueOrThrow({
       where: { id: ctx.session.user.id },
-      select: { id: true, name: true, email: true, image: true, username: true, trelloId: true, isAdmin: true, createdAt: true },
+      select: { id: true, name: true, email: true, image: true, avatarKey: true, username: true, trelloId: true, isAdmin: true, createdAt: true },
     }),
   ),
 
