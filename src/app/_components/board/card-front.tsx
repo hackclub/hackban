@@ -178,7 +178,7 @@ export const CardFront = memo(function CardFront({
               Blocked
             </span>
           )}
-          {card.blocking.length > 0 && (
+          {card.blocking.length > 0 && !card.dueComplete && (
             <span
               className="flex h-6 items-center gap-1 rounded-[3px] bg-[var(--color-warning)] px-1 text-[#172b4d]"
               title={`Blocking: ${card.blocking.map((b) => b.blocked.title).join(", ")}`}
