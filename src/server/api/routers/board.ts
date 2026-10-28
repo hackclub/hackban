@@ -22,8 +22,10 @@ const cardFrontInclude = {
   labels: { include: { label: true } },
   members: { include: { user: { select: { id: true, name: true, image: true } } } },
   checklists: { include: { items: { select: { complete: true } } } },
-  // Only open blockers: the card front shows "Blocked" until they're all done.
-  _count: { select: { comments: true, attachments: true, blockedBy: { where: { blocker: { closed: false, dueComplete: false } } } } },
+  _count: { select: { comments: true, attachments: true } },
+  // Only unfinished links: the card front shows "Blocked"/"Blocking" until they're done.
+  blockedBy: { where: { blocker: { closed: false, dueComplete: false } }, select: { blocker: { select: { title: true } } } },
+  blocking: { where: { blocked: { closed: false, dueComplete: false } }, select: { blocked: { select: { title: true } } } },
 } as const;
 
 /** A board must always keep at least one admin. */

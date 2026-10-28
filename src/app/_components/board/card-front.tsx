@@ -169,13 +169,22 @@ export const CardFront = memo(function CardFront({
         )}
         <CardTitle title={card.title} complete={card.dueComplete} onChange={overlay || readOnly ? undefined : setComplete} />
         <div className="mt-1 flex flex-wrap items-center gap-x-1 gap-y-0.5 pb-0.5 text-xs text-[var(--color-text-subtle)]">
-          {card._count.blockedBy > 0 && (
+          {card.blockedBy.length > 0 && (
             <span
               className="flex h-6 items-center gap-1 rounded-[3px] bg-[var(--color-danger)] px-1 text-white"
-              title={`Blocked by ${card._count.blockedBy} unfinished card${card._count.blockedBy === 1 ? "" : "s"}`}
+              title={`Blocked by: ${card.blockedBy.map((b) => b.blocker.title).join(", ")}`}
             >
               <Icon name="blocked" size={14} />
               Blocked
+            </span>
+          )}
+          {card.blocking.length > 0 && (
+            <span
+              className="flex h-6 items-center gap-1 rounded-[3px] bg-[var(--color-warning)] px-1 text-[#172b4d]"
+              title={`Blocking: ${card.blocking.map((b) => b.blocked.title).join(", ")}`}
+            >
+              <Icon name="blocked" size={14} />
+              Blocking {card.blocking.length}
             </span>
           )}
           {card.watching && (

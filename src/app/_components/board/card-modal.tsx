@@ -831,6 +831,20 @@ function Dependencies({
   readOnly: boolean;
 }) {
   const setBlocker = useSetBlocker(boardId);
+  const utils = api.useUtils();
+  const patch = usePatchCard(boardId);
+  // Complete a linked card right from this list, instantly here and on its front.
+  const complete = api.card.update.useMutation({
+    onMutate: ({ id, dueComplete }) => {
+      patch(id, fieldsPatch({ dueComplete: dueComplete! }));
+      const mark = (cs: CardDetail["blocking"]) => cs.map((c) => (c.id === id ? { ...c, dueComplete: dueComplete! } : c));
+      utils.card.get.setData({ id: card.id }, (c) => c && { ...c, blockedBy: mark(c.blockedBy), blocking: mark(c.blocking) });
+    },
+    onSettled: () => {
+      void utils.card.get.invalidate();
+      void utils.board.get.invalidate({ id: boardId });
+    },
+  });
   const groups = [
     { title: "Blocked by", cards: card.blockedBy, unlink: (id: string) => ({ id: card.id, blockerId: id }) },
     { title: "Blocking", cards: card.blocking, unlink: (id: string) => ({ id, blockerId: card.id }) },
@@ -845,7 +859,10 @@ function Dependencies({
           <h4 className="mb-1 text-xs font-semibold text-[var(--color-text-subtle)]">{g.title}</h4>
           {g.cards.map((c) => (
             <div key={c.id} className="group flex items-center gap-2 rounded-[3px] px-1 py-1 text-sm hover:bg-[var(--color-neutral)]">
-              <CompleteCheck complete={c.dueComplete} />
+              <CompleteCheck
+                complete={c.dueComplete}
+                onChange={readOnly ? undefined : (v) => complete.mutate({ id: c.id, dueComplete: v })}
+              />
               <button
                 onClick={() => onOpenCard(c.id)}
                 className={`min-w-0 flex-1 truncate text-left hover:underline ${c.dueComplete ? "text-[var(--color-text-subtle)] line-through" : ""}`}
