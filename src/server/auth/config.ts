@@ -4,6 +4,7 @@ import { type DefaultSession, type NextAuthConfig } from "next-auth";
 import { env } from "~/env";
 import { applyAutoJoinForUser, claimInvite } from "~/server/autojoin";
 import { db } from "~/server/db";
+import { joinHackbanChannel } from "~/server/slack";
 
 declare module "next-auth" {
   interface Session extends DefaultSession {
@@ -64,8 +65,11 @@ export const authConfig = {
   adapter: PrismaAdapter(db),
   pages: { signIn: "/login" },
   events: {
-    async signIn({ user }) {
+    async signIn({ user, profile }) {
       if (user.id) {
+        // Fire and forget: a slow or failing Slack API must not block login.
+        const slackId = (profile as HackClubProfile | undefined)?.identity?.slack_id;
+        if (slackId) void joinHackbanChannel(user.id, slackId).catch((e) => console.error("[slack]", e));
         await db.user.updateMany({
           where: { id: user.id, isGhost: true },
           data: { isGhost: false },

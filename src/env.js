@@ -18,6 +18,8 @@ export const env = createEnv({
     ADMIN_EMAILS: z.string().default(""),
     // Must be a subset of the scopes enabled on the Hack Club Auth app.
     AUTH_HACKCLUB_SCOPE: z.string().default("email name slack_id"),
+    // Bot token (channels:manage) that adds new users to #hackban. Optional.
+    SLACK_BOT_TOKEN: z.string().optional(),
     DATABASE_URL: z.string().url(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
@@ -44,6 +46,7 @@ export const env = createEnv({
     UPLOAD_DIR: process.env.UPLOAD_DIR,
     ADMIN_EMAILS: process.env.ADMIN_EMAILS,
     AUTH_HACKCLUB_SCOPE: process.env.AUTH_HACKCLUB_SCOPE,
+    SLACK_BOT_TOKEN: process.env.SLACK_BOT_TOKEN,
     DATABASE_URL: process.env.DATABASE_URL,
     NODE_ENV: process.env.NODE_ENV,
   },

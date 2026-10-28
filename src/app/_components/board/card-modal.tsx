@@ -27,6 +27,7 @@ import {
   CardPopover,
   uploadFiles,
   useCardInvalidate,
+  useSetBlocker,
   type CardDetail,
   type PopKind,
 } from "./card-popovers";
@@ -224,6 +225,15 @@ function CardBody({
             readOnly={readOnly}
           />
           <Description card={card} boardId={board.id} readOnly={readOnly} />
+          {(card.blockedBy.length > 0 || card.blocking.length > 0) && (
+            <Dependencies
+              card={card}
+              boardId={board.id}
+              onAdd={openPop("blockers")}
+              onOpenCard={onOpenCard}
+              readOnly={readOnly}
+            />
+          )}
           {card.attachments.length > 0 && (
             <Attachments
               card={card}
@@ -267,6 +277,9 @@ function CardBody({
             </SideButton>
             <SideButton icon="attach" onClick={openPop("attachment")}>
               Attachment
+            </SideButton>
+            <SideButton icon="blocked" onClick={openPop("blockers")}>
+              Dependencies
             </SideButton>
             {!card.coverColor && !card.coverAttachmentId && (
               <SideButton icon="cover" onClick={openPop("cover")}>
@@ -800,6 +813,58 @@ function Description({
           </button>
         )
       )}
+    </section>
+  );
+}
+
+function Dependencies({
+  card,
+  boardId,
+  onAdd,
+  onOpenCard,
+  readOnly,
+}: {
+  card: CardDetail;
+  boardId: string;
+  onAdd: (e: React.MouseEvent) => void;
+  onOpenCard: (id: string | null) => void;
+  readOnly: boolean;
+}) {
+  const setBlocker = useSetBlocker(boardId);
+  const groups = [
+    { title: "Blocked by", cards: card.blockedBy, unlink: (id: string) => ({ id: card.id, blockerId: id }) },
+    { title: "Blocking", cards: card.blocking, unlink: (id: string) => ({ id, blockerId: card.id }) },
+  ].filter((g) => g.cards.length > 0);
+  return (
+    <section className="mb-6">
+      <SectionHeader icon="blocked" title="Dependencies">
+        {!readOnly && <Button onClick={onAdd}>Add</Button>}
+      </SectionHeader>
+      {groups.map((g) => (
+        <div key={g.title} className="mb-2">
+          <h4 className="mb-1 text-xs font-semibold text-[var(--color-text-subtle)]">{g.title}</h4>
+          {g.cards.map((c) => (
+            <div key={c.id} className="group flex items-center gap-2 rounded-[3px] px-1 py-1 text-sm hover:bg-[var(--color-neutral)]">
+              <CompleteCheck complete={c.dueComplete} />
+              <button
+                onClick={() => onOpenCard(c.id)}
+                className={`min-w-0 flex-1 truncate text-left hover:underline ${c.dueComplete ? "text-[var(--color-text-subtle)] line-through" : ""}`}
+              >
+                {c.title}
+              </button>
+              {!readOnly && (
+                <IconButton
+                  aria-label={`Remove ${g.title.toLowerCase()} ${c.title}`}
+                  className="h-6 w-6 opacity-0 group-hover:opacity-100 focus:opacity-100"
+                  onClick={() => setBlocker.mutate({ ...g.unlink(c.id), on: false })}
+                >
+                  <Icon name="close" size={12} />
+                </IconButton>
+              )}
+            </div>
+          ))}
+        </div>
+      ))}
     </section>
   );
 }

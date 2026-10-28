@@ -162,6 +162,7 @@ exports.Prisma.UserScalarFieldEnum = {
   isGhost: 'isGhost',
   invitedEmail: 'invitedEmail',
   isAdmin: 'isAdmin',
+  slackJoined: 'slackJoined',
   trelloId: 'trelloId',
   createdAt: 'createdAt'
 };
@@ -247,6 +248,11 @@ exports.Prisma.CardScalarFieldEnum = {
   shortId: 'shortId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.CardBlockScalarFieldEnum = {
+  blockerId: 'blockerId',
+  blockedId: 'blockedId'
 };
 
 exports.Prisma.LabelScalarFieldEnum = {
@@ -396,6 +402,7 @@ exports.Prisma.ModelName = {
   BoardStar: 'BoardStar',
   List: 'List',
   Card: 'Card',
+  CardBlock: 'CardBlock',
   Label: 'Label',
   CardLabel: 'CardLabel',
   CardMember: 'CardMember',

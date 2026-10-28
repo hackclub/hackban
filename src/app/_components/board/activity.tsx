@@ -49,6 +49,8 @@ function describe(a: Act, onCard: boolean) {
     case "removeChecklist": return <>removed {s(d.name)} from {card}</>;
     case "completeCheckItem": return <>completed {s(d.name)} on {card}</>;
     case "incompleteCheckItem": return <>marked {s(d.name)} incomplete on {card}</>;
+    case "addBlocker": return <>marked {card} as blocked by {s(d.name)}</>;
+    case "removeBlocker": return <>marked {card} as no longer blocked by {s(d.name)}</>;
     case "addAttachment": return <>attached {s(d.name)} to {card}</>;
     case "addMemberToBoard": return <>added a member to this board</>;
     case "joinBoard": return <>joined this board via invite link</>;

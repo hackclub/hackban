@@ -15,6 +15,7 @@ async function requireBoardMember(db: typeof Db, boardId: string, userId: string
 }
 
 const userSelect = { id: true, name: true, image: true, username: true } as const;
+const depSelect = { id: true, title: true, dueComplete: true } as const;
 
 export const cardRouter = createTRPCRouter({
   get: protectedProcedure
@@ -40,12 +41,17 @@ export const cardRouter = createTRPCRouter({
             include: { actor: { select: userSelect } },
           },
           watches: { where: { userId } },
+          // Archived cards neither block nor count as blocked.
+          blockedBy: { where: { blocker: { closed: false } }, include: { blocker: { select: depSelect } } },
+          blocking: { where: { blocked: { closed: false } }, include: { blocked: { select: depSelect } } },
         },
       });
-      const { watches, activities, ...rest } = card;
+      const { watches, activities, blockedBy, blocking, ...rest } = card;
       return {
         ...rest,
         watching: watches.length > 0,
+        blockedBy: blockedBy.map((b) => b.blocker),
+        blocking: blocking.map((b) => b.blocked),
         activities: activities.map((a) => ({ ...a, data: JSON.parse(a.data) as Record<string, unknown> })),
       };
     }),
@@ -157,6 +163,8 @@ export const cardRouter = createTRPCRouter({
       });
       if (toBoard !== before.list.boardId) {
         await ctx.db.cardLabel.deleteMany({ where: { cardId: card.id } });
+        // Dependencies are board-scoped too.
+        await ctx.db.cardBlock.deleteMany({ where: { OR: [{ blockerId: card.id }, { blockedId: card.id }] } });
         touch(before.list.boardId, undefined, ctx.clientId);
       }
       if (before.listId !== input.listId) {
@@ -297,6 +305,35 @@ export const cardRouter = createTRPCRouter({
       await requireCard(ctx.db, userId, input.id, false);
       await ctx.db.watch.deleteMany({ where: { userId, cardId: input.id } });
       if (input.on) await ctx.db.watch.create({ data: { userId, cardId: input.id } });
+    }),
+
+  /** Mark card `id` as blocked by `blockerId`, or clear that. Both must be on the same board. */
+  setBlocker: protectedProcedure
+    .input(z.object({ id: z.string(), blockerId: z.string(), on: z.boolean() }))
+    .mutation(async ({ ctx, input }) => {
+      const boardId = await requireCard(ctx.db, ctx.session.user.id, input.id);
+      const blocker = await ctx.db.card.findUnique({ where: { id: input.blockerId }, select: { title: true, list: { select: { boardId: true } } } });
+      if (blocker?.list.boardId !== boardId) throw new TRPCError({ code: "BAD_REQUEST", message: "Blocking cards must be on the same board." });
+      if (input.on) {
+        if (input.blockerId === input.id) throw new TRPCError({ code: "BAD_REQUEST", message: "A card can't block itself." });
+        const reverse = await ctx.db.cardBlock.findUnique({ where: { blockerId_blockedId: { blockerId: input.id, blockedId: input.blockerId } } });
+        if (reverse) throw new TRPCError({ code: "BAD_REQUEST", message: "Those cards would block each other." });
+        await ctx.db.cardBlock.upsert({
+          where: { blockerId_blockedId: { blockerId: input.blockerId, blockedId: input.id } },
+          create: { blockerId: input.blockerId, blockedId: input.id },
+          update: {},
+        });
+      } else {
+        await ctx.db.cardBlock.deleteMany({ where: { blockerId: input.blockerId, blockedId: input.id } });
+      }
+      logActivity(ctx.db, {
+        boardId,
+        cardId: input.id,
+        actorId: ctx.session.user.id,
+        type: input.on ? "addBlocker" : "removeBlocker",
+        data: { name: blocker.title },
+        origin: ctx.clientId,
+      });
     }),
 
   // ----- Labels (board-scoped, edited from the card's label popover) -----

@@ -1,6 +1,8 @@
 // What's new in Hackban, newest first. Add an entry for every user-facing update or change.
 // `id` must be unique; the header shows a dot until the viewer has seen the newest one.
 export const ANNOUNCEMENTS: { id: string; date: string; title: string; body: string }[] = [
+  { id: "card-dependencies", date: "2026-10-28", title: "Blocked cards", body: "Mark a card as blocked by another card on the board from its Dependencies button; it shows a red Blocked badge until every blocker is complete." },
+  { id: "slack-channel-join", date: "2026-10-28", title: "Join #hackban on Slack", body: "Logging in to Hackban for the first time adds you to the #hackban channel on the Hack Club Slack." },
   { id: "admin-imports", date: "2026-10-26", title: "Trello imports by admins", body: "Trello imports are now run by Hackban admins: ask in #hackban to get yours set up. The import link lives in your profile picture menu." },
   { id: "mcp-more-tools", date: "2026-10-26", title: "More MCP tools", body: "Connected apps can now invite members by email, edit boards and labels, copy cards, move lists, read activity and notifications, and restore archived items." },
   { id: "email-invites", date: "2026-10-26", title: "Invite by email", body: "Invite people to a workspace or board by email before they've logged in; they show as invited and join automatically when they first log in." },

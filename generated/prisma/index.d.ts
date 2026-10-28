@@ -74,6 +74,12 @@ export type List = $Result.DefaultSelection<Prisma.$ListPayload>
  */
 export type Card = $Result.DefaultSelection<Prisma.$CardPayload>
 /**
+ * Model CardBlock
+ * `blocker` has to be completed (or archived) before `blocked` can go ahead.
+ * Both cards are on the same board.
+ */
+export type CardBlock = $Result.DefaultSelection<Prisma.$CardBlockPayload>
+/**
  * Model Label
  * 
  */
@@ -376,6 +382,16 @@ export class PrismaClient<
     * ```
     */
   get card(): Prisma.CardDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.cardBlock`: Exposes CRUD operations for the **CardBlock** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more CardBlocks
+    * const cardBlocks = await prisma.cardBlock.findMany()
+    * ```
+    */
+  get cardBlock(): Prisma.CardBlockDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.label`: Exposes CRUD operations for the **Label** model.
@@ -959,6 +975,7 @@ export namespace Prisma {
     BoardStar: 'BoardStar',
     List: 'List',
     Card: 'Card',
+    CardBlock: 'CardBlock',
     Label: 'Label',
     CardLabel: 'CardLabel',
     CardMember: 'CardMember',
@@ -990,7 +1007,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "account" | "session" | "verificationToken" | "user" | "workspace" | "workspaceAutoJoin" | "workspaceMember" | "board" | "boardMember" | "boardStar" | "list" | "card" | "label" | "cardLabel" | "cardMember" | "checklist" | "checkItem" | "attachment" | "comment" | "activity" | "watch" | "notification" | "trelloImport" | "oAuthClient" | "oAuthToken"
+      modelProps: "account" | "session" | "verificationToken" | "user" | "workspace" | "workspaceAutoJoin" | "workspaceMember" | "board" | "boardMember" | "boardStar" | "list" | "card" | "cardBlock" | "label" | "cardLabel" | "cardMember" | "checklist" | "checkItem" | "attachment" | "comment" | "activity" | "watch" | "notification" | "trelloImport" | "oAuthClient" | "oAuthToken"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1879,6 +1896,80 @@ export namespace Prisma {
           count: {
             args: Prisma.CardCountArgs<ExtArgs>
             result: $Utils.Optional<CardCountAggregateOutputType> | number
+          }
+        }
+      }
+      CardBlock: {
+        payload: Prisma.$CardBlockPayload<ExtArgs>
+        fields: Prisma.CardBlockFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.CardBlockFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CardBlockPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.CardBlockFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CardBlockPayload>
+          }
+          findFirst: {
+            args: Prisma.CardBlockFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CardBlockPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.CardBlockFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CardBlockPayload>
+          }
+          findMany: {
+            args: Prisma.CardBlockFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CardBlockPayload>[]
+          }
+          create: {
+            args: Prisma.CardBlockCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CardBlockPayload>
+          }
+          createMany: {
+            args: Prisma.CardBlockCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.CardBlockCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CardBlockPayload>[]
+          }
+          delete: {
+            args: Prisma.CardBlockDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CardBlockPayload>
+          }
+          update: {
+            args: Prisma.CardBlockUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CardBlockPayload>
+          }
+          deleteMany: {
+            args: Prisma.CardBlockDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.CardBlockUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.CardBlockUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CardBlockPayload>[]
+          }
+          upsert: {
+            args: Prisma.CardBlockUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CardBlockPayload>
+          }
+          aggregate: {
+            args: Prisma.CardBlockAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateCardBlock>
+          }
+          groupBy: {
+            args: Prisma.CardBlockGroupByArgs<ExtArgs>
+            result: $Utils.Optional<CardBlockGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.CardBlockCountArgs<ExtArgs>
+            result: $Utils.Optional<CardBlockCountAggregateOutputType> | number
           }
         }
       }
@@ -2952,6 +3043,7 @@ export namespace Prisma {
     boardStar?: BoardStarOmit
     list?: ListOmit
     card?: CardOmit
+    cardBlock?: CardBlockOmit
     label?: LabelOmit
     cardLabel?: CardLabelOmit
     cardMember?: CardMemberOmit
@@ -3365,6 +3457,8 @@ export namespace Prisma {
     comments: number
     activities: number
     watches: number
+    blocking: number
+    blockedBy: number
   }
 
   export type CardCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3375,6 +3469,8 @@ export namespace Prisma {
     comments?: boolean | CardCountOutputTypeCountCommentsArgs
     activities?: boolean | CardCountOutputTypeCountActivitiesArgs
     watches?: boolean | CardCountOutputTypeCountWatchesArgs
+    blocking?: boolean | CardCountOutputTypeCountBlockingArgs
+    blockedBy?: boolean | CardCountOutputTypeCountBlockedByArgs
   }
 
   // Custom InputTypes
@@ -3435,6 +3531,20 @@ export namespace Prisma {
    */
   export type CardCountOutputTypeCountWatchesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: WatchWhereInput
+  }
+
+  /**
+   * CardCountOutputType without action
+   */
+  export type CardCountOutputTypeCountBlockingArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CardBlockWhereInput
+  }
+
+  /**
+   * CardCountOutputType without action
+   */
+  export type CardCountOutputTypeCountBlockedByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CardBlockWhereInput
   }
 
 
@@ -6771,6 +6881,7 @@ export namespace Prisma {
     isGhost: boolean | null
     invitedEmail: string | null
     isAdmin: boolean | null
+    slackJoined: boolean | null
     trelloId: string | null
     createdAt: Date | null
   }
@@ -6787,6 +6898,7 @@ export namespace Prisma {
     isGhost: boolean | null
     invitedEmail: string | null
     isAdmin: boolean | null
+    slackJoined: boolean | null
     trelloId: string | null
     createdAt: Date | null
   }
@@ -6803,6 +6915,7 @@ export namespace Prisma {
     isGhost: number
     invitedEmail: number
     isAdmin: number
+    slackJoined: number
     trelloId: number
     createdAt: number
     _all: number
@@ -6821,6 +6934,7 @@ export namespace Prisma {
     isGhost?: true
     invitedEmail?: true
     isAdmin?: true
+    slackJoined?: true
     trelloId?: true
     createdAt?: true
   }
@@ -6837,6 +6951,7 @@ export namespace Prisma {
     isGhost?: true
     invitedEmail?: true
     isAdmin?: true
+    slackJoined?: true
     trelloId?: true
     createdAt?: true
   }
@@ -6853,6 +6968,7 @@ export namespace Prisma {
     isGhost?: true
     invitedEmail?: true
     isAdmin?: true
+    slackJoined?: true
     trelloId?: true
     createdAt?: true
     _all?: true
@@ -6942,6 +7058,7 @@ export namespace Prisma {
     isGhost: boolean
     invitedEmail: string | null
     isAdmin: boolean
+    slackJoined: boolean
     trelloId: string | null
     createdAt: Date
     _count: UserCountAggregateOutputType | null
@@ -6975,6 +7092,7 @@ export namespace Prisma {
     isGhost?: boolean
     invitedEmail?: boolean
     isAdmin?: boolean
+    slackJoined?: boolean
     trelloId?: boolean
     createdAt?: boolean
     accounts?: boolean | User$accountsArgs<ExtArgs>
@@ -7007,6 +7125,7 @@ export namespace Prisma {
     isGhost?: boolean
     invitedEmail?: boolean
     isAdmin?: boolean
+    slackJoined?: boolean
     trelloId?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["user"]>
@@ -7023,6 +7142,7 @@ export namespace Prisma {
     isGhost?: boolean
     invitedEmail?: boolean
     isAdmin?: boolean
+    slackJoined?: boolean
     trelloId?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["user"]>
@@ -7039,11 +7159,12 @@ export namespace Prisma {
     isGhost?: boolean
     invitedEmail?: boolean
     isAdmin?: boolean
+    slackJoined?: boolean
     trelloId?: boolean
     createdAt?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "username" | "email" | "emailVerified" | "image" | "avatarKey" | "providerImage" | "isGhost" | "invitedEmail" | "isAdmin" | "trelloId" | "createdAt", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "username" | "email" | "emailVerified" | "image" | "avatarKey" | "providerImage" | "isGhost" | "invitedEmail" | "isAdmin" | "slackJoined" | "trelloId" | "createdAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     accounts?: boolean | User$accountsArgs<ExtArgs>
     sessions?: boolean | User$sessionsArgs<ExtArgs>
@@ -7096,6 +7217,7 @@ export namespace Prisma {
       isGhost: boolean
       invitedEmail: string | null
       isAdmin: boolean
+      slackJoined: boolean
       trelloId: string | null
       createdAt: Date
     }, ExtArgs["result"]["user"]>
@@ -7547,6 +7669,7 @@ export namespace Prisma {
     readonly isGhost: FieldRef<"User", 'Boolean'>
     readonly invitedEmail: FieldRef<"User", 'String'>
     readonly isAdmin: FieldRef<"User", 'Boolean'>
+    readonly slackJoined: FieldRef<"User", 'Boolean'>
     readonly trelloId: FieldRef<"User", 'String'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
   }
@@ -16433,6 +16556,8 @@ export namespace Prisma {
     comments?: boolean | Card$commentsArgs<ExtArgs>
     activities?: boolean | Card$activitiesArgs<ExtArgs>
     watches?: boolean | Card$watchesArgs<ExtArgs>
+    blocking?: boolean | Card$blockingArgs<ExtArgs>
+    blockedBy?: boolean | Card$blockedByArgs<ExtArgs>
     _count?: boolean | CardCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["card"]>
 
@@ -16508,6 +16633,8 @@ export namespace Prisma {
     comments?: boolean | Card$commentsArgs<ExtArgs>
     activities?: boolean | Card$activitiesArgs<ExtArgs>
     watches?: boolean | Card$watchesArgs<ExtArgs>
+    blocking?: boolean | Card$blockingArgs<ExtArgs>
+    blockedBy?: boolean | Card$blockedByArgs<ExtArgs>
     _count?: boolean | CardCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type CardIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -16528,6 +16655,8 @@ export namespace Prisma {
       comments: Prisma.$CommentPayload<ExtArgs>[]
       activities: Prisma.$ActivityPayload<ExtArgs>[]
       watches: Prisma.$WatchPayload<ExtArgs>[]
+      blocking: Prisma.$CardBlockPayload<ExtArgs>[]
+      blockedBy: Prisma.$CardBlockPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -16949,6 +17078,8 @@ export namespace Prisma {
     comments<T extends Card$commentsArgs<ExtArgs> = {}>(args?: Subset<T, Card$commentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CommentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     activities<T extends Card$activitiesArgs<ExtArgs> = {}>(args?: Subset<T, Card$activitiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ActivityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     watches<T extends Card$watchesArgs<ExtArgs> = {}>(args?: Subset<T, Card$watchesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WatchPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    blocking<T extends Card$blockingArgs<ExtArgs> = {}>(args?: Subset<T, Card$blockingArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CardBlockPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    blockedBy<T extends Card$blockedByArgs<ExtArgs> = {}>(args?: Subset<T, Card$blockedByArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CardBlockPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -17559,6 +17690,54 @@ export namespace Prisma {
   }
 
   /**
+   * Card.blocking
+   */
+  export type Card$blockingArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CardBlock
+     */
+    select?: CardBlockSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CardBlock
+     */
+    omit?: CardBlockOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CardBlockInclude<ExtArgs> | null
+    where?: CardBlockWhereInput
+    orderBy?: CardBlockOrderByWithRelationInput | CardBlockOrderByWithRelationInput[]
+    cursor?: CardBlockWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CardBlockScalarFieldEnum | CardBlockScalarFieldEnum[]
+  }
+
+  /**
+   * Card.blockedBy
+   */
+  export type Card$blockedByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CardBlock
+     */
+    select?: CardBlockSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CardBlock
+     */
+    omit?: CardBlockOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CardBlockInclude<ExtArgs> | null
+    where?: CardBlockWhereInput
+    orderBy?: CardBlockOrderByWithRelationInput | CardBlockOrderByWithRelationInput[]
+    cursor?: CardBlockWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CardBlockScalarFieldEnum | CardBlockScalarFieldEnum[]
+  }
+
+  /**
    * Card without action
    */
   export type CardDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -17574,6 +17753,1033 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: CardInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model CardBlock
+   */
+
+  export type AggregateCardBlock = {
+    _count: CardBlockCountAggregateOutputType | null
+    _min: CardBlockMinAggregateOutputType | null
+    _max: CardBlockMaxAggregateOutputType | null
+  }
+
+  export type CardBlockMinAggregateOutputType = {
+    blockerId: string | null
+    blockedId: string | null
+  }
+
+  export type CardBlockMaxAggregateOutputType = {
+    blockerId: string | null
+    blockedId: string | null
+  }
+
+  export type CardBlockCountAggregateOutputType = {
+    blockerId: number
+    blockedId: number
+    _all: number
+  }
+
+
+  export type CardBlockMinAggregateInputType = {
+    blockerId?: true
+    blockedId?: true
+  }
+
+  export type CardBlockMaxAggregateInputType = {
+    blockerId?: true
+    blockedId?: true
+  }
+
+  export type CardBlockCountAggregateInputType = {
+    blockerId?: true
+    blockedId?: true
+    _all?: true
+  }
+
+  export type CardBlockAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which CardBlock to aggregate.
+     */
+    where?: CardBlockWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CardBlocks to fetch.
+     */
+    orderBy?: CardBlockOrderByWithRelationInput | CardBlockOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: CardBlockWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CardBlocks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CardBlocks.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned CardBlocks
+    **/
+    _count?: true | CardBlockCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: CardBlockMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: CardBlockMaxAggregateInputType
+  }
+
+  export type GetCardBlockAggregateType<T extends CardBlockAggregateArgs> = {
+        [P in keyof T & keyof AggregateCardBlock]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateCardBlock[P]>
+      : GetScalarType<T[P], AggregateCardBlock[P]>
+  }
+
+
+
+
+  export type CardBlockGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CardBlockWhereInput
+    orderBy?: CardBlockOrderByWithAggregationInput | CardBlockOrderByWithAggregationInput[]
+    by: CardBlockScalarFieldEnum[] | CardBlockScalarFieldEnum
+    having?: CardBlockScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: CardBlockCountAggregateInputType | true
+    _min?: CardBlockMinAggregateInputType
+    _max?: CardBlockMaxAggregateInputType
+  }
+
+  export type CardBlockGroupByOutputType = {
+    blockerId: string
+    blockedId: string
+    _count: CardBlockCountAggregateOutputType | null
+    _min: CardBlockMinAggregateOutputType | null
+    _max: CardBlockMaxAggregateOutputType | null
+  }
+
+  type GetCardBlockGroupByPayload<T extends CardBlockGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<CardBlockGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof CardBlockGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], CardBlockGroupByOutputType[P]>
+            : GetScalarType<T[P], CardBlockGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type CardBlockSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    blockerId?: boolean
+    blockedId?: boolean
+    blocker?: boolean | CardDefaultArgs<ExtArgs>
+    blocked?: boolean | CardDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["cardBlock"]>
+
+  export type CardBlockSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    blockerId?: boolean
+    blockedId?: boolean
+    blocker?: boolean | CardDefaultArgs<ExtArgs>
+    blocked?: boolean | CardDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["cardBlock"]>
+
+  export type CardBlockSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    blockerId?: boolean
+    blockedId?: boolean
+    blocker?: boolean | CardDefaultArgs<ExtArgs>
+    blocked?: boolean | CardDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["cardBlock"]>
+
+  export type CardBlockSelectScalar = {
+    blockerId?: boolean
+    blockedId?: boolean
+  }
+
+  export type CardBlockOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"blockerId" | "blockedId", ExtArgs["result"]["cardBlock"]>
+  export type CardBlockInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    blocker?: boolean | CardDefaultArgs<ExtArgs>
+    blocked?: boolean | CardDefaultArgs<ExtArgs>
+  }
+  export type CardBlockIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    blocker?: boolean | CardDefaultArgs<ExtArgs>
+    blocked?: boolean | CardDefaultArgs<ExtArgs>
+  }
+  export type CardBlockIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    blocker?: boolean | CardDefaultArgs<ExtArgs>
+    blocked?: boolean | CardDefaultArgs<ExtArgs>
+  }
+
+  export type $CardBlockPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "CardBlock"
+    objects: {
+      blocker: Prisma.$CardPayload<ExtArgs>
+      blocked: Prisma.$CardPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      blockerId: string
+      blockedId: string
+    }, ExtArgs["result"]["cardBlock"]>
+    composites: {}
+  }
+
+  type CardBlockGetPayload<S extends boolean | null | undefined | CardBlockDefaultArgs> = $Result.GetResult<Prisma.$CardBlockPayload, S>
+
+  type CardBlockCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<CardBlockFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: CardBlockCountAggregateInputType | true
+    }
+
+  export interface CardBlockDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['CardBlock'], meta: { name: 'CardBlock' } }
+    /**
+     * Find zero or one CardBlock that matches the filter.
+     * @param {CardBlockFindUniqueArgs} args - Arguments to find a CardBlock
+     * @example
+     * // Get one CardBlock
+     * const cardBlock = await prisma.cardBlock.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends CardBlockFindUniqueArgs>(args: SelectSubset<T, CardBlockFindUniqueArgs<ExtArgs>>): Prisma__CardBlockClient<$Result.GetResult<Prisma.$CardBlockPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one CardBlock that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {CardBlockFindUniqueOrThrowArgs} args - Arguments to find a CardBlock
+     * @example
+     * // Get one CardBlock
+     * const cardBlock = await prisma.cardBlock.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends CardBlockFindUniqueOrThrowArgs>(args: SelectSubset<T, CardBlockFindUniqueOrThrowArgs<ExtArgs>>): Prisma__CardBlockClient<$Result.GetResult<Prisma.$CardBlockPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first CardBlock that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CardBlockFindFirstArgs} args - Arguments to find a CardBlock
+     * @example
+     * // Get one CardBlock
+     * const cardBlock = await prisma.cardBlock.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends CardBlockFindFirstArgs>(args?: SelectSubset<T, CardBlockFindFirstArgs<ExtArgs>>): Prisma__CardBlockClient<$Result.GetResult<Prisma.$CardBlockPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first CardBlock that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CardBlockFindFirstOrThrowArgs} args - Arguments to find a CardBlock
+     * @example
+     * // Get one CardBlock
+     * const cardBlock = await prisma.cardBlock.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends CardBlockFindFirstOrThrowArgs>(args?: SelectSubset<T, CardBlockFindFirstOrThrowArgs<ExtArgs>>): Prisma__CardBlockClient<$Result.GetResult<Prisma.$CardBlockPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more CardBlocks that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CardBlockFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all CardBlocks
+     * const cardBlocks = await prisma.cardBlock.findMany()
+     * 
+     * // Get first 10 CardBlocks
+     * const cardBlocks = await prisma.cardBlock.findMany({ take: 10 })
+     * 
+     * // Only select the `blockerId`
+     * const cardBlockWithBlockerIdOnly = await prisma.cardBlock.findMany({ select: { blockerId: true } })
+     * 
+     */
+    findMany<T extends CardBlockFindManyArgs>(args?: SelectSubset<T, CardBlockFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CardBlockPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a CardBlock.
+     * @param {CardBlockCreateArgs} args - Arguments to create a CardBlock.
+     * @example
+     * // Create one CardBlock
+     * const CardBlock = await prisma.cardBlock.create({
+     *   data: {
+     *     // ... data to create a CardBlock
+     *   }
+     * })
+     * 
+     */
+    create<T extends CardBlockCreateArgs>(args: SelectSubset<T, CardBlockCreateArgs<ExtArgs>>): Prisma__CardBlockClient<$Result.GetResult<Prisma.$CardBlockPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many CardBlocks.
+     * @param {CardBlockCreateManyArgs} args - Arguments to create many CardBlocks.
+     * @example
+     * // Create many CardBlocks
+     * const cardBlock = await prisma.cardBlock.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends CardBlockCreateManyArgs>(args?: SelectSubset<T, CardBlockCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many CardBlocks and returns the data saved in the database.
+     * @param {CardBlockCreateManyAndReturnArgs} args - Arguments to create many CardBlocks.
+     * @example
+     * // Create many CardBlocks
+     * const cardBlock = await prisma.cardBlock.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many CardBlocks and only return the `blockerId`
+     * const cardBlockWithBlockerIdOnly = await prisma.cardBlock.createManyAndReturn({
+     *   select: { blockerId: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends CardBlockCreateManyAndReturnArgs>(args?: SelectSubset<T, CardBlockCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CardBlockPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a CardBlock.
+     * @param {CardBlockDeleteArgs} args - Arguments to delete one CardBlock.
+     * @example
+     * // Delete one CardBlock
+     * const CardBlock = await prisma.cardBlock.delete({
+     *   where: {
+     *     // ... filter to delete one CardBlock
+     *   }
+     * })
+     * 
+     */
+    delete<T extends CardBlockDeleteArgs>(args: SelectSubset<T, CardBlockDeleteArgs<ExtArgs>>): Prisma__CardBlockClient<$Result.GetResult<Prisma.$CardBlockPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one CardBlock.
+     * @param {CardBlockUpdateArgs} args - Arguments to update one CardBlock.
+     * @example
+     * // Update one CardBlock
+     * const cardBlock = await prisma.cardBlock.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends CardBlockUpdateArgs>(args: SelectSubset<T, CardBlockUpdateArgs<ExtArgs>>): Prisma__CardBlockClient<$Result.GetResult<Prisma.$CardBlockPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more CardBlocks.
+     * @param {CardBlockDeleteManyArgs} args - Arguments to filter CardBlocks to delete.
+     * @example
+     * // Delete a few CardBlocks
+     * const { count } = await prisma.cardBlock.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends CardBlockDeleteManyArgs>(args?: SelectSubset<T, CardBlockDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more CardBlocks.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CardBlockUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many CardBlocks
+     * const cardBlock = await prisma.cardBlock.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends CardBlockUpdateManyArgs>(args: SelectSubset<T, CardBlockUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more CardBlocks and returns the data updated in the database.
+     * @param {CardBlockUpdateManyAndReturnArgs} args - Arguments to update many CardBlocks.
+     * @example
+     * // Update many CardBlocks
+     * const cardBlock = await prisma.cardBlock.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more CardBlocks and only return the `blockerId`
+     * const cardBlockWithBlockerIdOnly = await prisma.cardBlock.updateManyAndReturn({
+     *   select: { blockerId: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends CardBlockUpdateManyAndReturnArgs>(args: SelectSubset<T, CardBlockUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CardBlockPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one CardBlock.
+     * @param {CardBlockUpsertArgs} args - Arguments to update or create a CardBlock.
+     * @example
+     * // Update or create a CardBlock
+     * const cardBlock = await prisma.cardBlock.upsert({
+     *   create: {
+     *     // ... data to create a CardBlock
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the CardBlock we want to update
+     *   }
+     * })
+     */
+    upsert<T extends CardBlockUpsertArgs>(args: SelectSubset<T, CardBlockUpsertArgs<ExtArgs>>): Prisma__CardBlockClient<$Result.GetResult<Prisma.$CardBlockPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of CardBlocks.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CardBlockCountArgs} args - Arguments to filter CardBlocks to count.
+     * @example
+     * // Count the number of CardBlocks
+     * const count = await prisma.cardBlock.count({
+     *   where: {
+     *     // ... the filter for the CardBlocks we want to count
+     *   }
+     * })
+    **/
+    count<T extends CardBlockCountArgs>(
+      args?: Subset<T, CardBlockCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], CardBlockCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a CardBlock.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CardBlockAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends CardBlockAggregateArgs>(args: Subset<T, CardBlockAggregateArgs>): Prisma.PrismaPromise<GetCardBlockAggregateType<T>>
+
+    /**
+     * Group by CardBlock.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CardBlockGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends CardBlockGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: CardBlockGroupByArgs['orderBy'] }
+        : { orderBy?: CardBlockGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, CardBlockGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetCardBlockGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the CardBlock model
+   */
+  readonly fields: CardBlockFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for CardBlock.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__CardBlockClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    blocker<T extends CardDefaultArgs<ExtArgs> = {}>(args?: Subset<T, CardDefaultArgs<ExtArgs>>): Prisma__CardClient<$Result.GetResult<Prisma.$CardPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    blocked<T extends CardDefaultArgs<ExtArgs> = {}>(args?: Subset<T, CardDefaultArgs<ExtArgs>>): Prisma__CardClient<$Result.GetResult<Prisma.$CardPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the CardBlock model
+   */
+  interface CardBlockFieldRefs {
+    readonly blockerId: FieldRef<"CardBlock", 'String'>
+    readonly blockedId: FieldRef<"CardBlock", 'String'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * CardBlock findUnique
+   */
+  export type CardBlockFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CardBlock
+     */
+    select?: CardBlockSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CardBlock
+     */
+    omit?: CardBlockOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CardBlockInclude<ExtArgs> | null
+    /**
+     * Filter, which CardBlock to fetch.
+     */
+    where: CardBlockWhereUniqueInput
+  }
+
+  /**
+   * CardBlock findUniqueOrThrow
+   */
+  export type CardBlockFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CardBlock
+     */
+    select?: CardBlockSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CardBlock
+     */
+    omit?: CardBlockOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CardBlockInclude<ExtArgs> | null
+    /**
+     * Filter, which CardBlock to fetch.
+     */
+    where: CardBlockWhereUniqueInput
+  }
+
+  /**
+   * CardBlock findFirst
+   */
+  export type CardBlockFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CardBlock
+     */
+    select?: CardBlockSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CardBlock
+     */
+    omit?: CardBlockOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CardBlockInclude<ExtArgs> | null
+    /**
+     * Filter, which CardBlock to fetch.
+     */
+    where?: CardBlockWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CardBlocks to fetch.
+     */
+    orderBy?: CardBlockOrderByWithRelationInput | CardBlockOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for CardBlocks.
+     */
+    cursor?: CardBlockWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CardBlocks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CardBlocks.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of CardBlocks.
+     */
+    distinct?: CardBlockScalarFieldEnum | CardBlockScalarFieldEnum[]
+  }
+
+  /**
+   * CardBlock findFirstOrThrow
+   */
+  export type CardBlockFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CardBlock
+     */
+    select?: CardBlockSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CardBlock
+     */
+    omit?: CardBlockOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CardBlockInclude<ExtArgs> | null
+    /**
+     * Filter, which CardBlock to fetch.
+     */
+    where?: CardBlockWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CardBlocks to fetch.
+     */
+    orderBy?: CardBlockOrderByWithRelationInput | CardBlockOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for CardBlocks.
+     */
+    cursor?: CardBlockWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CardBlocks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CardBlocks.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of CardBlocks.
+     */
+    distinct?: CardBlockScalarFieldEnum | CardBlockScalarFieldEnum[]
+  }
+
+  /**
+   * CardBlock findMany
+   */
+  export type CardBlockFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CardBlock
+     */
+    select?: CardBlockSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CardBlock
+     */
+    omit?: CardBlockOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CardBlockInclude<ExtArgs> | null
+    /**
+     * Filter, which CardBlocks to fetch.
+     */
+    where?: CardBlockWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CardBlocks to fetch.
+     */
+    orderBy?: CardBlockOrderByWithRelationInput | CardBlockOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing CardBlocks.
+     */
+    cursor?: CardBlockWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CardBlocks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CardBlocks.
+     */
+    skip?: number
+    distinct?: CardBlockScalarFieldEnum | CardBlockScalarFieldEnum[]
+  }
+
+  /**
+   * CardBlock create
+   */
+  export type CardBlockCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CardBlock
+     */
+    select?: CardBlockSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CardBlock
+     */
+    omit?: CardBlockOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CardBlockInclude<ExtArgs> | null
+    /**
+     * The data needed to create a CardBlock.
+     */
+    data: XOR<CardBlockCreateInput, CardBlockUncheckedCreateInput>
+  }
+
+  /**
+   * CardBlock createMany
+   */
+  export type CardBlockCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many CardBlocks.
+     */
+    data: CardBlockCreateManyInput | CardBlockCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * CardBlock createManyAndReturn
+   */
+  export type CardBlockCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CardBlock
+     */
+    select?: CardBlockSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the CardBlock
+     */
+    omit?: CardBlockOmit<ExtArgs> | null
+    /**
+     * The data used to create many CardBlocks.
+     */
+    data: CardBlockCreateManyInput | CardBlockCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CardBlockIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * CardBlock update
+   */
+  export type CardBlockUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CardBlock
+     */
+    select?: CardBlockSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CardBlock
+     */
+    omit?: CardBlockOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CardBlockInclude<ExtArgs> | null
+    /**
+     * The data needed to update a CardBlock.
+     */
+    data: XOR<CardBlockUpdateInput, CardBlockUncheckedUpdateInput>
+    /**
+     * Choose, which CardBlock to update.
+     */
+    where: CardBlockWhereUniqueInput
+  }
+
+  /**
+   * CardBlock updateMany
+   */
+  export type CardBlockUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update CardBlocks.
+     */
+    data: XOR<CardBlockUpdateManyMutationInput, CardBlockUncheckedUpdateManyInput>
+    /**
+     * Filter which CardBlocks to update
+     */
+    where?: CardBlockWhereInput
+    /**
+     * Limit how many CardBlocks to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * CardBlock updateManyAndReturn
+   */
+  export type CardBlockUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CardBlock
+     */
+    select?: CardBlockSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the CardBlock
+     */
+    omit?: CardBlockOmit<ExtArgs> | null
+    /**
+     * The data used to update CardBlocks.
+     */
+    data: XOR<CardBlockUpdateManyMutationInput, CardBlockUncheckedUpdateManyInput>
+    /**
+     * Filter which CardBlocks to update
+     */
+    where?: CardBlockWhereInput
+    /**
+     * Limit how many CardBlocks to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CardBlockIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * CardBlock upsert
+   */
+  export type CardBlockUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CardBlock
+     */
+    select?: CardBlockSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CardBlock
+     */
+    omit?: CardBlockOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CardBlockInclude<ExtArgs> | null
+    /**
+     * The filter to search for the CardBlock to update in case it exists.
+     */
+    where: CardBlockWhereUniqueInput
+    /**
+     * In case the CardBlock found by the `where` argument doesn't exist, create a new CardBlock with this data.
+     */
+    create: XOR<CardBlockCreateInput, CardBlockUncheckedCreateInput>
+    /**
+     * In case the CardBlock was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<CardBlockUpdateInput, CardBlockUncheckedUpdateInput>
+  }
+
+  /**
+   * CardBlock delete
+   */
+  export type CardBlockDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CardBlock
+     */
+    select?: CardBlockSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CardBlock
+     */
+    omit?: CardBlockOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CardBlockInclude<ExtArgs> | null
+    /**
+     * Filter which CardBlock to delete.
+     */
+    where: CardBlockWhereUniqueInput
+  }
+
+  /**
+   * CardBlock deleteMany
+   */
+  export type CardBlockDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which CardBlocks to delete
+     */
+    where?: CardBlockWhereInput
+    /**
+     * Limit how many CardBlocks to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * CardBlock without action
+   */
+  export type CardBlockDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CardBlock
+     */
+    select?: CardBlockSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CardBlock
+     */
+    omit?: CardBlockOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CardBlockInclude<ExtArgs> | null
   }
 
 
@@ -31854,6 +33060,7 @@ export namespace Prisma {
     isGhost: 'isGhost',
     invitedEmail: 'invitedEmail',
     isAdmin: 'isAdmin',
+    slackJoined: 'slackJoined',
     trelloId: 'trelloId',
     createdAt: 'createdAt'
   };
@@ -31966,6 +33173,14 @@ export namespace Prisma {
   };
 
   export type CardScalarFieldEnum = (typeof CardScalarFieldEnum)[keyof typeof CardScalarFieldEnum]
+
+
+  export const CardBlockScalarFieldEnum: {
+    blockerId: 'blockerId',
+    blockedId: 'blockedId'
+  };
+
+  export type CardBlockScalarFieldEnum = (typeof CardBlockScalarFieldEnum)[keyof typeof CardBlockScalarFieldEnum]
 
 
   export const LabelScalarFieldEnum: {
@@ -32426,6 +33641,7 @@ export namespace Prisma {
     isGhost?: BoolFilter<"User"> | boolean
     invitedEmail?: StringNullableFilter<"User"> | string | null
     isAdmin?: BoolFilter<"User"> | boolean
+    slackJoined?: BoolFilter<"User"> | boolean
     trelloId?: StringNullableFilter<"User"> | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     accounts?: AccountListRelationFilter
@@ -32457,6 +33673,7 @@ export namespace Prisma {
     isGhost?: SortOrder
     invitedEmail?: SortOrderInput | SortOrder
     isAdmin?: SortOrder
+    slackJoined?: SortOrder
     trelloId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     accounts?: AccountOrderByRelationAggregateInput
@@ -32492,6 +33709,7 @@ export namespace Prisma {
     providerImage?: StringNullableFilter<"User"> | string | null
     isGhost?: BoolFilter<"User"> | boolean
     isAdmin?: BoolFilter<"User"> | boolean
+    slackJoined?: BoolFilter<"User"> | boolean
     createdAt?: DateTimeFilter<"User"> | Date | string
     accounts?: AccountListRelationFilter
     sessions?: SessionListRelationFilter
@@ -32522,6 +33740,7 @@ export namespace Prisma {
     isGhost?: SortOrder
     invitedEmail?: SortOrderInput | SortOrder
     isAdmin?: SortOrder
+    slackJoined?: SortOrder
     trelloId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     _count?: UserCountOrderByAggregateInput
@@ -32544,6 +33763,7 @@ export namespace Prisma {
     isGhost?: BoolWithAggregatesFilter<"User"> | boolean
     invitedEmail?: StringNullableWithAggregatesFilter<"User"> | string | null
     isAdmin?: BoolWithAggregatesFilter<"User"> | boolean
+    slackJoined?: BoolWithAggregatesFilter<"User"> | boolean
     trelloId?: StringNullableWithAggregatesFilter<"User"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
   }
@@ -33040,6 +34260,8 @@ export namespace Prisma {
     comments?: CommentListRelationFilter
     activities?: ActivityListRelationFilter
     watches?: WatchListRelationFilter
+    blocking?: CardBlockListRelationFilter
+    blockedBy?: CardBlockListRelationFilter
   }
 
   export type CardOrderByWithRelationInput = {
@@ -33068,6 +34290,8 @@ export namespace Prisma {
     comments?: CommentOrderByRelationAggregateInput
     activities?: ActivityOrderByRelationAggregateInput
     watches?: WatchOrderByRelationAggregateInput
+    blocking?: CardBlockOrderByRelationAggregateInput
+    blockedBy?: CardBlockOrderByRelationAggregateInput
   }
 
   export type CardWhereUniqueInput = Prisma.AtLeast<{
@@ -33099,6 +34323,8 @@ export namespace Prisma {
     comments?: CommentListRelationFilter
     activities?: ActivityListRelationFilter
     watches?: WatchListRelationFilter
+    blocking?: CardBlockListRelationFilter
+    blockedBy?: CardBlockListRelationFilter
   }, "id" | "trelloId">
 
   export type CardOrderByWithAggregationInput = {
@@ -33147,6 +34373,50 @@ export namespace Prisma {
     shortId?: IntWithAggregatesFilter<"Card"> | number
     createdAt?: DateTimeWithAggregatesFilter<"Card"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Card"> | Date | string
+  }
+
+  export type CardBlockWhereInput = {
+    AND?: CardBlockWhereInput | CardBlockWhereInput[]
+    OR?: CardBlockWhereInput[]
+    NOT?: CardBlockWhereInput | CardBlockWhereInput[]
+    blockerId?: StringFilter<"CardBlock"> | string
+    blockedId?: StringFilter<"CardBlock"> | string
+    blocker?: XOR<CardScalarRelationFilter, CardWhereInput>
+    blocked?: XOR<CardScalarRelationFilter, CardWhereInput>
+  }
+
+  export type CardBlockOrderByWithRelationInput = {
+    blockerId?: SortOrder
+    blockedId?: SortOrder
+    blocker?: CardOrderByWithRelationInput
+    blocked?: CardOrderByWithRelationInput
+  }
+
+  export type CardBlockWhereUniqueInput = Prisma.AtLeast<{
+    blockerId_blockedId?: CardBlockBlockerIdBlockedIdCompoundUniqueInput
+    AND?: CardBlockWhereInput | CardBlockWhereInput[]
+    OR?: CardBlockWhereInput[]
+    NOT?: CardBlockWhereInput | CardBlockWhereInput[]
+    blockerId?: StringFilter<"CardBlock"> | string
+    blockedId?: StringFilter<"CardBlock"> | string
+    blocker?: XOR<CardScalarRelationFilter, CardWhereInput>
+    blocked?: XOR<CardScalarRelationFilter, CardWhereInput>
+  }, "blockerId_blockedId">
+
+  export type CardBlockOrderByWithAggregationInput = {
+    blockerId?: SortOrder
+    blockedId?: SortOrder
+    _count?: CardBlockCountOrderByAggregateInput
+    _max?: CardBlockMaxOrderByAggregateInput
+    _min?: CardBlockMinOrderByAggregateInput
+  }
+
+  export type CardBlockScalarWhereWithAggregatesInput = {
+    AND?: CardBlockScalarWhereWithAggregatesInput | CardBlockScalarWhereWithAggregatesInput[]
+    OR?: CardBlockScalarWhereWithAggregatesInput[]
+    NOT?: CardBlockScalarWhereWithAggregatesInput | CardBlockScalarWhereWithAggregatesInput[]
+    blockerId?: StringWithAggregatesFilter<"CardBlock"> | string
+    blockedId?: StringWithAggregatesFilter<"CardBlock"> | string
   }
 
   export type LabelWhereInput = {
@@ -34188,6 +35458,7 @@ export namespace Prisma {
     isGhost?: boolean
     invitedEmail?: string | null
     isAdmin?: boolean
+    slackJoined?: boolean
     trelloId?: string | null
     createdAt?: Date | string
     accounts?: AccountCreateNestedManyWithoutUserInput
@@ -34219,6 +35490,7 @@ export namespace Prisma {
     isGhost?: boolean
     invitedEmail?: string | null
     isAdmin?: boolean
+    slackJoined?: boolean
     trelloId?: string | null
     createdAt?: Date | string
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
@@ -34250,6 +35522,7 @@ export namespace Prisma {
     isGhost?: BoolFieldUpdateOperationsInput | boolean
     invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
+    slackJoined?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUpdateManyWithoutUserNestedInput
@@ -34281,6 +35554,7 @@ export namespace Prisma {
     isGhost?: BoolFieldUpdateOperationsInput | boolean
     invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
+    slackJoined?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
@@ -34312,6 +35586,7 @@ export namespace Prisma {
     isGhost?: boolean
     invitedEmail?: string | null
     isAdmin?: boolean
+    slackJoined?: boolean
     trelloId?: string | null
     createdAt?: Date | string
   }
@@ -34328,6 +35603,7 @@ export namespace Prisma {
     isGhost?: BoolFieldUpdateOperationsInput | boolean
     invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
+    slackJoined?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -34344,6 +35620,7 @@ export namespace Prisma {
     isGhost?: BoolFieldUpdateOperationsInput | boolean
     invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
+    slackJoined?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -34845,6 +36122,8 @@ export namespace Prisma {
     comments?: CommentCreateNestedManyWithoutCardInput
     activities?: ActivityCreateNestedManyWithoutCardInput
     watches?: WatchCreateNestedManyWithoutCardInput
+    blocking?: CardBlockCreateNestedManyWithoutBlockerInput
+    blockedBy?: CardBlockCreateNestedManyWithoutBlockedInput
   }
 
   export type CardUncheckedCreateInput = {
@@ -34872,6 +36151,8 @@ export namespace Prisma {
     comments?: CommentUncheckedCreateNestedManyWithoutCardInput
     activities?: ActivityUncheckedCreateNestedManyWithoutCardInput
     watches?: WatchUncheckedCreateNestedManyWithoutCardInput
+    blocking?: CardBlockUncheckedCreateNestedManyWithoutBlockerInput
+    blockedBy?: CardBlockUncheckedCreateNestedManyWithoutBlockedInput
   }
 
   export type CardUpdateInput = {
@@ -34899,6 +36180,8 @@ export namespace Prisma {
     comments?: CommentUpdateManyWithoutCardNestedInput
     activities?: ActivityUpdateManyWithoutCardNestedInput
     watches?: WatchUpdateManyWithoutCardNestedInput
+    blocking?: CardBlockUpdateManyWithoutBlockerNestedInput
+    blockedBy?: CardBlockUpdateManyWithoutBlockedNestedInput
   }
 
   export type CardUncheckedUpdateInput = {
@@ -34926,6 +36209,8 @@ export namespace Prisma {
     comments?: CommentUncheckedUpdateManyWithoutCardNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutCardNestedInput
     watches?: WatchUncheckedUpdateManyWithoutCardNestedInput
+    blocking?: CardBlockUncheckedUpdateManyWithoutBlockerNestedInput
+    blockedBy?: CardBlockUncheckedUpdateManyWithoutBlockedNestedInput
   }
 
   export type CardCreateManyInput = {
@@ -34985,6 +36270,40 @@ export namespace Prisma {
     shortId?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CardBlockCreateInput = {
+    blocker: CardCreateNestedOneWithoutBlockingInput
+    blocked: CardCreateNestedOneWithoutBlockedByInput
+  }
+
+  export type CardBlockUncheckedCreateInput = {
+    blockerId: string
+    blockedId: string
+  }
+
+  export type CardBlockUpdateInput = {
+    blocker?: CardUpdateOneRequiredWithoutBlockingNestedInput
+    blocked?: CardUpdateOneRequiredWithoutBlockedByNestedInput
+  }
+
+  export type CardBlockUncheckedUpdateInput = {
+    blockerId?: StringFieldUpdateOperationsInput | string
+    blockedId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type CardBlockCreateManyInput = {
+    blockerId: string
+    blockedId: string
+  }
+
+  export type CardBlockUpdateManyMutationInput = {
+
+  }
+
+  export type CardBlockUncheckedUpdateManyInput = {
+    blockerId?: StringFieldUpdateOperationsInput | string
+    blockedId?: StringFieldUpdateOperationsInput | string
   }
 
   export type LabelCreateInput = {
@@ -36218,6 +37537,7 @@ export namespace Prisma {
     isGhost?: SortOrder
     invitedEmail?: SortOrder
     isAdmin?: SortOrder
+    slackJoined?: SortOrder
     trelloId?: SortOrder
     createdAt?: SortOrder
   }
@@ -36234,6 +37554,7 @@ export namespace Prisma {
     isGhost?: SortOrder
     invitedEmail?: SortOrder
     isAdmin?: SortOrder
+    slackJoined?: SortOrder
     trelloId?: SortOrder
     createdAt?: SortOrder
   }
@@ -36250,6 +37571,7 @@ export namespace Prisma {
     isGhost?: SortOrder
     invitedEmail?: SortOrder
     isAdmin?: SortOrder
+    slackJoined?: SortOrder
     trelloId?: SortOrder
     createdAt?: SortOrder
   }
@@ -36568,11 +37890,21 @@ export namespace Prisma {
     none?: ChecklistWhereInput
   }
 
+  export type CardBlockListRelationFilter = {
+    every?: CardBlockWhereInput
+    some?: CardBlockWhereInput
+    none?: CardBlockWhereInput
+  }
+
   export type CardLabelOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
   export type ChecklistOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type CardBlockOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -36660,6 +37992,31 @@ export namespace Prisma {
     _max?: NestedIntFilter<$PrismaModel>
   }
 
+  export type CardScalarRelationFilter = {
+    is?: CardWhereInput
+    isNot?: CardWhereInput
+  }
+
+  export type CardBlockBlockerIdBlockedIdCompoundUniqueInput = {
+    blockerId: string
+    blockedId: string
+  }
+
+  export type CardBlockCountOrderByAggregateInput = {
+    blockerId?: SortOrder
+    blockedId?: SortOrder
+  }
+
+  export type CardBlockMaxOrderByAggregateInput = {
+    blockerId?: SortOrder
+    blockedId?: SortOrder
+  }
+
+  export type CardBlockMinOrderByAggregateInput = {
+    blockerId?: SortOrder
+    blockedId?: SortOrder
+  }
+
   export type LabelCountOrderByAggregateInput = {
     id?: SortOrder
     boardId?: SortOrder
@@ -36682,11 +38039,6 @@ export namespace Prisma {
     name?: SortOrder
     color?: SortOrder
     trelloId?: SortOrder
-  }
-
-  export type CardScalarRelationFilter = {
-    is?: CardWhereInput
-    isNot?: CardWhereInput
   }
 
   export type LabelScalarRelationFilter = {
@@ -38377,6 +39729,20 @@ export namespace Prisma {
     connect?: WatchWhereUniqueInput | WatchWhereUniqueInput[]
   }
 
+  export type CardBlockCreateNestedManyWithoutBlockerInput = {
+    create?: XOR<CardBlockCreateWithoutBlockerInput, CardBlockUncheckedCreateWithoutBlockerInput> | CardBlockCreateWithoutBlockerInput[] | CardBlockUncheckedCreateWithoutBlockerInput[]
+    connectOrCreate?: CardBlockCreateOrConnectWithoutBlockerInput | CardBlockCreateOrConnectWithoutBlockerInput[]
+    createMany?: CardBlockCreateManyBlockerInputEnvelope
+    connect?: CardBlockWhereUniqueInput | CardBlockWhereUniqueInput[]
+  }
+
+  export type CardBlockCreateNestedManyWithoutBlockedInput = {
+    create?: XOR<CardBlockCreateWithoutBlockedInput, CardBlockUncheckedCreateWithoutBlockedInput> | CardBlockCreateWithoutBlockedInput[] | CardBlockUncheckedCreateWithoutBlockedInput[]
+    connectOrCreate?: CardBlockCreateOrConnectWithoutBlockedInput | CardBlockCreateOrConnectWithoutBlockedInput[]
+    createMany?: CardBlockCreateManyBlockedInputEnvelope
+    connect?: CardBlockWhereUniqueInput | CardBlockWhereUniqueInput[]
+  }
+
   export type CardLabelUncheckedCreateNestedManyWithoutCardInput = {
     create?: XOR<CardLabelCreateWithoutCardInput, CardLabelUncheckedCreateWithoutCardInput> | CardLabelCreateWithoutCardInput[] | CardLabelUncheckedCreateWithoutCardInput[]
     connectOrCreate?: CardLabelCreateOrConnectWithoutCardInput | CardLabelCreateOrConnectWithoutCardInput[]
@@ -38424,6 +39790,20 @@ export namespace Prisma {
     connectOrCreate?: WatchCreateOrConnectWithoutCardInput | WatchCreateOrConnectWithoutCardInput[]
     createMany?: WatchCreateManyCardInputEnvelope
     connect?: WatchWhereUniqueInput | WatchWhereUniqueInput[]
+  }
+
+  export type CardBlockUncheckedCreateNestedManyWithoutBlockerInput = {
+    create?: XOR<CardBlockCreateWithoutBlockerInput, CardBlockUncheckedCreateWithoutBlockerInput> | CardBlockCreateWithoutBlockerInput[] | CardBlockUncheckedCreateWithoutBlockerInput[]
+    connectOrCreate?: CardBlockCreateOrConnectWithoutBlockerInput | CardBlockCreateOrConnectWithoutBlockerInput[]
+    createMany?: CardBlockCreateManyBlockerInputEnvelope
+    connect?: CardBlockWhereUniqueInput | CardBlockWhereUniqueInput[]
+  }
+
+  export type CardBlockUncheckedCreateNestedManyWithoutBlockedInput = {
+    create?: XOR<CardBlockCreateWithoutBlockedInput, CardBlockUncheckedCreateWithoutBlockedInput> | CardBlockCreateWithoutBlockedInput[] | CardBlockUncheckedCreateWithoutBlockedInput[]
+    connectOrCreate?: CardBlockCreateOrConnectWithoutBlockedInput | CardBlockCreateOrConnectWithoutBlockedInput[]
+    createMany?: CardBlockCreateManyBlockedInputEnvelope
+    connect?: CardBlockWhereUniqueInput | CardBlockWhereUniqueInput[]
   }
 
   export type IntFieldUpdateOperationsInput = {
@@ -38540,6 +39920,34 @@ export namespace Prisma {
     deleteMany?: WatchScalarWhereInput | WatchScalarWhereInput[]
   }
 
+  export type CardBlockUpdateManyWithoutBlockerNestedInput = {
+    create?: XOR<CardBlockCreateWithoutBlockerInput, CardBlockUncheckedCreateWithoutBlockerInput> | CardBlockCreateWithoutBlockerInput[] | CardBlockUncheckedCreateWithoutBlockerInput[]
+    connectOrCreate?: CardBlockCreateOrConnectWithoutBlockerInput | CardBlockCreateOrConnectWithoutBlockerInput[]
+    upsert?: CardBlockUpsertWithWhereUniqueWithoutBlockerInput | CardBlockUpsertWithWhereUniqueWithoutBlockerInput[]
+    createMany?: CardBlockCreateManyBlockerInputEnvelope
+    set?: CardBlockWhereUniqueInput | CardBlockWhereUniqueInput[]
+    disconnect?: CardBlockWhereUniqueInput | CardBlockWhereUniqueInput[]
+    delete?: CardBlockWhereUniqueInput | CardBlockWhereUniqueInput[]
+    connect?: CardBlockWhereUniqueInput | CardBlockWhereUniqueInput[]
+    update?: CardBlockUpdateWithWhereUniqueWithoutBlockerInput | CardBlockUpdateWithWhereUniqueWithoutBlockerInput[]
+    updateMany?: CardBlockUpdateManyWithWhereWithoutBlockerInput | CardBlockUpdateManyWithWhereWithoutBlockerInput[]
+    deleteMany?: CardBlockScalarWhereInput | CardBlockScalarWhereInput[]
+  }
+
+  export type CardBlockUpdateManyWithoutBlockedNestedInput = {
+    create?: XOR<CardBlockCreateWithoutBlockedInput, CardBlockUncheckedCreateWithoutBlockedInput> | CardBlockCreateWithoutBlockedInput[] | CardBlockUncheckedCreateWithoutBlockedInput[]
+    connectOrCreate?: CardBlockCreateOrConnectWithoutBlockedInput | CardBlockCreateOrConnectWithoutBlockedInput[]
+    upsert?: CardBlockUpsertWithWhereUniqueWithoutBlockedInput | CardBlockUpsertWithWhereUniqueWithoutBlockedInput[]
+    createMany?: CardBlockCreateManyBlockedInputEnvelope
+    set?: CardBlockWhereUniqueInput | CardBlockWhereUniqueInput[]
+    disconnect?: CardBlockWhereUniqueInput | CardBlockWhereUniqueInput[]
+    delete?: CardBlockWhereUniqueInput | CardBlockWhereUniqueInput[]
+    connect?: CardBlockWhereUniqueInput | CardBlockWhereUniqueInput[]
+    update?: CardBlockUpdateWithWhereUniqueWithoutBlockedInput | CardBlockUpdateWithWhereUniqueWithoutBlockedInput[]
+    updateMany?: CardBlockUpdateManyWithWhereWithoutBlockedInput | CardBlockUpdateManyWithWhereWithoutBlockedInput[]
+    deleteMany?: CardBlockScalarWhereInput | CardBlockScalarWhereInput[]
+  }
+
   export type CardLabelUncheckedUpdateManyWithoutCardNestedInput = {
     create?: XOR<CardLabelCreateWithoutCardInput, CardLabelUncheckedCreateWithoutCardInput> | CardLabelCreateWithoutCardInput[] | CardLabelUncheckedCreateWithoutCardInput[]
     connectOrCreate?: CardLabelCreateOrConnectWithoutCardInput | CardLabelCreateOrConnectWithoutCardInput[]
@@ -38636,6 +40044,62 @@ export namespace Prisma {
     update?: WatchUpdateWithWhereUniqueWithoutCardInput | WatchUpdateWithWhereUniqueWithoutCardInput[]
     updateMany?: WatchUpdateManyWithWhereWithoutCardInput | WatchUpdateManyWithWhereWithoutCardInput[]
     deleteMany?: WatchScalarWhereInput | WatchScalarWhereInput[]
+  }
+
+  export type CardBlockUncheckedUpdateManyWithoutBlockerNestedInput = {
+    create?: XOR<CardBlockCreateWithoutBlockerInput, CardBlockUncheckedCreateWithoutBlockerInput> | CardBlockCreateWithoutBlockerInput[] | CardBlockUncheckedCreateWithoutBlockerInput[]
+    connectOrCreate?: CardBlockCreateOrConnectWithoutBlockerInput | CardBlockCreateOrConnectWithoutBlockerInput[]
+    upsert?: CardBlockUpsertWithWhereUniqueWithoutBlockerInput | CardBlockUpsertWithWhereUniqueWithoutBlockerInput[]
+    createMany?: CardBlockCreateManyBlockerInputEnvelope
+    set?: CardBlockWhereUniqueInput | CardBlockWhereUniqueInput[]
+    disconnect?: CardBlockWhereUniqueInput | CardBlockWhereUniqueInput[]
+    delete?: CardBlockWhereUniqueInput | CardBlockWhereUniqueInput[]
+    connect?: CardBlockWhereUniqueInput | CardBlockWhereUniqueInput[]
+    update?: CardBlockUpdateWithWhereUniqueWithoutBlockerInput | CardBlockUpdateWithWhereUniqueWithoutBlockerInput[]
+    updateMany?: CardBlockUpdateManyWithWhereWithoutBlockerInput | CardBlockUpdateManyWithWhereWithoutBlockerInput[]
+    deleteMany?: CardBlockScalarWhereInput | CardBlockScalarWhereInput[]
+  }
+
+  export type CardBlockUncheckedUpdateManyWithoutBlockedNestedInput = {
+    create?: XOR<CardBlockCreateWithoutBlockedInput, CardBlockUncheckedCreateWithoutBlockedInput> | CardBlockCreateWithoutBlockedInput[] | CardBlockUncheckedCreateWithoutBlockedInput[]
+    connectOrCreate?: CardBlockCreateOrConnectWithoutBlockedInput | CardBlockCreateOrConnectWithoutBlockedInput[]
+    upsert?: CardBlockUpsertWithWhereUniqueWithoutBlockedInput | CardBlockUpsertWithWhereUniqueWithoutBlockedInput[]
+    createMany?: CardBlockCreateManyBlockedInputEnvelope
+    set?: CardBlockWhereUniqueInput | CardBlockWhereUniqueInput[]
+    disconnect?: CardBlockWhereUniqueInput | CardBlockWhereUniqueInput[]
+    delete?: CardBlockWhereUniqueInput | CardBlockWhereUniqueInput[]
+    connect?: CardBlockWhereUniqueInput | CardBlockWhereUniqueInput[]
+    update?: CardBlockUpdateWithWhereUniqueWithoutBlockedInput | CardBlockUpdateWithWhereUniqueWithoutBlockedInput[]
+    updateMany?: CardBlockUpdateManyWithWhereWithoutBlockedInput | CardBlockUpdateManyWithWhereWithoutBlockedInput[]
+    deleteMany?: CardBlockScalarWhereInput | CardBlockScalarWhereInput[]
+  }
+
+  export type CardCreateNestedOneWithoutBlockingInput = {
+    create?: XOR<CardCreateWithoutBlockingInput, CardUncheckedCreateWithoutBlockingInput>
+    connectOrCreate?: CardCreateOrConnectWithoutBlockingInput
+    connect?: CardWhereUniqueInput
+  }
+
+  export type CardCreateNestedOneWithoutBlockedByInput = {
+    create?: XOR<CardCreateWithoutBlockedByInput, CardUncheckedCreateWithoutBlockedByInput>
+    connectOrCreate?: CardCreateOrConnectWithoutBlockedByInput
+    connect?: CardWhereUniqueInput
+  }
+
+  export type CardUpdateOneRequiredWithoutBlockingNestedInput = {
+    create?: XOR<CardCreateWithoutBlockingInput, CardUncheckedCreateWithoutBlockingInput>
+    connectOrCreate?: CardCreateOrConnectWithoutBlockingInput
+    upsert?: CardUpsertWithoutBlockingInput
+    connect?: CardWhereUniqueInput
+    update?: XOR<XOR<CardUpdateToOneWithWhereWithoutBlockingInput, CardUpdateWithoutBlockingInput>, CardUncheckedUpdateWithoutBlockingInput>
+  }
+
+  export type CardUpdateOneRequiredWithoutBlockedByNestedInput = {
+    create?: XOR<CardCreateWithoutBlockedByInput, CardUncheckedCreateWithoutBlockedByInput>
+    connectOrCreate?: CardCreateOrConnectWithoutBlockedByInput
+    upsert?: CardUpsertWithoutBlockedByInput
+    connect?: CardWhereUniqueInput
+    update?: XOR<XOR<CardUpdateToOneWithWhereWithoutBlockedByInput, CardUpdateWithoutBlockedByInput>, CardUncheckedUpdateWithoutBlockedByInput>
   }
 
   export type BoardCreateNestedOneWithoutLabelsInput = {
@@ -39304,6 +40768,7 @@ export namespace Prisma {
     isGhost?: boolean
     invitedEmail?: string | null
     isAdmin?: boolean
+    slackJoined?: boolean
     trelloId?: string | null
     createdAt?: Date | string
     sessions?: SessionCreateNestedManyWithoutUserInput
@@ -39334,6 +40799,7 @@ export namespace Prisma {
     isGhost?: boolean
     invitedEmail?: string | null
     isAdmin?: boolean
+    slackJoined?: boolean
     trelloId?: string | null
     createdAt?: Date | string
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
@@ -39380,6 +40846,7 @@ export namespace Prisma {
     isGhost?: BoolFieldUpdateOperationsInput | boolean
     invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
+    slackJoined?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sessions?: SessionUpdateManyWithoutUserNestedInput
@@ -39410,6 +40877,7 @@ export namespace Prisma {
     isGhost?: BoolFieldUpdateOperationsInput | boolean
     invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
+    slackJoined?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
@@ -39440,6 +40908,7 @@ export namespace Prisma {
     isGhost?: boolean
     invitedEmail?: string | null
     isAdmin?: boolean
+    slackJoined?: boolean
     trelloId?: string | null
     createdAt?: Date | string
     accounts?: AccountCreateNestedManyWithoutUserInput
@@ -39470,6 +40939,7 @@ export namespace Prisma {
     isGhost?: boolean
     invitedEmail?: string | null
     isAdmin?: boolean
+    slackJoined?: boolean
     trelloId?: string | null
     createdAt?: Date | string
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
@@ -39516,6 +40986,7 @@ export namespace Prisma {
     isGhost?: BoolFieldUpdateOperationsInput | boolean
     invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
+    slackJoined?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUpdateManyWithoutUserNestedInput
@@ -39546,6 +41017,7 @@ export namespace Prisma {
     isGhost?: BoolFieldUpdateOperationsInput | boolean
     invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
+    slackJoined?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
@@ -40590,6 +42062,7 @@ export namespace Prisma {
     isGhost?: boolean
     invitedEmail?: string | null
     isAdmin?: boolean
+    slackJoined?: boolean
     trelloId?: string | null
     createdAt?: Date | string
     accounts?: AccountCreateNestedManyWithoutUserInput
@@ -40620,6 +42093,7 @@ export namespace Prisma {
     isGhost?: boolean
     invitedEmail?: string | null
     isAdmin?: boolean
+    slackJoined?: boolean
     trelloId?: string | null
     createdAt?: Date | string
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
@@ -40699,6 +42173,7 @@ export namespace Prisma {
     isGhost?: BoolFieldUpdateOperationsInput | boolean
     invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
+    slackJoined?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUpdateManyWithoutUserNestedInput
@@ -40729,6 +42204,7 @@ export namespace Prisma {
     isGhost?: BoolFieldUpdateOperationsInput | boolean
     invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
+    slackJoined?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
@@ -40786,6 +42262,7 @@ export namespace Prisma {
     isGhost?: boolean
     invitedEmail?: string | null
     isAdmin?: boolean
+    slackJoined?: boolean
     trelloId?: string | null
     createdAt?: Date | string
     accounts?: AccountCreateNestedManyWithoutUserInput
@@ -40816,6 +42293,7 @@ export namespace Prisma {
     isGhost?: boolean
     invitedEmail?: string | null
     isAdmin?: boolean
+    slackJoined?: boolean
     trelloId?: string | null
     createdAt?: Date | string
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
@@ -40895,6 +42373,7 @@ export namespace Prisma {
     isGhost?: BoolFieldUpdateOperationsInput | boolean
     invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
+    slackJoined?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUpdateManyWithoutUserNestedInput
@@ -40925,6 +42404,7 @@ export namespace Prisma {
     isGhost?: BoolFieldUpdateOperationsInput | boolean
     invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
+    slackJoined?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
@@ -41331,6 +42811,7 @@ export namespace Prisma {
     isGhost?: boolean
     invitedEmail?: string | null
     isAdmin?: boolean
+    slackJoined?: boolean
     trelloId?: string | null
     createdAt?: Date | string
     accounts?: AccountCreateNestedManyWithoutUserInput
@@ -41361,6 +42842,7 @@ export namespace Prisma {
     isGhost?: boolean
     invitedEmail?: string | null
     isAdmin?: boolean
+    slackJoined?: boolean
     trelloId?: string | null
     createdAt?: Date | string
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
@@ -41460,6 +42942,7 @@ export namespace Prisma {
     isGhost?: BoolFieldUpdateOperationsInput | boolean
     invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
+    slackJoined?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUpdateManyWithoutUserNestedInput
@@ -41490,6 +42973,7 @@ export namespace Prisma {
     isGhost?: BoolFieldUpdateOperationsInput | boolean
     invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
+    slackJoined?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
@@ -41567,6 +43051,7 @@ export namespace Prisma {
     isGhost?: boolean
     invitedEmail?: string | null
     isAdmin?: boolean
+    slackJoined?: boolean
     trelloId?: string | null
     createdAt?: Date | string
     accounts?: AccountCreateNestedManyWithoutUserInput
@@ -41597,6 +43082,7 @@ export namespace Prisma {
     isGhost?: boolean
     invitedEmail?: string | null
     isAdmin?: boolean
+    slackJoined?: boolean
     trelloId?: string | null
     createdAt?: Date | string
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
@@ -41696,6 +43182,7 @@ export namespace Prisma {
     isGhost?: BoolFieldUpdateOperationsInput | boolean
     invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
+    slackJoined?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUpdateManyWithoutUserNestedInput
@@ -41726,6 +43213,7 @@ export namespace Prisma {
     isGhost?: BoolFieldUpdateOperationsInput | boolean
     invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
+    slackJoined?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
@@ -41815,6 +43303,8 @@ export namespace Prisma {
     comments?: CommentCreateNestedManyWithoutCardInput
     activities?: ActivityCreateNestedManyWithoutCardInput
     watches?: WatchCreateNestedManyWithoutCardInput
+    blocking?: CardBlockCreateNestedManyWithoutBlockerInput
+    blockedBy?: CardBlockCreateNestedManyWithoutBlockedInput
   }
 
   export type CardUncheckedCreateWithoutListInput = {
@@ -41841,6 +43331,8 @@ export namespace Prisma {
     comments?: CommentUncheckedCreateNestedManyWithoutCardInput
     activities?: ActivityUncheckedCreateNestedManyWithoutCardInput
     watches?: WatchUncheckedCreateNestedManyWithoutCardInput
+    blocking?: CardBlockUncheckedCreateNestedManyWithoutBlockerInput
+    blockedBy?: CardBlockUncheckedCreateNestedManyWithoutBlockedInput
   }
 
   export type CardCreateOrConnectWithoutListInput = {
@@ -42148,6 +43640,42 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type CardBlockCreateWithoutBlockerInput = {
+    blocked: CardCreateNestedOneWithoutBlockedByInput
+  }
+
+  export type CardBlockUncheckedCreateWithoutBlockerInput = {
+    blockedId: string
+  }
+
+  export type CardBlockCreateOrConnectWithoutBlockerInput = {
+    where: CardBlockWhereUniqueInput
+    create: XOR<CardBlockCreateWithoutBlockerInput, CardBlockUncheckedCreateWithoutBlockerInput>
+  }
+
+  export type CardBlockCreateManyBlockerInputEnvelope = {
+    data: CardBlockCreateManyBlockerInput | CardBlockCreateManyBlockerInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type CardBlockCreateWithoutBlockedInput = {
+    blocker: CardCreateNestedOneWithoutBlockingInput
+  }
+
+  export type CardBlockUncheckedCreateWithoutBlockedInput = {
+    blockerId: string
+  }
+
+  export type CardBlockCreateOrConnectWithoutBlockedInput = {
+    where: CardBlockWhereUniqueInput
+    create: XOR<CardBlockCreateWithoutBlockedInput, CardBlockUncheckedCreateWithoutBlockedInput>
+  }
+
+  export type CardBlockCreateManyBlockedInputEnvelope = {
+    data: CardBlockCreateManyBlockedInput | CardBlockCreateManyBlockedInput[]
+    skipDuplicates?: boolean
+  }
+
   export type ListUpsertWithoutCardsInput = {
     update: XOR<ListUpdateWithoutCardsInput, ListUncheckedUpdateWithoutCardsInput>
     create: XOR<ListCreateWithoutCardsInput, ListUncheckedCreateWithoutCardsInput>
@@ -42312,6 +43840,302 @@ export namespace Prisma {
     data: XOR<WatchUpdateManyMutationInput, WatchUncheckedUpdateManyWithoutCardInput>
   }
 
+  export type CardBlockUpsertWithWhereUniqueWithoutBlockerInput = {
+    where: CardBlockWhereUniqueInput
+    update: XOR<CardBlockUpdateWithoutBlockerInput, CardBlockUncheckedUpdateWithoutBlockerInput>
+    create: XOR<CardBlockCreateWithoutBlockerInput, CardBlockUncheckedCreateWithoutBlockerInput>
+  }
+
+  export type CardBlockUpdateWithWhereUniqueWithoutBlockerInput = {
+    where: CardBlockWhereUniqueInput
+    data: XOR<CardBlockUpdateWithoutBlockerInput, CardBlockUncheckedUpdateWithoutBlockerInput>
+  }
+
+  export type CardBlockUpdateManyWithWhereWithoutBlockerInput = {
+    where: CardBlockScalarWhereInput
+    data: XOR<CardBlockUpdateManyMutationInput, CardBlockUncheckedUpdateManyWithoutBlockerInput>
+  }
+
+  export type CardBlockScalarWhereInput = {
+    AND?: CardBlockScalarWhereInput | CardBlockScalarWhereInput[]
+    OR?: CardBlockScalarWhereInput[]
+    NOT?: CardBlockScalarWhereInput | CardBlockScalarWhereInput[]
+    blockerId?: StringFilter<"CardBlock"> | string
+    blockedId?: StringFilter<"CardBlock"> | string
+  }
+
+  export type CardBlockUpsertWithWhereUniqueWithoutBlockedInput = {
+    where: CardBlockWhereUniqueInput
+    update: XOR<CardBlockUpdateWithoutBlockedInput, CardBlockUncheckedUpdateWithoutBlockedInput>
+    create: XOR<CardBlockCreateWithoutBlockedInput, CardBlockUncheckedCreateWithoutBlockedInput>
+  }
+
+  export type CardBlockUpdateWithWhereUniqueWithoutBlockedInput = {
+    where: CardBlockWhereUniqueInput
+    data: XOR<CardBlockUpdateWithoutBlockedInput, CardBlockUncheckedUpdateWithoutBlockedInput>
+  }
+
+  export type CardBlockUpdateManyWithWhereWithoutBlockedInput = {
+    where: CardBlockScalarWhereInput
+    data: XOR<CardBlockUpdateManyMutationInput, CardBlockUncheckedUpdateManyWithoutBlockedInput>
+  }
+
+  export type CardCreateWithoutBlockingInput = {
+    id?: string
+    title: string
+    description?: string
+    pos: string
+    start?: Date | string | null
+    due?: Date | string | null
+    dueComplete?: boolean
+    recurrence?: string | null
+    coverColor?: string | null
+    coverAttachmentId?: string | null
+    coverSize?: string
+    closed?: boolean
+    trelloId?: string | null
+    shortId?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    list: ListCreateNestedOneWithoutCardsInput
+    labels?: CardLabelCreateNestedManyWithoutCardInput
+    members?: CardMemberCreateNestedManyWithoutCardInput
+    checklists?: ChecklistCreateNestedManyWithoutCardInput
+    attachments?: AttachmentCreateNestedManyWithoutCardInput
+    comments?: CommentCreateNestedManyWithoutCardInput
+    activities?: ActivityCreateNestedManyWithoutCardInput
+    watches?: WatchCreateNestedManyWithoutCardInput
+    blockedBy?: CardBlockCreateNestedManyWithoutBlockedInput
+  }
+
+  export type CardUncheckedCreateWithoutBlockingInput = {
+    id?: string
+    listId: string
+    title: string
+    description?: string
+    pos: string
+    start?: Date | string | null
+    due?: Date | string | null
+    dueComplete?: boolean
+    recurrence?: string | null
+    coverColor?: string | null
+    coverAttachmentId?: string | null
+    coverSize?: string
+    closed?: boolean
+    trelloId?: string | null
+    shortId?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    labels?: CardLabelUncheckedCreateNestedManyWithoutCardInput
+    members?: CardMemberUncheckedCreateNestedManyWithoutCardInput
+    checklists?: ChecklistUncheckedCreateNestedManyWithoutCardInput
+    attachments?: AttachmentUncheckedCreateNestedManyWithoutCardInput
+    comments?: CommentUncheckedCreateNestedManyWithoutCardInput
+    activities?: ActivityUncheckedCreateNestedManyWithoutCardInput
+    watches?: WatchUncheckedCreateNestedManyWithoutCardInput
+    blockedBy?: CardBlockUncheckedCreateNestedManyWithoutBlockedInput
+  }
+
+  export type CardCreateOrConnectWithoutBlockingInput = {
+    where: CardWhereUniqueInput
+    create: XOR<CardCreateWithoutBlockingInput, CardUncheckedCreateWithoutBlockingInput>
+  }
+
+  export type CardCreateWithoutBlockedByInput = {
+    id?: string
+    title: string
+    description?: string
+    pos: string
+    start?: Date | string | null
+    due?: Date | string | null
+    dueComplete?: boolean
+    recurrence?: string | null
+    coverColor?: string | null
+    coverAttachmentId?: string | null
+    coverSize?: string
+    closed?: boolean
+    trelloId?: string | null
+    shortId?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    list: ListCreateNestedOneWithoutCardsInput
+    labels?: CardLabelCreateNestedManyWithoutCardInput
+    members?: CardMemberCreateNestedManyWithoutCardInput
+    checklists?: ChecklistCreateNestedManyWithoutCardInput
+    attachments?: AttachmentCreateNestedManyWithoutCardInput
+    comments?: CommentCreateNestedManyWithoutCardInput
+    activities?: ActivityCreateNestedManyWithoutCardInput
+    watches?: WatchCreateNestedManyWithoutCardInput
+    blocking?: CardBlockCreateNestedManyWithoutBlockerInput
+  }
+
+  export type CardUncheckedCreateWithoutBlockedByInput = {
+    id?: string
+    listId: string
+    title: string
+    description?: string
+    pos: string
+    start?: Date | string | null
+    due?: Date | string | null
+    dueComplete?: boolean
+    recurrence?: string | null
+    coverColor?: string | null
+    coverAttachmentId?: string | null
+    coverSize?: string
+    closed?: boolean
+    trelloId?: string | null
+    shortId?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    labels?: CardLabelUncheckedCreateNestedManyWithoutCardInput
+    members?: CardMemberUncheckedCreateNestedManyWithoutCardInput
+    checklists?: ChecklistUncheckedCreateNestedManyWithoutCardInput
+    attachments?: AttachmentUncheckedCreateNestedManyWithoutCardInput
+    comments?: CommentUncheckedCreateNestedManyWithoutCardInput
+    activities?: ActivityUncheckedCreateNestedManyWithoutCardInput
+    watches?: WatchUncheckedCreateNestedManyWithoutCardInput
+    blocking?: CardBlockUncheckedCreateNestedManyWithoutBlockerInput
+  }
+
+  export type CardCreateOrConnectWithoutBlockedByInput = {
+    where: CardWhereUniqueInput
+    create: XOR<CardCreateWithoutBlockedByInput, CardUncheckedCreateWithoutBlockedByInput>
+  }
+
+  export type CardUpsertWithoutBlockingInput = {
+    update: XOR<CardUpdateWithoutBlockingInput, CardUncheckedUpdateWithoutBlockingInput>
+    create: XOR<CardCreateWithoutBlockingInput, CardUncheckedCreateWithoutBlockingInput>
+    where?: CardWhereInput
+  }
+
+  export type CardUpdateToOneWithWhereWithoutBlockingInput = {
+    where?: CardWhereInput
+    data: XOR<CardUpdateWithoutBlockingInput, CardUncheckedUpdateWithoutBlockingInput>
+  }
+
+  export type CardUpdateWithoutBlockingInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    pos?: StringFieldUpdateOperationsInput | string
+    start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    due?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dueComplete?: BoolFieldUpdateOperationsInput | boolean
+    recurrence?: NullableStringFieldUpdateOperationsInput | string | null
+    coverColor?: NullableStringFieldUpdateOperationsInput | string | null
+    coverAttachmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    coverSize?: StringFieldUpdateOperationsInput | string
+    closed?: BoolFieldUpdateOperationsInput | boolean
+    trelloId?: NullableStringFieldUpdateOperationsInput | string | null
+    shortId?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    list?: ListUpdateOneRequiredWithoutCardsNestedInput
+    labels?: CardLabelUpdateManyWithoutCardNestedInput
+    members?: CardMemberUpdateManyWithoutCardNestedInput
+    checklists?: ChecklistUpdateManyWithoutCardNestedInput
+    attachments?: AttachmentUpdateManyWithoutCardNestedInput
+    comments?: CommentUpdateManyWithoutCardNestedInput
+    activities?: ActivityUpdateManyWithoutCardNestedInput
+    watches?: WatchUpdateManyWithoutCardNestedInput
+    blockedBy?: CardBlockUpdateManyWithoutBlockedNestedInput
+  }
+
+  export type CardUncheckedUpdateWithoutBlockingInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    listId?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    pos?: StringFieldUpdateOperationsInput | string
+    start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    due?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dueComplete?: BoolFieldUpdateOperationsInput | boolean
+    recurrence?: NullableStringFieldUpdateOperationsInput | string | null
+    coverColor?: NullableStringFieldUpdateOperationsInput | string | null
+    coverAttachmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    coverSize?: StringFieldUpdateOperationsInput | string
+    closed?: BoolFieldUpdateOperationsInput | boolean
+    trelloId?: NullableStringFieldUpdateOperationsInput | string | null
+    shortId?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    labels?: CardLabelUncheckedUpdateManyWithoutCardNestedInput
+    members?: CardMemberUncheckedUpdateManyWithoutCardNestedInput
+    checklists?: ChecklistUncheckedUpdateManyWithoutCardNestedInput
+    attachments?: AttachmentUncheckedUpdateManyWithoutCardNestedInput
+    comments?: CommentUncheckedUpdateManyWithoutCardNestedInput
+    activities?: ActivityUncheckedUpdateManyWithoutCardNestedInput
+    watches?: WatchUncheckedUpdateManyWithoutCardNestedInput
+    blockedBy?: CardBlockUncheckedUpdateManyWithoutBlockedNestedInput
+  }
+
+  export type CardUpsertWithoutBlockedByInput = {
+    update: XOR<CardUpdateWithoutBlockedByInput, CardUncheckedUpdateWithoutBlockedByInput>
+    create: XOR<CardCreateWithoutBlockedByInput, CardUncheckedCreateWithoutBlockedByInput>
+    where?: CardWhereInput
+  }
+
+  export type CardUpdateToOneWithWhereWithoutBlockedByInput = {
+    where?: CardWhereInput
+    data: XOR<CardUpdateWithoutBlockedByInput, CardUncheckedUpdateWithoutBlockedByInput>
+  }
+
+  export type CardUpdateWithoutBlockedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    pos?: StringFieldUpdateOperationsInput | string
+    start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    due?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dueComplete?: BoolFieldUpdateOperationsInput | boolean
+    recurrence?: NullableStringFieldUpdateOperationsInput | string | null
+    coverColor?: NullableStringFieldUpdateOperationsInput | string | null
+    coverAttachmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    coverSize?: StringFieldUpdateOperationsInput | string
+    closed?: BoolFieldUpdateOperationsInput | boolean
+    trelloId?: NullableStringFieldUpdateOperationsInput | string | null
+    shortId?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    list?: ListUpdateOneRequiredWithoutCardsNestedInput
+    labels?: CardLabelUpdateManyWithoutCardNestedInput
+    members?: CardMemberUpdateManyWithoutCardNestedInput
+    checklists?: ChecklistUpdateManyWithoutCardNestedInput
+    attachments?: AttachmentUpdateManyWithoutCardNestedInput
+    comments?: CommentUpdateManyWithoutCardNestedInput
+    activities?: ActivityUpdateManyWithoutCardNestedInput
+    watches?: WatchUpdateManyWithoutCardNestedInput
+    blocking?: CardBlockUpdateManyWithoutBlockerNestedInput
+  }
+
+  export type CardUncheckedUpdateWithoutBlockedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    listId?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    pos?: StringFieldUpdateOperationsInput | string
+    start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    due?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dueComplete?: BoolFieldUpdateOperationsInput | boolean
+    recurrence?: NullableStringFieldUpdateOperationsInput | string | null
+    coverColor?: NullableStringFieldUpdateOperationsInput | string | null
+    coverAttachmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    coverSize?: StringFieldUpdateOperationsInput | string
+    closed?: BoolFieldUpdateOperationsInput | boolean
+    trelloId?: NullableStringFieldUpdateOperationsInput | string | null
+    shortId?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    labels?: CardLabelUncheckedUpdateManyWithoutCardNestedInput
+    members?: CardMemberUncheckedUpdateManyWithoutCardNestedInput
+    checklists?: ChecklistUncheckedUpdateManyWithoutCardNestedInput
+    attachments?: AttachmentUncheckedUpdateManyWithoutCardNestedInput
+    comments?: CommentUncheckedUpdateManyWithoutCardNestedInput
+    activities?: ActivityUncheckedUpdateManyWithoutCardNestedInput
+    watches?: WatchUncheckedUpdateManyWithoutCardNestedInput
+    blocking?: CardBlockUncheckedUpdateManyWithoutBlockerNestedInput
+  }
+
   export type BoardCreateWithoutLabelsInput = {
     id?: string
     name: string
@@ -42470,6 +44294,8 @@ export namespace Prisma {
     comments?: CommentCreateNestedManyWithoutCardInput
     activities?: ActivityCreateNestedManyWithoutCardInput
     watches?: WatchCreateNestedManyWithoutCardInput
+    blocking?: CardBlockCreateNestedManyWithoutBlockerInput
+    blockedBy?: CardBlockCreateNestedManyWithoutBlockedInput
   }
 
   export type CardUncheckedCreateWithoutLabelsInput = {
@@ -42496,6 +44322,8 @@ export namespace Prisma {
     comments?: CommentUncheckedCreateNestedManyWithoutCardInput
     activities?: ActivityUncheckedCreateNestedManyWithoutCardInput
     watches?: WatchUncheckedCreateNestedManyWithoutCardInput
+    blocking?: CardBlockUncheckedCreateNestedManyWithoutBlockerInput
+    blockedBy?: CardBlockUncheckedCreateNestedManyWithoutBlockedInput
   }
 
   export type CardCreateOrConnectWithoutLabelsInput = {
@@ -42559,6 +44387,8 @@ export namespace Prisma {
     comments?: CommentUpdateManyWithoutCardNestedInput
     activities?: ActivityUpdateManyWithoutCardNestedInput
     watches?: WatchUpdateManyWithoutCardNestedInput
+    blocking?: CardBlockUpdateManyWithoutBlockerNestedInput
+    blockedBy?: CardBlockUpdateManyWithoutBlockedNestedInput
   }
 
   export type CardUncheckedUpdateWithoutLabelsInput = {
@@ -42585,6 +44415,8 @@ export namespace Prisma {
     comments?: CommentUncheckedUpdateManyWithoutCardNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutCardNestedInput
     watches?: WatchUncheckedUpdateManyWithoutCardNestedInput
+    blocking?: CardBlockUncheckedUpdateManyWithoutBlockerNestedInput
+    blockedBy?: CardBlockUncheckedUpdateManyWithoutBlockedNestedInput
   }
 
   export type LabelUpsertWithoutCardsInput = {
@@ -42638,6 +44470,8 @@ export namespace Prisma {
     comments?: CommentCreateNestedManyWithoutCardInput
     activities?: ActivityCreateNestedManyWithoutCardInput
     watches?: WatchCreateNestedManyWithoutCardInput
+    blocking?: CardBlockCreateNestedManyWithoutBlockerInput
+    blockedBy?: CardBlockCreateNestedManyWithoutBlockedInput
   }
 
   export type CardUncheckedCreateWithoutMembersInput = {
@@ -42664,6 +44498,8 @@ export namespace Prisma {
     comments?: CommentUncheckedCreateNestedManyWithoutCardInput
     activities?: ActivityUncheckedCreateNestedManyWithoutCardInput
     watches?: WatchUncheckedCreateNestedManyWithoutCardInput
+    blocking?: CardBlockUncheckedCreateNestedManyWithoutBlockerInput
+    blockedBy?: CardBlockUncheckedCreateNestedManyWithoutBlockedInput
   }
 
   export type CardCreateOrConnectWithoutMembersInput = {
@@ -42683,6 +44519,7 @@ export namespace Prisma {
     isGhost?: boolean
     invitedEmail?: string | null
     isAdmin?: boolean
+    slackJoined?: boolean
     trelloId?: string | null
     createdAt?: Date | string
     accounts?: AccountCreateNestedManyWithoutUserInput
@@ -42713,6 +44550,7 @@ export namespace Prisma {
     isGhost?: boolean
     invitedEmail?: string | null
     isAdmin?: boolean
+    slackJoined?: boolean
     trelloId?: string | null
     createdAt?: Date | string
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
@@ -42771,6 +44609,8 @@ export namespace Prisma {
     comments?: CommentUpdateManyWithoutCardNestedInput
     activities?: ActivityUpdateManyWithoutCardNestedInput
     watches?: WatchUpdateManyWithoutCardNestedInput
+    blocking?: CardBlockUpdateManyWithoutBlockerNestedInput
+    blockedBy?: CardBlockUpdateManyWithoutBlockedNestedInput
   }
 
   export type CardUncheckedUpdateWithoutMembersInput = {
@@ -42797,6 +44637,8 @@ export namespace Prisma {
     comments?: CommentUncheckedUpdateManyWithoutCardNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutCardNestedInput
     watches?: WatchUncheckedUpdateManyWithoutCardNestedInput
+    blocking?: CardBlockUncheckedUpdateManyWithoutBlockerNestedInput
+    blockedBy?: CardBlockUncheckedUpdateManyWithoutBlockedNestedInput
   }
 
   export type UserUpsertWithoutCardsInput = {
@@ -42822,6 +44664,7 @@ export namespace Prisma {
     isGhost?: BoolFieldUpdateOperationsInput | boolean
     invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
+    slackJoined?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUpdateManyWithoutUserNestedInput
@@ -42852,6 +44695,7 @@ export namespace Prisma {
     isGhost?: BoolFieldUpdateOperationsInput | boolean
     invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
+    slackJoined?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
@@ -42894,6 +44738,8 @@ export namespace Prisma {
     comments?: CommentCreateNestedManyWithoutCardInput
     activities?: ActivityCreateNestedManyWithoutCardInput
     watches?: WatchCreateNestedManyWithoutCardInput
+    blocking?: CardBlockCreateNestedManyWithoutBlockerInput
+    blockedBy?: CardBlockCreateNestedManyWithoutBlockedInput
   }
 
   export type CardUncheckedCreateWithoutChecklistsInput = {
@@ -42920,6 +44766,8 @@ export namespace Prisma {
     comments?: CommentUncheckedCreateNestedManyWithoutCardInput
     activities?: ActivityUncheckedCreateNestedManyWithoutCardInput
     watches?: WatchUncheckedCreateNestedManyWithoutCardInput
+    blocking?: CardBlockUncheckedCreateNestedManyWithoutBlockerInput
+    blockedBy?: CardBlockUncheckedCreateNestedManyWithoutBlockedInput
   }
 
   export type CardCreateOrConnectWithoutChecklistsInput = {
@@ -42992,6 +44840,8 @@ export namespace Prisma {
     comments?: CommentUpdateManyWithoutCardNestedInput
     activities?: ActivityUpdateManyWithoutCardNestedInput
     watches?: WatchUpdateManyWithoutCardNestedInput
+    blocking?: CardBlockUpdateManyWithoutBlockerNestedInput
+    blockedBy?: CardBlockUpdateManyWithoutBlockedNestedInput
   }
 
   export type CardUncheckedUpdateWithoutChecklistsInput = {
@@ -43018,6 +44868,8 @@ export namespace Prisma {
     comments?: CommentUncheckedUpdateManyWithoutCardNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutCardNestedInput
     watches?: WatchUncheckedUpdateManyWithoutCardNestedInput
+    blocking?: CardBlockUncheckedUpdateManyWithoutBlockerNestedInput
+    blockedBy?: CardBlockUncheckedUpdateManyWithoutBlockedNestedInput
   }
 
   export type CheckItemUpsertWithWhereUniqueWithoutChecklistInput = {
@@ -43069,6 +44921,7 @@ export namespace Prisma {
     isGhost?: boolean
     invitedEmail?: string | null
     isAdmin?: boolean
+    slackJoined?: boolean
     trelloId?: string | null
     createdAt?: Date | string
     accounts?: AccountCreateNestedManyWithoutUserInput
@@ -43099,6 +44952,7 @@ export namespace Prisma {
     isGhost?: boolean
     invitedEmail?: string | null
     isAdmin?: boolean
+    slackJoined?: boolean
     trelloId?: string | null
     createdAt?: Date | string
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
@@ -43172,6 +45026,7 @@ export namespace Prisma {
     isGhost?: BoolFieldUpdateOperationsInput | boolean
     invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
+    slackJoined?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUpdateManyWithoutUserNestedInput
@@ -43202,6 +45057,7 @@ export namespace Prisma {
     isGhost?: BoolFieldUpdateOperationsInput | boolean
     invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
+    slackJoined?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
@@ -43244,6 +45100,8 @@ export namespace Prisma {
     comments?: CommentCreateNestedManyWithoutCardInput
     activities?: ActivityCreateNestedManyWithoutCardInput
     watches?: WatchCreateNestedManyWithoutCardInput
+    blocking?: CardBlockCreateNestedManyWithoutBlockerInput
+    blockedBy?: CardBlockCreateNestedManyWithoutBlockedInput
   }
 
   export type CardUncheckedCreateWithoutAttachmentsInput = {
@@ -43270,6 +45128,8 @@ export namespace Prisma {
     comments?: CommentUncheckedCreateNestedManyWithoutCardInput
     activities?: ActivityUncheckedCreateNestedManyWithoutCardInput
     watches?: WatchUncheckedCreateNestedManyWithoutCardInput
+    blocking?: CardBlockUncheckedCreateNestedManyWithoutBlockerInput
+    blockedBy?: CardBlockUncheckedCreateNestedManyWithoutBlockedInput
   }
 
   export type CardCreateOrConnectWithoutAttachmentsInput = {
@@ -43289,6 +45149,7 @@ export namespace Prisma {
     isGhost?: boolean
     invitedEmail?: string | null
     isAdmin?: boolean
+    slackJoined?: boolean
     trelloId?: string | null
     createdAt?: Date | string
     accounts?: AccountCreateNestedManyWithoutUserInput
@@ -43319,6 +45180,7 @@ export namespace Prisma {
     isGhost?: boolean
     invitedEmail?: string | null
     isAdmin?: boolean
+    slackJoined?: boolean
     trelloId?: string | null
     createdAt?: Date | string
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
@@ -43377,6 +45239,8 @@ export namespace Prisma {
     comments?: CommentUpdateManyWithoutCardNestedInput
     activities?: ActivityUpdateManyWithoutCardNestedInput
     watches?: WatchUpdateManyWithoutCardNestedInput
+    blocking?: CardBlockUpdateManyWithoutBlockerNestedInput
+    blockedBy?: CardBlockUpdateManyWithoutBlockedNestedInput
   }
 
   export type CardUncheckedUpdateWithoutAttachmentsInput = {
@@ -43403,6 +45267,8 @@ export namespace Prisma {
     comments?: CommentUncheckedUpdateManyWithoutCardNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutCardNestedInput
     watches?: WatchUncheckedUpdateManyWithoutCardNestedInput
+    blocking?: CardBlockUncheckedUpdateManyWithoutBlockerNestedInput
+    blockedBy?: CardBlockUncheckedUpdateManyWithoutBlockedNestedInput
   }
 
   export type UserUpsertWithoutAttachmentsInput = {
@@ -43428,6 +45294,7 @@ export namespace Prisma {
     isGhost?: BoolFieldUpdateOperationsInput | boolean
     invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
+    slackJoined?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUpdateManyWithoutUserNestedInput
@@ -43458,6 +45325,7 @@ export namespace Prisma {
     isGhost?: BoolFieldUpdateOperationsInput | boolean
     invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
+    slackJoined?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
@@ -43500,6 +45368,8 @@ export namespace Prisma {
     attachments?: AttachmentCreateNestedManyWithoutCardInput
     activities?: ActivityCreateNestedManyWithoutCardInput
     watches?: WatchCreateNestedManyWithoutCardInput
+    blocking?: CardBlockCreateNestedManyWithoutBlockerInput
+    blockedBy?: CardBlockCreateNestedManyWithoutBlockedInput
   }
 
   export type CardUncheckedCreateWithoutCommentsInput = {
@@ -43526,6 +45396,8 @@ export namespace Prisma {
     attachments?: AttachmentUncheckedCreateNestedManyWithoutCardInput
     activities?: ActivityUncheckedCreateNestedManyWithoutCardInput
     watches?: WatchUncheckedCreateNestedManyWithoutCardInput
+    blocking?: CardBlockUncheckedCreateNestedManyWithoutBlockerInput
+    blockedBy?: CardBlockUncheckedCreateNestedManyWithoutBlockedInput
   }
 
   export type CardCreateOrConnectWithoutCommentsInput = {
@@ -43545,6 +45417,7 @@ export namespace Prisma {
     isGhost?: boolean
     invitedEmail?: string | null
     isAdmin?: boolean
+    slackJoined?: boolean
     trelloId?: string | null
     createdAt?: Date | string
     accounts?: AccountCreateNestedManyWithoutUserInput
@@ -43575,6 +45448,7 @@ export namespace Prisma {
     isGhost?: boolean
     invitedEmail?: string | null
     isAdmin?: boolean
+    slackJoined?: boolean
     trelloId?: string | null
     createdAt?: Date | string
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
@@ -43633,6 +45507,8 @@ export namespace Prisma {
     attachments?: AttachmentUpdateManyWithoutCardNestedInput
     activities?: ActivityUpdateManyWithoutCardNestedInput
     watches?: WatchUpdateManyWithoutCardNestedInput
+    blocking?: CardBlockUpdateManyWithoutBlockerNestedInput
+    blockedBy?: CardBlockUpdateManyWithoutBlockedNestedInput
   }
 
   export type CardUncheckedUpdateWithoutCommentsInput = {
@@ -43659,6 +45535,8 @@ export namespace Prisma {
     attachments?: AttachmentUncheckedUpdateManyWithoutCardNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutCardNestedInput
     watches?: WatchUncheckedUpdateManyWithoutCardNestedInput
+    blocking?: CardBlockUncheckedUpdateManyWithoutBlockerNestedInput
+    blockedBy?: CardBlockUncheckedUpdateManyWithoutBlockedNestedInput
   }
 
   export type UserUpsertWithoutCommentsInput = {
@@ -43684,6 +45562,7 @@ export namespace Prisma {
     isGhost?: BoolFieldUpdateOperationsInput | boolean
     invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
+    slackJoined?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUpdateManyWithoutUserNestedInput
@@ -43714,6 +45593,7 @@ export namespace Prisma {
     isGhost?: BoolFieldUpdateOperationsInput | boolean
     invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
+    slackJoined?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
@@ -43803,6 +45683,8 @@ export namespace Prisma {
     attachments?: AttachmentCreateNestedManyWithoutCardInput
     comments?: CommentCreateNestedManyWithoutCardInput
     watches?: WatchCreateNestedManyWithoutCardInput
+    blocking?: CardBlockCreateNestedManyWithoutBlockerInput
+    blockedBy?: CardBlockCreateNestedManyWithoutBlockedInput
   }
 
   export type CardUncheckedCreateWithoutActivitiesInput = {
@@ -43829,6 +45711,8 @@ export namespace Prisma {
     attachments?: AttachmentUncheckedCreateNestedManyWithoutCardInput
     comments?: CommentUncheckedCreateNestedManyWithoutCardInput
     watches?: WatchUncheckedCreateNestedManyWithoutCardInput
+    blocking?: CardBlockUncheckedCreateNestedManyWithoutBlockerInput
+    blockedBy?: CardBlockUncheckedCreateNestedManyWithoutBlockedInput
   }
 
   export type CardCreateOrConnectWithoutActivitiesInput = {
@@ -43848,6 +45732,7 @@ export namespace Prisma {
     isGhost?: boolean
     invitedEmail?: string | null
     isAdmin?: boolean
+    slackJoined?: boolean
     trelloId?: string | null
     createdAt?: Date | string
     accounts?: AccountCreateNestedManyWithoutUserInput
@@ -43878,6 +45763,7 @@ export namespace Prisma {
     isGhost?: boolean
     invitedEmail?: string | null
     isAdmin?: boolean
+    slackJoined?: boolean
     trelloId?: string | null
     createdAt?: Date | string
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
@@ -43989,6 +45875,8 @@ export namespace Prisma {
     attachments?: AttachmentUpdateManyWithoutCardNestedInput
     comments?: CommentUpdateManyWithoutCardNestedInput
     watches?: WatchUpdateManyWithoutCardNestedInput
+    blocking?: CardBlockUpdateManyWithoutBlockerNestedInput
+    blockedBy?: CardBlockUpdateManyWithoutBlockedNestedInput
   }
 
   export type CardUncheckedUpdateWithoutActivitiesInput = {
@@ -44015,6 +45903,8 @@ export namespace Prisma {
     attachments?: AttachmentUncheckedUpdateManyWithoutCardNestedInput
     comments?: CommentUncheckedUpdateManyWithoutCardNestedInput
     watches?: WatchUncheckedUpdateManyWithoutCardNestedInput
+    blocking?: CardBlockUncheckedUpdateManyWithoutBlockerNestedInput
+    blockedBy?: CardBlockUncheckedUpdateManyWithoutBlockedNestedInput
   }
 
   export type UserUpsertWithoutActivitiesInput = {
@@ -44040,6 +45930,7 @@ export namespace Prisma {
     isGhost?: BoolFieldUpdateOperationsInput | boolean
     invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
+    slackJoined?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUpdateManyWithoutUserNestedInput
@@ -44070,6 +45961,7 @@ export namespace Prisma {
     isGhost?: BoolFieldUpdateOperationsInput | boolean
     invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
+    slackJoined?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
@@ -44100,6 +45992,7 @@ export namespace Prisma {
     isGhost?: boolean
     invitedEmail?: string | null
     isAdmin?: boolean
+    slackJoined?: boolean
     trelloId?: string | null
     createdAt?: Date | string
     accounts?: AccountCreateNestedManyWithoutUserInput
@@ -44130,6 +46023,7 @@ export namespace Prisma {
     isGhost?: boolean
     invitedEmail?: string | null
     isAdmin?: boolean
+    slackJoined?: boolean
     trelloId?: string | null
     createdAt?: Date | string
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
@@ -44224,6 +46118,8 @@ export namespace Prisma {
     attachments?: AttachmentCreateNestedManyWithoutCardInput
     comments?: CommentCreateNestedManyWithoutCardInput
     activities?: ActivityCreateNestedManyWithoutCardInput
+    blocking?: CardBlockCreateNestedManyWithoutBlockerInput
+    blockedBy?: CardBlockCreateNestedManyWithoutBlockedInput
   }
 
   export type CardUncheckedCreateWithoutWatchesInput = {
@@ -44250,6 +46146,8 @@ export namespace Prisma {
     attachments?: AttachmentUncheckedCreateNestedManyWithoutCardInput
     comments?: CommentUncheckedCreateNestedManyWithoutCardInput
     activities?: ActivityUncheckedCreateNestedManyWithoutCardInput
+    blocking?: CardBlockUncheckedCreateNestedManyWithoutBlockerInput
+    blockedBy?: CardBlockUncheckedCreateNestedManyWithoutBlockedInput
   }
 
   export type CardCreateOrConnectWithoutWatchesInput = {
@@ -44280,6 +46178,7 @@ export namespace Prisma {
     isGhost?: BoolFieldUpdateOperationsInput | boolean
     invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
+    slackJoined?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUpdateManyWithoutUserNestedInput
@@ -44310,6 +46209,7 @@ export namespace Prisma {
     isGhost?: BoolFieldUpdateOperationsInput | boolean
     invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
+    slackJoined?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
@@ -44416,6 +46316,8 @@ export namespace Prisma {
     attachments?: AttachmentUpdateManyWithoutCardNestedInput
     comments?: CommentUpdateManyWithoutCardNestedInput
     activities?: ActivityUpdateManyWithoutCardNestedInput
+    blocking?: CardBlockUpdateManyWithoutBlockerNestedInput
+    blockedBy?: CardBlockUpdateManyWithoutBlockedNestedInput
   }
 
   export type CardUncheckedUpdateWithoutWatchesInput = {
@@ -44442,6 +46344,8 @@ export namespace Prisma {
     attachments?: AttachmentUncheckedUpdateManyWithoutCardNestedInput
     comments?: CommentUncheckedUpdateManyWithoutCardNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutCardNestedInput
+    blocking?: CardBlockUncheckedUpdateManyWithoutBlockerNestedInput
+    blockedBy?: CardBlockUncheckedUpdateManyWithoutBlockedNestedInput
   }
 
   export type UserCreateWithoutNotificationsInput = {
@@ -44456,6 +46360,7 @@ export namespace Prisma {
     isGhost?: boolean
     invitedEmail?: string | null
     isAdmin?: boolean
+    slackJoined?: boolean
     trelloId?: string | null
     createdAt?: Date | string
     accounts?: AccountCreateNestedManyWithoutUserInput
@@ -44486,6 +46391,7 @@ export namespace Prisma {
     isGhost?: boolean
     invitedEmail?: string | null
     isAdmin?: boolean
+    slackJoined?: boolean
     trelloId?: string | null
     createdAt?: Date | string
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
@@ -44532,6 +46438,7 @@ export namespace Prisma {
     isGhost?: BoolFieldUpdateOperationsInput | boolean
     invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
+    slackJoined?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUpdateManyWithoutUserNestedInput
@@ -44562,6 +46469,7 @@ export namespace Prisma {
     isGhost?: BoolFieldUpdateOperationsInput | boolean
     invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
+    slackJoined?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
@@ -44592,6 +46500,7 @@ export namespace Prisma {
     isGhost?: boolean
     invitedEmail?: string | null
     isAdmin?: boolean
+    slackJoined?: boolean
     trelloId?: string | null
     createdAt?: Date | string
     accounts?: AccountCreateNestedManyWithoutUserInput
@@ -44622,6 +46531,7 @@ export namespace Prisma {
     isGhost?: boolean
     invitedEmail?: string | null
     isAdmin?: boolean
+    slackJoined?: boolean
     trelloId?: string | null
     createdAt?: Date | string
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
@@ -44668,6 +46578,7 @@ export namespace Prisma {
     isGhost?: BoolFieldUpdateOperationsInput | boolean
     invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
+    slackJoined?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUpdateManyWithoutUserNestedInput
@@ -44698,6 +46609,7 @@ export namespace Prisma {
     isGhost?: BoolFieldUpdateOperationsInput | boolean
     invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
+    slackJoined?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
@@ -44797,6 +46709,7 @@ export namespace Prisma {
     isGhost?: boolean
     invitedEmail?: string | null
     isAdmin?: boolean
+    slackJoined?: boolean
     trelloId?: string | null
     createdAt?: Date | string
     accounts?: AccountCreateNestedManyWithoutUserInput
@@ -44827,6 +46740,7 @@ export namespace Prisma {
     isGhost?: boolean
     invitedEmail?: string | null
     isAdmin?: boolean
+    slackJoined?: boolean
     trelloId?: string | null
     createdAt?: Date | string
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
@@ -44900,6 +46814,7 @@ export namespace Prisma {
     isGhost?: BoolFieldUpdateOperationsInput | boolean
     invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
+    slackJoined?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUpdateManyWithoutUserNestedInput
@@ -44930,6 +46845,7 @@ export namespace Prisma {
     isGhost?: BoolFieldUpdateOperationsInput | boolean
     invitedEmail?: NullableStringFieldUpdateOperationsInput | string | null
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
+    slackJoined?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
@@ -45783,6 +47699,8 @@ export namespace Prisma {
     comments?: CommentUpdateManyWithoutCardNestedInput
     activities?: ActivityUpdateManyWithoutCardNestedInput
     watches?: WatchUpdateManyWithoutCardNestedInput
+    blocking?: CardBlockUpdateManyWithoutBlockerNestedInput
+    blockedBy?: CardBlockUpdateManyWithoutBlockedNestedInput
   }
 
   export type CardUncheckedUpdateWithoutListInput = {
@@ -45809,6 +47727,8 @@ export namespace Prisma {
     comments?: CommentUncheckedUpdateManyWithoutCardNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutCardNestedInput
     watches?: WatchUncheckedUpdateManyWithoutCardNestedInput
+    blocking?: CardBlockUncheckedUpdateManyWithoutBlockerNestedInput
+    blockedBy?: CardBlockUncheckedUpdateManyWithoutBlockedNestedInput
   }
 
   export type CardUncheckedUpdateManyWithoutListInput = {
@@ -45880,6 +47800,14 @@ export namespace Prisma {
     id?: string
     userId: string
     boardId?: string | null
+  }
+
+  export type CardBlockCreateManyBlockerInput = {
+    blockedId: string
+  }
+
+  export type CardBlockCreateManyBlockedInput = {
+    blockerId: string
   }
 
   export type CardLabelUpdateWithoutCardInput = {
@@ -46038,6 +47966,30 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     boardId?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type CardBlockUpdateWithoutBlockerInput = {
+    blocked?: CardUpdateOneRequiredWithoutBlockedByNestedInput
+  }
+
+  export type CardBlockUncheckedUpdateWithoutBlockerInput = {
+    blockedId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type CardBlockUncheckedUpdateManyWithoutBlockerInput = {
+    blockedId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type CardBlockUpdateWithoutBlockedInput = {
+    blocker?: CardUpdateOneRequiredWithoutBlockingNestedInput
+  }
+
+  export type CardBlockUncheckedUpdateWithoutBlockedInput = {
+    blockerId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type CardBlockUncheckedUpdateManyWithoutBlockedInput = {
+    blockerId?: StringFieldUpdateOperationsInput | string
   }
 
   export type CardLabelCreateManyLabelInput = {

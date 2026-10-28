@@ -444,7 +444,7 @@ export function CardComposer({
         updatedAt: new Date(),
         labels: [],
         members: [],
-        _count: { comments: 0, attachments: 0 },
+        _count: { comments: 0, attachments: 0, blockedBy: 0 },
         checkTotal: 0,
         checkDone: 0,
         coverUrl: null,

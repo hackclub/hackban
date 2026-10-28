@@ -32,7 +32,7 @@ export const RECURRENCE_OPTIONS: [Recurrence, string][] = [
 ];
 
 export type CardDetail = RouterOutputs["card"]["get"];
-export type PopKind = "members" | "labels" | "checklist" | "dates" | "attachment" | "cover" | "move" | "copy";
+export type PopKind = "members" | "labels" | "checklist" | "dates" | "attachment" | "cover" | "move" | "copy" | "blockers";
 type Anchor = Parameters<typeof Popover>[0]["anchor"];
 
 const TITLES: Record<PopKind, string> = {
@@ -44,6 +44,7 @@ const TITLES: Record<PopKind, string> = {
   cover: "Cover",
   move: "Move card",
   copy: "Copy card",
+  blockers: "Dependencies",
 };
 
 export function useCardInvalidate(cardId: string, boardId: string) {
@@ -84,8 +85,58 @@ export function CardPopover({
       {kind === "cover" && <CoverPane card={card} board={board} />}
       {kind === "move" && <MovePane card={card} board={board} />}
       {kind === "copy" && <CopyPane card={card} board={board} />}
+      {kind === "blockers" && <BlockersPane card={card} board={board} />}
     </Popover>
   );
+}
+
+/** Mark this card as blocked by (or blocking) another open card on the board. */
+function BlockersPane({ card, board }: { card: CardDetail; board: BoardData }) {
+  const [q, setQ] = useState("");
+  const [mode, setMode] = useState<"blockedBy" | "blocking">("blockedBy");
+  const setBlocker = useSetBlocker(board.id);
+  const linked = new Set([card.id, ...card.blockedBy.map((c) => c.id), ...card.blocking.map((c) => c.id)]);
+  const matches = board.lists
+    .flatMap((l) => l.cards.map((c) => ({ ...c, listName: l.name })))
+    .filter((c) => !linked.has(c.id) && c.title.toLowerCase().includes(q.toLowerCase()))
+    .slice(0, 8);
+  return (
+    <div>
+      <div className="mb-2 grid grid-cols-2 gap-1">
+        {(["blockedBy", "blocking"] as const).map((m) => (
+          <Button key={m} variant={mode === m ? "primary" : "subtle"} onClick={() => setMode(m)}>
+            {m === "blockedBy" ? "Blocked by" : "Blocking"}
+          </Button>
+        ))}
+      </div>
+      <input autoFocus className={inputCls} placeholder="Search cards on this board" value={q} onChange={(e) => setQ(e.target.value)} />
+      <div className="mt-2">
+        {matches.map((c) => (
+          <MenuItem
+            key={c.id}
+            onClick={() =>
+              setBlocker.mutate(mode === "blockedBy" ? { id: card.id, blockerId: c.id, on: true } : { id: c.id, blockerId: card.id, on: true })
+            }
+          >
+            <span className="block truncate">{c.title}</span>
+            <span className="block text-xs text-[var(--color-text-subtle)]">in {c.listName}</span>
+          </MenuItem>
+        ))}
+        {matches.length === 0 && <p className="py-2 text-sm text-[var(--color-text-subtle)]">No matching cards.</p>}
+      </div>
+    </div>
+  );
+}
+
+/** Both cards' backs change, so refresh every open card plus the board. */
+export function useSetBlocker(boardId: string) {
+  const utils = api.useUtils();
+  return api.card.setBlocker.useMutation({
+    onSettled: () => {
+      void utils.card.get.invalidate();
+      void utils.board.get.invalidate({ id: boardId });
+    },
+  });
 }
 
 function MembersPane({ card, board }: { card: CardDetail; board: BoardData }) {

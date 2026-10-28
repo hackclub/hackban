@@ -138,6 +138,8 @@ export function hackbanMcp(user: User, base: string) {
         })),
         attachments: c.attachments.map((a) => ({ name: a.name, url: abs(a.url) })),
         comments: c.comments.map((m) => ({ id: m.id, author: m.author.name, text: m.text, at: m.createdAt })),
+        blockedBy: c.blockedBy.length ? c.blockedBy : undefined,
+        blocking: c.blocking.length ? c.blocking : undefined,
       });
     },
   );
@@ -281,6 +283,20 @@ export function hackbanMcp(user: User, base: string) {
     },
     async ({ cardId, labelId, on }) => {
       await api.card.toggleLabel({ id: cardId, labelId, on });
+      return text({ ok: true });
+    },
+  );
+
+  server.registerTool(
+    "set_card_blocker",
+    {
+      title: "Set card blocker",
+      description: "Mark a card as blocked by another card on the same board (it stays blocked until the blocker is completed or archived), or remove that.",
+      inputSchema: { cardId: z.string().describe("The blocked card"), blockerCardId: z.string(), on: z.boolean() },
+      annotations: { ...write, idempotentHint: true },
+    },
+    async ({ cardId, blockerCardId, on }) => {
+      await api.card.setBlocker({ id: cardId, blockerId: blockerCardId, on });
       return text({ ok: true });
     },
   );

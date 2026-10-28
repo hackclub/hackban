@@ -25,7 +25,8 @@ const cardFrontInclude = {
   labels: { include: { label: true } },
   members: { include: { user: { select: { id: true, name: true, image: true } } } },
   checklists: { include: { items: { select: { complete: true } } } },
-  _count: { select: { comments: true, attachments: true } },
+  // Only open blockers: the card front shows "Blocked" until they're all done.
+  _count: { select: { comments: true, attachments: true, blockedBy: { where: { blocker: { closed: false, dueComplete: false } } } } },
 } as const;
 
 /** A board must always keep at least one admin. */

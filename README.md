@@ -84,6 +84,7 @@ bun dev                 # http://localhost:3000
 | `AUTH_TRUST_HOST`      | prod     | `true` when behind a proxy |
 | `ADMIN_EMAILS`         | no       | Comma-separated emails that are always site admins |
 | `UPLOAD_DIR`           | no       | Where attachments are stored. Default `./uploads` |
+| `SLACK_BOT_TOKEN`      | no       | Bot token with `channels:manage`; adds each user to #hackban on first login. The bot must be in the channel |
 
 ### Hack Club Auth
 
@@ -177,7 +178,7 @@ Tools: `whoami`, `list_workspaces`, `get_workspace`, `search`, `get_board`,
 `create_board`, `update_board`, `add_board_member`, `add_workspace_member`,
 `create_list`, `update_list`, `move_list`, `save_label`, `create_card`, `update_card`,
 `move_card`, `copy_card`, `watch_card`, `add_comment`, `edit_comment`, `add_link`,
-`set_card_label`, `set_card_member`, `add_checklist`, `rename_checklist`,
+`set_card_label`, `set_card_member`, `set_card_blocker`, `add_checklist`, `rename_checklist`,
 `add_check_item`, `update_check_item`. They call the same tRPC procedures as the web
 app, so access checks, activity and live updates match. Nothing is permanently
 deleted: cards, lists and boards can only be archived, and members can be added
