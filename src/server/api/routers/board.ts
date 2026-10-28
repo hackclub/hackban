@@ -5,6 +5,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { logActivity, requireBoard, touch } from "~/server/api/access";
+import { DEFAULT_LABEL_COLORS, httpsUrl } from "~/server/api/defaults";
 import { sequentialKeys } from "~/server/api/pos";
 import { memberInput, userForInvite } from "~/server/invite";
 import { removeStored, storedKeys } from "~/server/storage";
@@ -17,10 +18,6 @@ const background = z
   .string()
   .max(200)
   .regex(/^(#[0-9a-fA-F]{3,8}|linear-gradient\([#0-9a-zA-Z%,.\s-]+\))$/, "Invalid background");
-export const httpsUrl = z.string().max(2048).url().refine((u) => u.startsWith("https://"), "Must be an https URL");
-
-export const DEFAULT_LABEL_COLORS = ["green", "yellow", "orange", "red", "purple", "blue"];
-
 const cardFrontInclude = {
   labels: { include: { label: true } },
   members: { include: { user: { select: { id: true, name: true, image: true } } } },

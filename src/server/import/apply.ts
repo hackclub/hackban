@@ -1,5 +1,5 @@
 import { db } from "~/server/db";
-import { DEFAULT_LABEL_COLORS, httpsUrl } from "~/server/api/routers/board";
+import { DEFAULT_LABEL_COLORS, httpsUrl } from "~/server/api/defaults";
 import { sequentialKeys } from "~/server/api/pos";
 import { touch } from "~/server/api/access";
 import { saveFile } from "~/server/storage";
