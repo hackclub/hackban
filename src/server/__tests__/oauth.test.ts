@@ -2,7 +2,19 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { test } from "bun:test";
 
-import { baseUrl, consume, knownRedirect, nativeRedirect, parseScope, redirectMatches, sha256, verifyPkce, validRedirectUri, withParams } from "~/server/oauth";
+import {
+  baseUrl,
+  checkAuthorize,
+  consume,
+  knownRedirect,
+  nativeRedirect,
+  parseScope,
+  redirectMatches,
+  sha256,
+  verifyPkce,
+  validRedirectUri,
+  withParams,
+} from "~/server/oauth";
 
 test("PKCE S256", () => {
   const verifier = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
@@ -67,11 +79,50 @@ test("app scope is opt-in and only for native redirects", () => {
   assert.equal(parseScope("app"), "app");
   assert.equal(parseScope("read app"), "app");
   assert.equal(parseScope("application"), "mcp");
-  for (const ok of ["hackban-desktop://oauth/callback", "http://127.0.0.1:5000/cb", "http://localhost/cb"]) {
-    assert.equal(nativeRedirect(ok), true, ok);
-  }
-  for (const bad of ["https://evil.com/cb", "https://claude.ai/cb", "http://evil.com/cb", "javascript:alert(1)", "not a url"]) {
+  assert.equal(nativeRedirect("hackban-desktop://oauth/callback"), true);
+  for (const bad of [
+    "https://evil.com/cb",
+    "https://claude.ai/cb",
+    "http://evil.com/cb",
+    // Loopback is where MCP clients listen.
+    "http://127.0.0.1:5000/cb",
+    "http://localhost/cb",
+    // Custom schemes that hand the URL to a website.
+    "web+hb://claude.ai/cb",
+    "microsoft-edge:https://evil.com/cb",
+    "x-safari-https://evil.com/cb",
+    "irc://evil.com/cb",
+    "cursor://anysphere.cursor-retrieval/oauth/callback",
+    "hackban-desktop://oauth/callback#frag",
+    "javascript:alert(1)",
+    "not a url",
+  ]) {
     assert.equal(nativeRedirect(bad), false, bad);
   }
-  assert.equal(knownRedirect("hackban-desktop://oauth/callback"), true);
+});
+
+test("known redirects match hostnames only over http(s)", () => {
+  for (const ok of ["hackban-desktop://oauth/callback", "https://claude.ai/cb", "http://127.0.0.1:5000/cb", "vscode://cb"]) {
+    assert.equal(knownRedirect(ok), true, ok);
+  }
+  for (const bad of ["web+hb://claude.ai/cb", "irc://claude.ai/cb", "http://claude.ai/cb", "x-safari-https://vscode.dev/cb"]) {
+    assert.equal(knownRedirect(bad), false, bad);
+  }
+});
+
+test("asking for app with a non-native redirect is granted mcp, not an error", async () => {
+  const redirectUris = ["https://vscode.dev/redirect", "http://127.0.0.1/cb", "hackban-desktop://oauth/callback"];
+  const fake = {
+    oAuthClient: { findUnique: async () => ({ id: "c", name: "App", redirectUris, secretHash: null, createdAt: new Date() }) },
+  } as unknown as Parameters<typeof checkAuthorize>[0];
+  const granted = async (redirect_uri: string, scope?: string) => {
+    const r = await checkAuthorize(fake, { client_id: "c", redirect_uri, scope, response_type: "code", code_challenge: "x", code_challenge_method: "S256" });
+    assert.ok(!("error" in r), redirect_uri);
+    assert.equal(r.ok, true);
+    return r.scope;
+  };
+  assert.equal(await granted("https://vscode.dev/redirect", "mcp app"), "mcp");
+  assert.equal(await granted("http://127.0.0.1:4000/cb", "mcp app"), "mcp");
+  assert.equal(await granted("hackban-desktop://oauth/callback", "app"), "app");
+  assert.equal(await granted("hackban-desktop://oauth/callback"), "mcp");
 });

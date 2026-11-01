@@ -64,12 +64,22 @@ export function redirectMatches(registered: string[], uri: string) {
 }
 
 /**
+ * Custom schemes of Hackban's own native apps, the only redirects that get full-access
+ * ("app") tokens. Any other custom scheme can hand the code to a website: a site can
+ * register itself as the web+… handler, and microsoft-edge:https://… opens a page.
+ */
+const NATIVE_SCHEMES = ["hackban-desktop:"];
+
+/**
  * Redirects that can only land in a client we recognise. Anyone can register an
  * app named "Claude", so the consent page warns unless the code goes back to one of these.
+ * Hostnames only count over http(s): web+x://claude.ai/ goes to whichever site handles web+x.
  */
 export function knownRedirect(uri: string) {
   const url = new URL(uri);
-  return ["cursor:", "vscode:", "hackban-desktop:"].includes(url.protocol) || [...LOOPBACK, "claude.ai", "claude.com", "vscode.dev"].includes(url.hostname);
+  if (["cursor:", "vscode:", ...NATIVE_SCHEMES].includes(url.protocol)) return true;
+  if (url.protocol === "http:") return LOOPBACK.includes(url.hostname);
+  return url.protocol === "https:" && [...LOOPBACK, "claude.ai", "claude.com", "vscode.dev"].includes(url.hostname);
 }
 
 /** Scopes a client can ask for. "app" is full access for native apps; anything else means MCP only. */
@@ -81,15 +91,12 @@ export function parseScope(raw: string | null | undefined): Scope {
 }
 
 /**
- * Full-access ("app") tokens only go to native apps: a custom scheme or http on
- * loopback. A web page can't receive them, so a phishing site can't collect one
- * with a consent link.
+ * Full-access ("app") tokens only go to Hackban's own native apps (NATIVE_SCHEMES).
+ * A web page can't receive them, so a phishing site can't collect one with a consent
+ * link. Loopback is left out too: that's where MCP clients listen.
  */
 export function nativeRedirect(uri: string) {
-  if (!URL.canParse(uri)) return false;
-  const url = new URL(uri);
-  if (url.protocol === "http:") return LOOPBACK.includes(url.hostname);
-  return url.protocol !== "https:" && validRedirectUri(uri);
+  return URL.canParse(uri) && NATIVE_SCHEMES.includes(new URL(uri).protocol) && validRedirectUri(uri);
 }
 
 export function withParams(uri: string, params: Record<string, string | undefined>) {
@@ -109,10 +116,9 @@ export async function checkAuthorize(db: DB, p: Record<string, string | undefine
   if (!redirectUri || !redirectMatches(client.redirectUris, redirectUri)) {
     return { error: "This app's redirect address doesn't match what it registered." } as const;
   }
-  const scope = parseScope(p.scope);
-  if (scope === "app" && !nativeRedirect(redirectUri)) {
-    return { error: "Full access can only be granted to an app installed on your computer." } as const;
-  }
+  // Anyone else asking for "app" (e.g. an MCP client requesting every scope in our
+  // metadata) gets "mcp": OAuth allows a narrower grant, and the token response says which.
+  const scope: Scope = parseScope(p.scope) === "app" && nativeRedirect(redirectUri) ? "app" : "mcp";
   const ok = p.response_type === "code" && !!p.code_challenge && p.code_challenge_method === "S256";
   return { client, redirectUri, scope, ok } as const;
 }
