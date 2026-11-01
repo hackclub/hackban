@@ -17,13 +17,13 @@ export async function POST(req: Request) {
     ) {
       return json({ error: "invalid_grant" }, 400);
     }
-    return json(await issueTokens(db, client.id, code.userId));
+    return json(await issueTokens(db, client.id, code.userId, code.scope));
   }
 
   if (form.get("grant_type") === "refresh_token") {
     const old = await consume(db, form.get("refresh_token") ?? "", "refresh");
     if (old?.clientId !== client.id) return json({ error: "invalid_grant" }, 400);
-    return json(await issueTokens(db, client.id, old.userId));
+    return json(await issueTokens(db, client.id, old.userId, old.scope));
   }
 
   return json({ error: "unsupported_grant_type" }, 400);

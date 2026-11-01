@@ -6,7 +6,7 @@ import { db } from "~/server/db";
 import { checkAuthorize, issue, knownRedirect, withParams } from "~/server/oauth";
 
 type Params = Record<string, string | undefined>;
-const FIELDS = ["client_id", "redirect_uri", "response_type", "code_challenge", "code_challenge_method", "state"] as const;
+const FIELDS = ["client_id", "redirect_uri", "response_type", "code_challenge", "code_challenge_method", "state", "scope"] as const;
 
 async function decide(form: FormData) {
   "use server";
@@ -16,7 +16,11 @@ async function decide(form: FormData) {
   const check = await checkAuthorize(db, p);
   if ("error" in check || !check.ok) throw new Error("Invalid authorization request");
   if (form.get("allow") !== "1") redirect(withParams(check.redirectUri, { error: "access_denied", state: p.state }));
-  const code = await issue(db, "code", check.client.id, user.id, { redirectUri: check.redirectUri, challenge: p.code_challenge! });
+  const code = await issue(db, "code", check.client.id, user.id, {
+    redirectUri: check.redirectUri,
+    challenge: p.code_challenge!,
+    scope: check.scope,
+  });
   redirect(withParams(check.redirectUri, { code, state: p.state }));
 }
 
@@ -42,10 +46,18 @@ export default async function AuthorizePage({ searchParams }: { searchParams: Pr
           app &ldquo;Claude&rdquo;.
         </p>
       )}
-      <ul className="mb-4 list-disc space-y-1 pl-5 text-left">
-        <li>Read your workspaces, boards, cards and comments</li>
-        <li>Create and edit boards, lists, cards, checklists and comments</li>
-      </ul>
+      {check.scope === "app" ? (
+        <ul className="mb-4 list-disc space-y-1 pl-5 text-left">
+          <li>Full access: everything you can do on Hackban in your browser</li>
+          <li>Read, create, edit and <b className="text-[var(--color-text)]">delete</b> boards, lists, cards, comments and attachments</li>
+          <li>Manage members, workspaces and your profile</li>
+        </ul>
+      ) : (
+        <ul className="mb-4 list-disc space-y-1 pl-5 text-left">
+          <li>Read your workspaces, boards, cards and comments</li>
+          <li>Create and edit boards, lists, cards, checklists and comments</li>
+        </ul>
+      )}
       <p className="mb-6 text-xs text-[var(--color-text-subtlest)]">
         Revoke access any time in Settings → Connected apps.
       </p>

@@ -368,6 +368,7 @@ exports.Prisma.OAuthTokenScalarFieldEnum = {
   userId: 'userId',
   redirectUri: 'redirectUri',
   challenge: 'challenge',
+  scope: 'scope',
   usedAt: 'usedAt',
   expiresAt: 'expiresAt',
   createdAt: 'createdAt'

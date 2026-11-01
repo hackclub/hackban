@@ -188,6 +188,22 @@ Code: `src/server/mcp.ts` (tools), `src/server/oauth.ts` (OAuth 2.1: PKCE,
 dynamic client registration, rotating refresh tokens), `src/app/oauth/authorize`
 (consent page), and `src/app/api/{mcp,oauth}`.
 
+## Native apps (API access)
+
+Native apps such as [Hackban for Mac](https://github.com/leowilkin/hackban-desktop) use the same OAuth server
+as MCP, asking for `scope=app` on `/oauth/authorize`. The consent page then says the app gets full access, and
+the resulting bearer token works on everything the browser can use: tRPC (`/api/trpc`, including the
+`board.onEvent` live-update stream) and the file routes (attachments, avatars, workspace logos, board export).
+
+- `app` tokens are only issued to Hackban's own native redirect schemes (`NATIVE_SCHEMES` in `src/server/oauth.ts`,
+  currently `hackban-desktop://`). Other custom schemes can forward the code to a website (`web+…` handlers,
+  `microsoft-edge:https://…`), and loopback is where MCP clients listen, so neither qualifies. A client asking
+  for `app` with any other redirect is granted `mcp` instead, and the token response's `scope` says so.
+- Site-admin powers (the admin panel, Trello import, linking imported members) stay browser-only.
+- Tokens without `app` (MCP clients) still only work on `/api/mcp`.
+- `/.well-known/oauth-authorization-server` lists `scopes_supported: ["mcp", "app"]`, so apps can tell whether
+  a server supports this. Revoke an app under **Settings → Connected apps**.
+
 ## Deploying
 
 The `Dockerfile` builds a standalone Next.js server:

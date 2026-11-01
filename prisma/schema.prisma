@@ -390,6 +390,8 @@ model OAuthToken {
     userId      String
     redirectUri String? // code only
     challenge   String? // code only: PKCE S256 challenge
+    // null/"mcp" = MCP only; "app" = full access over tRPC and the file routes (native apps).
+    scope       String?
     usedAt      DateTime? // codes and refresh tokens are single-use; kept until expiry to catch replays
     expiresAt   DateTime
     createdAt   DateTime    @default(now())

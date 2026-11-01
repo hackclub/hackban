@@ -31895,6 +31895,7 @@ export namespace Prisma {
     userId: string | null
     redirectUri: string | null
     challenge: string | null
+    scope: string | null
     usedAt: Date | null
     expiresAt: Date | null
     createdAt: Date | null
@@ -31907,6 +31908,7 @@ export namespace Prisma {
     userId: string | null
     redirectUri: string | null
     challenge: string | null
+    scope: string | null
     usedAt: Date | null
     expiresAt: Date | null
     createdAt: Date | null
@@ -31919,6 +31921,7 @@ export namespace Prisma {
     userId: number
     redirectUri: number
     challenge: number
+    scope: number
     usedAt: number
     expiresAt: number
     createdAt: number
@@ -31933,6 +31936,7 @@ export namespace Prisma {
     userId?: true
     redirectUri?: true
     challenge?: true
+    scope?: true
     usedAt?: true
     expiresAt?: true
     createdAt?: true
@@ -31945,6 +31949,7 @@ export namespace Prisma {
     userId?: true
     redirectUri?: true
     challenge?: true
+    scope?: true
     usedAt?: true
     expiresAt?: true
     createdAt?: true
@@ -31957,6 +31962,7 @@ export namespace Prisma {
     userId?: true
     redirectUri?: true
     challenge?: true
+    scope?: true
     usedAt?: true
     expiresAt?: true
     createdAt?: true
@@ -32042,6 +32048,7 @@ export namespace Prisma {
     userId: string
     redirectUri: string | null
     challenge: string | null
+    scope: string | null
     usedAt: Date | null
     expiresAt: Date
     createdAt: Date
@@ -32071,6 +32078,7 @@ export namespace Prisma {
     userId?: boolean
     redirectUri?: boolean
     challenge?: boolean
+    scope?: boolean
     usedAt?: boolean
     expiresAt?: boolean
     createdAt?: boolean
@@ -32085,6 +32093,7 @@ export namespace Prisma {
     userId?: boolean
     redirectUri?: boolean
     challenge?: boolean
+    scope?: boolean
     usedAt?: boolean
     expiresAt?: boolean
     createdAt?: boolean
@@ -32099,6 +32108,7 @@ export namespace Prisma {
     userId?: boolean
     redirectUri?: boolean
     challenge?: boolean
+    scope?: boolean
     usedAt?: boolean
     expiresAt?: boolean
     createdAt?: boolean
@@ -32113,12 +32123,13 @@ export namespace Prisma {
     userId?: boolean
     redirectUri?: boolean
     challenge?: boolean
+    scope?: boolean
     usedAt?: boolean
     expiresAt?: boolean
     createdAt?: boolean
   }
 
-  export type OAuthTokenOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"hash" | "kind" | "clientId" | "userId" | "redirectUri" | "challenge" | "usedAt" | "expiresAt" | "createdAt", ExtArgs["result"]["oAuthToken"]>
+  export type OAuthTokenOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"hash" | "kind" | "clientId" | "userId" | "redirectUri" | "challenge" | "scope" | "usedAt" | "expiresAt" | "createdAt", ExtArgs["result"]["oAuthToken"]>
   export type OAuthTokenInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     client?: boolean | OAuthClientDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -32145,6 +32156,7 @@ export namespace Prisma {
       userId: string
       redirectUri: string | null
       challenge: string | null
+      scope: string | null
       usedAt: Date | null
       expiresAt: Date
       createdAt: Date
@@ -32579,6 +32591,7 @@ export namespace Prisma {
     readonly userId: FieldRef<"OAuthToken", 'String'>
     readonly redirectUri: FieldRef<"OAuthToken", 'String'>
     readonly challenge: FieldRef<"OAuthToken", 'String'>
+    readonly scope: FieldRef<"OAuthToken", 'String'>
     readonly usedAt: FieldRef<"OAuthToken", 'DateTime'>
     readonly expiresAt: FieldRef<"OAuthToken", 'DateTime'>
     readonly createdAt: FieldRef<"OAuthToken", 'DateTime'>
@@ -33332,6 +33345,7 @@ export namespace Prisma {
     userId: 'userId',
     redirectUri: 'redirectUri',
     challenge: 'challenge',
+    scope: 'scope',
     usedAt: 'usedAt',
     expiresAt: 'expiresAt',
     createdAt: 'createdAt'
@@ -35177,6 +35191,7 @@ export namespace Prisma {
     userId?: StringFilter<"OAuthToken"> | string
     redirectUri?: StringNullableFilter<"OAuthToken"> | string | null
     challenge?: StringNullableFilter<"OAuthToken"> | string | null
+    scope?: StringNullableFilter<"OAuthToken"> | string | null
     usedAt?: DateTimeNullableFilter<"OAuthToken"> | Date | string | null
     expiresAt?: DateTimeFilter<"OAuthToken"> | Date | string
     createdAt?: DateTimeFilter<"OAuthToken"> | Date | string
@@ -35191,6 +35206,7 @@ export namespace Prisma {
     userId?: SortOrder
     redirectUri?: SortOrderInput | SortOrder
     challenge?: SortOrderInput | SortOrder
+    scope?: SortOrderInput | SortOrder
     usedAt?: SortOrderInput | SortOrder
     expiresAt?: SortOrder
     createdAt?: SortOrder
@@ -35208,6 +35224,7 @@ export namespace Prisma {
     userId?: StringFilter<"OAuthToken"> | string
     redirectUri?: StringNullableFilter<"OAuthToken"> | string | null
     challenge?: StringNullableFilter<"OAuthToken"> | string | null
+    scope?: StringNullableFilter<"OAuthToken"> | string | null
     usedAt?: DateTimeNullableFilter<"OAuthToken"> | Date | string | null
     expiresAt?: DateTimeFilter<"OAuthToken"> | Date | string
     createdAt?: DateTimeFilter<"OAuthToken"> | Date | string
@@ -35222,6 +35239,7 @@ export namespace Prisma {
     userId?: SortOrder
     redirectUri?: SortOrderInput | SortOrder
     challenge?: SortOrderInput | SortOrder
+    scope?: SortOrderInput | SortOrder
     usedAt?: SortOrderInput | SortOrder
     expiresAt?: SortOrder
     createdAt?: SortOrder
@@ -35240,6 +35258,7 @@ export namespace Prisma {
     userId?: StringWithAggregatesFilter<"OAuthToken"> | string
     redirectUri?: StringNullableWithAggregatesFilter<"OAuthToken"> | string | null
     challenge?: StringNullableWithAggregatesFilter<"OAuthToken"> | string | null
+    scope?: StringNullableWithAggregatesFilter<"OAuthToken"> | string | null
     usedAt?: DateTimeNullableWithAggregatesFilter<"OAuthToken"> | Date | string | null
     expiresAt?: DateTimeWithAggregatesFilter<"OAuthToken"> | Date | string
     createdAt?: DateTimeWithAggregatesFilter<"OAuthToken"> | Date | string
@@ -37047,6 +37066,7 @@ export namespace Prisma {
     kind: string
     redirectUri?: string | null
     challenge?: string | null
+    scope?: string | null
     usedAt?: Date | string | null
     expiresAt: Date | string
     createdAt?: Date | string
@@ -37061,6 +37081,7 @@ export namespace Prisma {
     userId: string
     redirectUri?: string | null
     challenge?: string | null
+    scope?: string | null
     usedAt?: Date | string | null
     expiresAt: Date | string
     createdAt?: Date | string
@@ -37071,6 +37092,7 @@ export namespace Prisma {
     kind?: StringFieldUpdateOperationsInput | string
     redirectUri?: NullableStringFieldUpdateOperationsInput | string | null
     challenge?: NullableStringFieldUpdateOperationsInput | string | null
+    scope?: NullableStringFieldUpdateOperationsInput | string | null
     usedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -37085,6 +37107,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     redirectUri?: NullableStringFieldUpdateOperationsInput | string | null
     challenge?: NullableStringFieldUpdateOperationsInput | string | null
+    scope?: NullableStringFieldUpdateOperationsInput | string | null
     usedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -37097,6 +37120,7 @@ export namespace Prisma {
     userId: string
     redirectUri?: string | null
     challenge?: string | null
+    scope?: string | null
     usedAt?: Date | string | null
     expiresAt: Date | string
     createdAt?: Date | string
@@ -37107,6 +37131,7 @@ export namespace Prisma {
     kind?: StringFieldUpdateOperationsInput | string
     redirectUri?: NullableStringFieldUpdateOperationsInput | string | null
     challenge?: NullableStringFieldUpdateOperationsInput | string | null
+    scope?: NullableStringFieldUpdateOperationsInput | string | null
     usedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -37119,6 +37144,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     redirectUri?: NullableStringFieldUpdateOperationsInput | string | null
     challenge?: NullableStringFieldUpdateOperationsInput | string | null
+    scope?: NullableStringFieldUpdateOperationsInput | string | null
     usedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -38397,6 +38423,7 @@ export namespace Prisma {
     userId?: SortOrder
     redirectUri?: SortOrder
     challenge?: SortOrder
+    scope?: SortOrder
     usedAt?: SortOrder
     expiresAt?: SortOrder
     createdAt?: SortOrder
@@ -38409,6 +38436,7 @@ export namespace Prisma {
     userId?: SortOrder
     redirectUri?: SortOrder
     challenge?: SortOrder
+    scope?: SortOrder
     usedAt?: SortOrder
     expiresAt?: SortOrder
     createdAt?: SortOrder
@@ -38421,6 +38449,7 @@ export namespace Prisma {
     userId?: SortOrder
     redirectUri?: SortOrder
     challenge?: SortOrder
+    scope?: SortOrder
     usedAt?: SortOrder
     expiresAt?: SortOrder
     createdAt?: SortOrder
@@ -41407,6 +41436,7 @@ export namespace Prisma {
     kind: string
     redirectUri?: string | null
     challenge?: string | null
+    scope?: string | null
     usedAt?: Date | string | null
     expiresAt: Date | string
     createdAt?: Date | string
@@ -41419,6 +41449,7 @@ export namespace Prisma {
     clientId: string
     redirectUri?: string | null
     challenge?: string | null
+    scope?: string | null
     usedAt?: Date | string | null
     expiresAt: Date | string
     createdAt?: Date | string
@@ -41853,6 +41884,7 @@ export namespace Prisma {
     userId?: StringFilter<"OAuthToken"> | string
     redirectUri?: StringNullableFilter<"OAuthToken"> | string | null
     challenge?: StringNullableFilter<"OAuthToken"> | string | null
+    scope?: StringNullableFilter<"OAuthToken"> | string | null
     usedAt?: DateTimeNullableFilter<"OAuthToken"> | Date | string | null
     expiresAt?: DateTimeFilter<"OAuthToken"> | Date | string
     createdAt?: DateTimeFilter<"OAuthToken"> | Date | string
@@ -46633,6 +46665,7 @@ export namespace Prisma {
     kind: string
     redirectUri?: string | null
     challenge?: string | null
+    scope?: string | null
     usedAt?: Date | string | null
     expiresAt: Date | string
     createdAt?: Date | string
@@ -46645,6 +46678,7 @@ export namespace Prisma {
     userId: string
     redirectUri?: string | null
     challenge?: string | null
+    scope?: string | null
     usedAt?: Date | string | null
     expiresAt: Date | string
     createdAt?: Date | string
@@ -46983,6 +47017,7 @@ export namespace Prisma {
     clientId: string
     redirectUri?: string | null
     challenge?: string | null
+    scope?: string | null
     usedAt?: Date | string | null
     expiresAt: Date | string
     createdAt?: Date | string
@@ -47332,6 +47367,7 @@ export namespace Prisma {
     kind?: StringFieldUpdateOperationsInput | string
     redirectUri?: NullableStringFieldUpdateOperationsInput | string | null
     challenge?: NullableStringFieldUpdateOperationsInput | string | null
+    scope?: NullableStringFieldUpdateOperationsInput | string | null
     usedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -47344,6 +47380,7 @@ export namespace Prisma {
     clientId?: StringFieldUpdateOperationsInput | string
     redirectUri?: NullableStringFieldUpdateOperationsInput | string | null
     challenge?: NullableStringFieldUpdateOperationsInput | string | null
+    scope?: NullableStringFieldUpdateOperationsInput | string | null
     usedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -47355,6 +47392,7 @@ export namespace Prisma {
     clientId?: StringFieldUpdateOperationsInput | string
     redirectUri?: NullableStringFieldUpdateOperationsInput | string | null
     challenge?: NullableStringFieldUpdateOperationsInput | string | null
+    scope?: NullableStringFieldUpdateOperationsInput | string | null
     usedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -48054,6 +48092,7 @@ export namespace Prisma {
     userId: string
     redirectUri?: string | null
     challenge?: string | null
+    scope?: string | null
     usedAt?: Date | string | null
     expiresAt: Date | string
     createdAt?: Date | string
@@ -48064,6 +48103,7 @@ export namespace Prisma {
     kind?: StringFieldUpdateOperationsInput | string
     redirectUri?: NullableStringFieldUpdateOperationsInput | string | null
     challenge?: NullableStringFieldUpdateOperationsInput | string | null
+    scope?: NullableStringFieldUpdateOperationsInput | string | null
     usedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -48076,6 +48116,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     redirectUri?: NullableStringFieldUpdateOperationsInput | string | null
     challenge?: NullableStringFieldUpdateOperationsInput | string | null
+    scope?: NullableStringFieldUpdateOperationsInput | string | null
     usedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -48087,6 +48128,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     redirectUri?: NullableStringFieldUpdateOperationsInput | string | null
     challenge?: NullableStringFieldUpdateOperationsInput | string | null
+    scope?: NullableStringFieldUpdateOperationsInput | string | null
     usedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
