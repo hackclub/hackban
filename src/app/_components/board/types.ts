@@ -52,3 +52,11 @@ export const SORTS: [string, (a: CardData, b: CardData) => number][] = [
   ["Oldest first", (a, b) => a.createdAt.getTime() - b.createdAt.getTime()],
   ["Most members first", (a, b) => b.members.length - a.members.length],
 ];
+
+/** Pulls cards with the same assignees together, keeping the existing order within and between groups (by first appearance). */
+export function groupByAssignee(cards: CardData[]) {
+  const key = (c: CardData) => c.members.map((m) => m.userId).sort().join();
+  const first = new Map<string, number>();
+  cards.forEach((c, i) => { if (!first.has(key(c))) first.set(key(c), i); });
+  return [...cards].sort((a, b) => first.get(key(a))! - first.get(key(b))!);
+}
