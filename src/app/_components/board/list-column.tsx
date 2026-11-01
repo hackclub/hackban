@@ -13,7 +13,7 @@ import { AssignSuggestion } from "./assign-suggestion";
 import { CardFront } from "./card-front";
 import { realIds } from "./optimistic";
 import { COVER_COLORS } from "./card-popovers";
-import { SORTS, groupByAssignee, type BoardData, type CardData, type ListData } from "./types";
+import { SORTS, sortCards, type BoardData, type CardData, type ListData } from "./types";
 
 export const SortableCard = memo(function SortableCard({
   card,
@@ -264,11 +264,10 @@ function ListSort({ list, boardId, cards }: { list: ListData; boardId: string; c
   const utils = api.useUtils();
   const sort = api.list.sortCards.useMutation({ onSettled: () => utils.board.get.invalidate({ id: boardId }) });
   const [group, setGroup] = useState(false);
-  const apply = (cmp: (a: CardData, b: CardData) => number) => {
+  const apply = (s: (typeof SORTS)[number]) => {
     p.close();
     // Optimistic cards (temp ids) don't exist server-side yet; the server appends anything it wasn't told about.
-    const byCmp = [...cards].sort(cmp);
-    const sorted = group ? groupByAssignee(byCmp) : byCmp;
+    const sorted = sortCards(cards, s, group);
     utils.board.get.setData({ id: boardId }, (b) => b && { ...b, lists: b.lists.map((l) => (l.id === list.id ? { ...l, cards: sorted } : l)) });
     sort.mutate({ id: list.id, ids: sorted.filter((c) => !c.id.startsWith("temp-")).map((c) => c.id) });
   };
@@ -278,8 +277,8 @@ function ListSort({ list, boardId, cards }: { list: ListData; boardId: string; c
         <Icon name="sort" />
       </IconButton>
       <Popover anchor={p.anchor} open={p.open} onClose={p.close} title="Sort list">
-        {SORTS.map(([label, cmp]) => (
-          <MenuItem key={label} onClick={() => apply(cmp)}>{label}</MenuItem>
+        {SORTS.map((s) => (
+          <MenuItem key={s[0]} onClick={() => apply(s)}>{s[0]}</MenuItem>
         ))}
         <label className="mt-1 flex min-h-8 cursor-pointer items-center gap-2 rounded border-t border-[var(--color-border)] px-2 pt-1 text-sm hover:bg-[var(--color-neutral)]">
           <input type="checkbox" checked={group} onChange={(e) => setGroup(e.target.checked)} className="h-4 w-4 accent-[var(--color-brand)]" />

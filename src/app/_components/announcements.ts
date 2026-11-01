@@ -1,7 +1,7 @@
 // What's new in Hackban, newest first. Add an entry for every user-facing update or change.
 // `id` must be unique; the header shows a dot until the viewer has seen the newest one.
 export const ANNOUNCEMENTS: { id: string; date: string; title: string; body: string }[] = [
-  { id: "sort-group-assignee", date: "2026-11-01", title: "Group sorted cards by assignee", body: "Tick Group by assignee in a list's sort menu to keep cards with the same people together, in the order the sort put them." },
+  { id: "sort-group-assignee", date: "2026-11-01", title: "Group sorted cards by assignee", body: "Tick Group by assignee in a list's sort menu to keep cards the sort ranks equal (like ones due the same day) together by who is assigned." },
   { id: "card-dependencies", date: "2026-10-28", title: "Blocked cards", body: "Mark a card as blocked by another card from its Dependencies button: it gets a red Blocked badge and the blocker a yellow Blocking badge until the blocker is complete, which you can do right from the list." },
   { id: "slack-channel-join", date: "2026-10-28", title: "Join #hackban on Slack", body: "Logging in to Hackban for the first time adds you to the #hackban channel on the Hack Club Slack." },
   { id: "admin-imports", date: "2026-10-26", title: "Trello imports by admins", body: "Trello imports are now run by Hackban admins: ask in #hackban to get yours set up. The import link lives in your profile picture menu." },

@@ -44,8 +44,13 @@ export function cardMatches(c: CardData, f: Filters) {
 }
 
 const byTitle = (a: CardData, b: CardData) => a.title.localeCompare(b.title, undefined, { numeric: true, sensitivity: "base" });
-export const SORTS: [string, (a: CardData, b: CardData) => number][] = [
-  ["Due date (soonest first)", (a, b) => (a.due?.getTime() ?? Infinity) - (b.due?.getTime() ?? Infinity) || byTitle(a, b)],
+const dueTime = (c: CardData) => c.due?.getTime() ?? Infinity;
+const dueDay = (c: CardData) => (c.due ? new Date(c.due).setHours(0, 0, 0, 0) : Infinity);
+type Cmp = (a: CardData, b: CardData) => number;
+/** [label, comparator, coarser comparator that assignee grouping breaks ties within (defaults to the comparator)] */
+export const SORTS: [string, Cmp, Cmp?][] = [
+  // Cards only show the day, so grouping treats same-day cards as tied.
+  ["Due date (soonest first)", (a, b) => dueTime(a) - dueTime(b) || byTitle(a, b), (a, b) => dueDay(a) - dueDay(b)],
   ["Name (A–Z)", byTitle],
   ["Name (Z–A)", (a, b) => byTitle(b, a)],
   ["Newest first", (a, b) => b.createdAt.getTime() - a.createdAt.getTime()],
@@ -53,10 +58,8 @@ export const SORTS: [string, (a: CardData, b: CardData) => number][] = [
   ["Most members first", (a, b) => b.members.length - a.members.length],
 ];
 
-/** Pulls cards with the same assignees together, keeping the existing order within and between groups (by first appearance). */
-export function groupByAssignee(cards: CardData[]) {
-  const key = (c: CardData) => c.members.map((m) => m.userId).sort().join();
-  const first = new Map<string, number>();
-  cards.forEach((c, i) => { if (!first.has(key(c))) first.set(key(c), i); });
-  return [...cards].sort((a, b) => first.get(key(a))! - first.get(key(b))!);
+const assignees = (c: CardData) => c.members.map((m) => m.userId).sort().join();
+/** Sorts by the chosen sort first; with `group`, cards it ranks equal sit together by assignees (shared prefixes stay adjacent). */
+export function sortCards(cards: CardData[], [, cmp, coarse = cmp]: (typeof SORTS)[number], group: boolean) {
+  return [...cards].sort(group ? (a, b) => coarse(a, b) || assignees(a).localeCompare(assignees(b)) || cmp(a, b) : cmp);
 }
