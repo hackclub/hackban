@@ -13,6 +13,7 @@ import { ZodError } from "zod";
 
 import { auth } from "~/server/auth";
 import { db } from "~/server/db";
+import { appSessionForBearer } from "~/server/oauth";
 
 /**
  * 1. CONTEXT
@@ -27,7 +28,8 @@ import { db } from "~/server/db";
  * @see https://trpc.io/docs/server/context
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
-  const session = await auth();
+  // Browser: the Auth.js cookie. Native apps: an "app"-scoped OAuth bearer token.
+  const session = (await auth()) ?? (await appSessionForBearer(db, opts.headers.get("authorization")));
 
   return {
     db,

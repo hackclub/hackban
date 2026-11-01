@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { test } from "bun:test";
 
-import { baseUrl, consume, knownRedirect, redirectMatches, sha256, verifyPkce, validRedirectUri, withParams } from "~/server/oauth";
+import { baseUrl, consume, knownRedirect, nativeRedirect, parseScope, redirectMatches, sha256, verifyPkce, validRedirectUri, withParams } from "~/server/oauth";
 
 test("PKCE S256", () => {
   const verifier = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
@@ -58,4 +58,20 @@ test("a replayed refresh token revokes the whole grant", async () => {
   assert.ok(await consume(fake, "rt", "refresh"));
   assert.equal(await consume(fake, "rt", "refresh"), null);
   assert.equal(rows.size, 0);
+});
+
+test("app scope is opt-in and only for native redirects", () => {
+  assert.equal(parseScope(undefined), "mcp");
+  assert.equal(parseScope(""), "mcp");
+  assert.equal(parseScope("mcp"), "mcp");
+  assert.equal(parseScope("app"), "app");
+  assert.equal(parseScope("read app"), "app");
+  assert.equal(parseScope("application"), "mcp");
+  for (const ok of ["hackban-desktop://oauth/callback", "http://127.0.0.1:5000/cb", "http://localhost/cb"]) {
+    assert.equal(nativeRedirect(ok), true, ok);
+  }
+  for (const bad of ["https://evil.com/cb", "https://claude.ai/cb", "http://evil.com/cb", "javascript:alert(1)", "not a url"]) {
+    assert.equal(nativeRedirect(bad), false, bad);
+  }
+  assert.equal(knownRedirect("hackban-desktop://oauth/callback"), true);
 });

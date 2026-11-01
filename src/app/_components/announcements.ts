@@ -1,6 +1,7 @@
 // What's new in Hackban, newest first. Add an entry for every user-facing update or change.
 // `id` must be unique; the header shows a dot until the viewer has seen the newest one.
 export const ANNOUNCEMENTS: { id: string; date: string; title: string; body: string }[] = [
+  { id: "native-apps", date: "2026-11-01", title: "Sign in from native apps", body: "Desktop apps like Hackban for Mac can now sign in with full access to your boards after you approve them on a consent page, and you can revoke them any time under Connected apps." },
   { id: "sort-group-assignee", date: "2026-11-01", title: "Group sorted cards by assignee", body: "Tick Group by assignee in a list's sort menu to keep cards the sort ranks equal (like ones due the same day) together by who is assigned." },
   { id: "card-dependencies", date: "2026-10-28", title: "Blocked cards", body: "Mark a card as blocked by another card from its Dependencies button: it gets a red Blocked badge and the blocker a yellow Blocking badge until the blocker is complete, which you can do right from the list." },
   { id: "slack-channel-join", date: "2026-10-28", title: "Join #hackban on Slack", body: "Logging in to Hackban for the first time adds you to the #hackban channel on the Hack Club Slack." },

@@ -69,7 +69,27 @@ export function redirectMatches(registered: string[], uri: string) {
  */
 export function knownRedirect(uri: string) {
   const url = new URL(uri);
-  return ["cursor:", "vscode:"].includes(url.protocol) || [...LOOPBACK, "claude.ai", "claude.com", "vscode.dev"].includes(url.hostname);
+  return ["cursor:", "vscode:", "hackban-desktop:"].includes(url.protocol) || [...LOOPBACK, "claude.ai", "claude.com", "vscode.dev"].includes(url.hostname);
+}
+
+/** Scopes a client can ask for. "app" is full access for native apps; anything else means MCP only. */
+export type Scope = "mcp" | "app";
+
+/** The granted scope for a space-separated `scope` request parameter. */
+export function parseScope(raw: string | null | undefined): Scope {
+  return (raw ?? "").split(/\s+/).includes("app") ? "app" : "mcp";
+}
+
+/**
+ * Full-access ("app") tokens only go to native apps: a custom scheme or http on
+ * loopback. A web page can't receive them, so a phishing site can't collect one
+ * with a consent link.
+ */
+export function nativeRedirect(uri: string) {
+  if (!URL.canParse(uri)) return false;
+  const url = new URL(uri);
+  if (url.protocol === "http:") return LOOPBACK.includes(url.hostname);
+  return url.protocol !== "https:" && validRedirectUri(uri);
 }
 
 export function withParams(uri: string, params: Record<string, string | undefined>) {
@@ -89,11 +109,21 @@ export async function checkAuthorize(db: DB, p: Record<string, string | undefine
   if (!redirectUri || !redirectMatches(client.redirectUris, redirectUri)) {
     return { error: "This app's redirect address doesn't match what it registered." } as const;
   }
+  const scope = parseScope(p.scope);
+  if (scope === "app" && !nativeRedirect(redirectUri)) {
+    return { error: "Full access can only be granted to an app installed on your computer." } as const;
+  }
   const ok = p.response_type === "code" && !!p.code_challenge && p.code_challenge_method === "S256";
-  return { client, redirectUri, ok } as const;
+  return { client, redirectUri, scope, ok } as const;
 }
 
-export async function issue(db: DB, kind: Kind, clientId: string, userId: string, extra?: { redirectUri: string; challenge: string }) {
+export async function issue(
+  db: DB,
+  kind: Kind,
+  clientId: string,
+  userId: string,
+  extra?: { redirectUri?: string; challenge?: string; scope?: string | null },
+) {
   const token = newToken();
   await db.oAuthToken.create({
     data: { hash: sha256(token), kind, clientId, userId, expiresAt: new Date(Date.now() + TTL[kind] * 1000), ...extra },
@@ -101,14 +131,14 @@ export async function issue(db: DB, kind: Kind, clientId: string, userId: string
   return token;
 }
 
-/** Token endpoint response: a fresh access + (rotated) refresh token. */
-export async function issueTokens(db: DB, clientId: string, userId: string) {
+/** Token endpoint response: a fresh access + (rotated) refresh token, keeping the grant's scope. */
+export async function issueTokens(db: DB, clientId: string, userId: string, scope: string | null = null) {
   void db.oAuthToken.deleteMany({ where: { expiresAt: { lt: new Date() } } }).catch(() => undefined);
   const [access_token, refresh_token] = await Promise.all([
-    issue(db, "access", clientId, userId),
-    issue(db, "refresh", clientId, userId),
+    issue(db, "access", clientId, userId, { scope }),
+    issue(db, "refresh", clientId, userId, { scope }),
   ]);
-  return { access_token, refresh_token, token_type: "Bearer", expires_in: TTL.access };
+  return { access_token, refresh_token, token_type: "Bearer", expires_in: TTL.access, scope: scope ?? "mcp" };
 }
 
 /** Single-use tokens (codes, refresh tokens): spent on first presentation, valid or not. */
@@ -147,9 +177,25 @@ export async function authClient(db: DB, form: URLSearchParams, authorization: s
   return client;
 }
 
-export async function userForBearer(db: DB, authorization: string | null) {
+async function accessToken(db: DB, authorization: string | null) {
   const token = authorization?.match(/^Bearer (.+)$/i)?.[1];
   if (!token) return null;
   const row = await db.oAuthToken.findUnique({ where: { hash: sha256(token) }, include: { user: true } });
-  return row?.kind === "access" && row.expiresAt > new Date() ? row.user : null;
+  return row?.kind === "access" && row.expiresAt > new Date() ? row : null;
+}
+
+/** MCP: any access token. */
+export async function userForBearer(db: DB, authorization: string | null) {
+  return (await accessToken(db, authorization))?.user ?? null;
+}
+
+/**
+ * Native apps: an "app"-scoped access token, as an Auth.js-shaped session.
+ * Site-admin powers stay with the browser (as with MCP), so isAdmin is false.
+ */
+export async function appSessionForBearer(db: DB, authorization: string | null) {
+  const row = await accessToken(db, authorization);
+  if (row?.scope !== "app") return null;
+  const { id, name, email, image } = row.user;
+  return { user: { id, name, email, image, isAdmin: false }, expires: row.expiresAt.toISOString() };
 }

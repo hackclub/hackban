@@ -1,12 +1,12 @@
 import { requireCard } from "~/server/api/access";
-import { auth } from "~/server/auth";
+import { sessionFor } from "~/server/auth/session";
 import { db } from "~/server/db";
 import { readStored } from "~/server/storage";
 
 const INLINE_TYPES = new Set(["image/png", "image/jpeg", "image/gif", "image/webp", "image/avif", "application/pdf"]);
 
-export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const session = await auth();
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const session = await sessionFor(req);
   if (!session?.user) return new Response("Unauthorized", { status: 401 });
   const { id } = await params;
   const a = await db.attachment.findUnique({ where: { id } });

@@ -1,5 +1,5 @@
 import { logActivity, requireCard } from "~/server/api/access";
-import { auth } from "~/server/auth";
+import { sessionFor } from "~/server/auth/session";
 import { db } from "~/server/db";
 import { bodyTooBig, saveFile } from "~/server/storage";
 
@@ -7,7 +7,7 @@ const MAX_BYTES = 100 * 1024 * 1024; // per request: the whole body is held in m
 const MAX_FILES = 20;
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const session = await auth();
+  const session = await sessionFor(req);
   if (!session?.user) return new Response("Unauthorized", { status: 401 });
   const { id: cardId } = await params;
   let boardId: string;

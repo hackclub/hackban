@@ -1,11 +1,11 @@
-import { auth } from "~/server/auth";
+import { sessionFor } from "~/server/auth/session";
 import { db } from "~/server/db";
 import { bodyTooBig, imageType, readStored, removeStored, saveFile } from "~/server/storage";
 
 const MAX_BYTES = 2 * 1024 * 1024;
 
-async function membership(workspaceId: string) {
-  const session = await auth();
+async function membership(req: Request, workspaceId: string) {
+  const session = await sessionFor(req);
   if (!session?.user) return null;
   return db.workspaceMember.findUnique({ where: { workspaceId_userId: { workspaceId, userId: session.user.id } } });
 }
@@ -17,9 +17,9 @@ async function replaceLogo(id: string, logoKey: string | null) {
   await removeStored(old?.logoKey?.split(":")[0]);
 }
 
-export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  if (!(await membership(id))) return new Response("Not found", { status: 404 });
+  if (!(await membership(req, id))) return new Response("Not found", { status: 404 });
   const ws = await db.workspace.findUnique({ where: { id }, select: { logoKey: true } });
   if (!ws?.logoKey) return new Response("Not found", { status: 404 });
   const [key, type] = ws.logoKey.split(":") as [string, string];
@@ -36,7 +36,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 /** Workspace admins upload a logo (multipart field "file"). */
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const m = await membership(id);
+  const m = await membership(req, id);
   if (m?.role !== "admin") return new Response("Forbidden", { status: 403 });
   if (bodyTooBig(req, MAX_BYTES)) return new Response("Logos must be under 2 MB.", { status: 413 });
   const file = (await req.formData()).get("file");
@@ -50,9 +50,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   return new Response(null, { status: 204 });
 }
 
-export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const m = await membership(id);
+  const m = await membership(req, id);
   if (m?.role !== "admin") return new Response("Forbidden", { status: 403 });
   await replaceLogo(id, null);
   return new Response(null, { status: 204 });

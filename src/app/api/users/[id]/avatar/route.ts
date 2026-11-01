@@ -1,12 +1,12 @@
-import { auth } from "~/server/auth";
+import { sessionFor } from "~/server/auth/session";
 import { db } from "~/server/db";
 import { bodyTooBig, imageType, readStored, removeStored, saveFile } from "~/server/storage";
 
 const MAX_BYTES = 2 * 1024 * 1024;
 
 /** Signed-in user's id if it matches the route's user (you can only change your own avatar). */
-async function self(id: string) {
-  const session = await auth();
+async function self(req: Request, id: string) {
+  const session = await sessionFor(req);
   return session?.user.id === id ? id : null;
 }
 
@@ -24,9 +24,9 @@ async function replaceAvatar(id: string, key: string | null, type?: string) {
 }
 
 /** Any signed-in user can see avatars; they show up on every shared board. */
-export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  if (!(await auth())?.user) return new Response("Not found", { status: 404 });
+  if (!(await sessionFor(req))?.user) return new Response("Not found", { status: 404 });
   const user = await db.user.findUnique({ where: { id }, select: { avatarKey: true } });
   if (!user?.avatarKey) return new Response("Not found", { status: 404 });
   const [key, type] = user.avatarKey.split(":") as [string, string];
@@ -43,7 +43,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
 /** Upload your own avatar (multipart field "file"). */
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const id = await self((await params).id);
+  const id = await self(req, (await params).id);
   if (!id) return new Response("Forbidden", { status: 403 });
   // Reject oversized bodies before buffering them.
   if (bodyTooBig(req, MAX_BYTES)) return new Response("Pictures must be under 2 MB.", { status: 413 });
@@ -57,8 +57,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   return new Response(null, { status: 204 });
 }
 
-export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const id = await self((await params).id);
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const id = await self(req, (await params).id);
   if (!id) return new Response("Forbidden", { status: 403 });
   await replaceAvatar(id, null);
   return new Response(null, { status: 204 });
