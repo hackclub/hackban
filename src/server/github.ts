@@ -219,6 +219,8 @@ export async function trackIssue(db: DB, cardId: string, ref: IssueRef, userId: 
     }
   } catch (e) {
     console.error("[github] initial fetch failed", issueLabel(ref), e);
+    // Recorded as a failure so nothing treats the row as read until a fetch succeeds.
+    await db.gitHubIssue.update({ where: { id: issue.id }, data: { fetchError: "error" } }).catch(() => undefined);
   }
   return issue;
 }
