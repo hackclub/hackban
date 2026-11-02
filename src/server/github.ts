@@ -1,5 +1,5 @@
 import { env } from "~/env";
-import { logActivity, touch } from "~/server/api/access";
+import { logActivity, requireBoard, touch } from "~/server/api/access";
 import { type db as Db } from "~/server/db";
 
 type DB = typeof Db;
@@ -53,10 +53,14 @@ export function stateFromPayload(p: GitHubIssuePayload, closedBy?: string | null
  * Fetch an issue as the user who linked it when they've connected GitHub (so
  * private repos work), otherwise with the shared token or anonymously. A
  * revoked user token is forgotten and the fetch retried without it.
+ *
+ * `boardId` guards against a confused deputy: once the linker can no longer
+ * read the card's board, their token stops feeding it private issue data.
  */
-export async function fetchIssueAs(db: DB, ref: IssueRef, userId: string | null, etag?: string | null) {
+export async function fetchIssueAs(db: DB, ref: IssueRef, userId: string | null, etag?: string | null, boardId?: string) {
   const conn = userId ? await db.gitHubConnection.findUnique({ where: { userId } }) : null;
   if (!conn) return fetchIssue(ref, etag);
+  if (boardId && !(await requireBoard(db, conn.userId, boardId, false).then(() => true, () => false))) return fetchIssue(ref, etag);
   try {
     return await fetchIssue(ref, etag, conn.accessToken);
   } catch (e) {
@@ -168,8 +172,10 @@ export async function applyIssueState(db: DB, issueId: string, next: IssueState,
  * read (deleted, private, or really a pull request) stays tracked with
  * `fetchError` set so the card can say so.
  */
-export async function syncIssue(db: DB, issue: { id: string; owner: string; repo: string; number: number; etag: string | null; addedById: string | null }) {
-  const res = await fetchIssueAs(db, issue, issue.addedById, issue.etag);
+export async function syncIssue(db: DB, issue: { id: string; owner: string; repo: string; number: number; etag: string | null; addedById: string | null; cardId: string }) {
+  const card = await db.card.findUnique({ where: { id: issue.cardId }, select: { list: { select: { boardId: true } } } });
+  if (!card) return;
+  const res = await fetchIssueAs(db, issue, issue.addedById, issue.etag, card.list.boardId);
   if (res === "unchanged") {
     await db.gitHubIssue.update({ where: { id: issue.id }, data: { checkedAt: new Date(), fetchError: null } });
     return;
