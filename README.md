@@ -10,6 +10,11 @@ with Hack Club Auth, and it runs at [hackban.hackclub.com](https://hackban.hackc
   checklists, attachments (upload, drag-drop, paste), covers, comments,
   activity, watching, archive/restore, copy/move, and a quick editor (right-click
   or `e`).
+- **GitHub issues:** paste an issue link onto a card (or add it as a link) to
+  track it. The card shows the issue's state and is marked complete when
+  every tracked issue is closed (and reopened if one is reopened). Public
+  issues work out of the box; people connect their own GitHub account under
+  **/me** to track issues in private repos. See [GitHub issues](#github-issues).
 - **Live updates:** changes appear for everyone viewing a board without
   refreshing.
 - **Workspaces:** members and roles, logos, settings, board export (JSON),
@@ -85,6 +90,9 @@ bun dev                 # http://localhost:3000
 | `ADMIN_EMAILS`         | no       | Comma-separated emails that are always site admins |
 | `UPLOAD_DIR`           | no       | Where attachments are stored. Default `./uploads` |
 | `SLACK_BOT_TOKEN`      | no       | Bot token with `channels:manage`; adds each user to #hackban on first login. The bot must be in the channel |
+| `GITHUB_TOKEN`         | no       | Token used to poll tracked issues when the person who linked one hasn't connected GitHub. Raises the API limit from 60 to 5000 requests/hour |
+| `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | no | GitHub OAuth app that lets people connect their own account (private repo issues). Callback URL: `<origin>/api/github/callback` |
+| `GITHUB_WEBHOOK_SECRET` | no      | Secret of a GitHub `issues` webhook pointed at `<origin>/api/github/webhook`, for instant updates instead of waiting for the next poll |
 
 ### Hack Club Auth
 
@@ -99,6 +107,29 @@ https://hackban.hackclub.com/api/auth/callback/hackclub
 
 The app doesn't need the `openid` scope: it uses plain OAuth and reads the
 profile from `/api/v1/me`.
+
+## GitHub issues
+
+Adding `https://github.com/owner/repo/issues/123` to a card (as a link from
+**Attachment**, by pasting it onto the open card, or over MCP) tracks that
+issue instead of attaching it. The card front shows `#123` in green while the
+issue is open and purple once it's closed, and the card is marked complete when
+its last open issue closes. Reopening an issue reopens a card that an issue
+closed; a card someone completed by hand is left alone.
+
+Tracked issues are polled every couple of minutes (hourly once closed) using
+ETags, so unchanged issues cost nothing against GitHub's rate limit. Issues are
+fetched as the person who linked them if they've connected their GitHub account
+(**/me → GitHub**), which is what makes private repos work; otherwise with
+`GITHUB_TOKEN`, or anonymously. Connecting needs a GitHub OAuth app
+(`GITHUB_CLIENT_ID`/`GITHUB_CLIENT_SECRET`) with the callback URL
+`<origin>/api/github/callback`; it asks for the `repo` scope because that's the
+only OAuth-app scope that can read private issues. Tokens are stored on the
+server and dropped automatically if GitHub revokes them.
+
+For instant updates, add a webhook on the repo or org (**Settings → Webhooks**:
+payload URL `<origin>/api/github/webhook`, content type JSON, the `issues`
+event) and put its secret in `GITHUB_WEBHOOK_SECRET`.
 
 ## Sharing boards with people outside a workspace
 

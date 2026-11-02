@@ -1,6 +1,7 @@
 // What's new in Hackban, newest first. Add an entry for every user-facing update or change.
 // `id` must be unique; the header shows a dot until the viewer has seen the newest one.
 export const ANNOUNCEMENTS: { id: string; date: string; title: string; body: string }[] = [
+  { id: "github-issues", date: "2026-11-02", title: "Track GitHub issues", body: "Paste a GitHub issue link onto a card (or add it as a link) and the card shows the issue's status and is marked complete when the issue is closed; connect your GitHub account under your profile to track issues in private repos." },
   { id: "native-apps", date: "2026-11-01", title: "Sign in from native apps", body: "Desktop apps like Hackban for Mac can now sign in with full access to your boards after you approve them on a consent page, and you can revoke them any time under Connected apps." },
   { id: "sort-group-assignee", date: "2026-11-01", title: "Group sorted cards by assignee", body: "Tick Group by assignee in a list's sort menu to keep cards the sort ranks equal (like ones due the same day) together by who is assigned." },
   { id: "card-dependencies", date: "2026-10-28", title: "Blocked cards", body: "Mark a card as blocked by another card from its Dependencies button: it gets a red Blocked badge and the blocker a yellow Blocking badge until the blocker is complete, which you can do right from the list." },

@@ -255,6 +255,43 @@ function Settings() {
   );
 }
 
+function GitHubAccount() {
+  const utils = api.useUtils();
+  const { data } = api.me.github.useQuery();
+  const disconnect = api.me.disconnectGithub.useMutation({ onSuccess: () => void utils.me.github.invalidate() });
+  const [flash, setFlash] = useState<string | null>(null);
+  useEffect(() => {
+    const q = new URLSearchParams(location.search).get("github");
+    if (q) {
+      setFlash(q === "connected" ? "GitHub connected." : "Connecting GitHub didn't work. Try again.");
+      history.replaceState(null, "", location.pathname);
+    }
+  }, []);
+  if (!data?.available) return null;
+  return (
+    <>
+      <h2 className="mt-8 mb-2 font-semibold">GitHub</h2>
+      <p className="mb-2 text-sm text-[var(--color-text-subtle)]">
+        Cards track GitHub issues you link to them and complete when the issue closes. Public issues work without this; connect your account to track issues in private repos you can see.
+      </p>
+      {flash && <p className="mb-2 text-sm">{flash}</p>}
+      {data.connection ? (
+        <div className="flex items-center justify-between gap-3 rounded-[3px] bg-[var(--color-neutral)] px-3 py-2 text-sm">
+          <div className="min-w-0">
+            <div className="truncate font-medium">@{data.connection.login}</div>
+            <div className="text-xs text-[var(--color-text-subtlest)]">Connected {format(data.connection.createdAt, "MMM d, yyyy")}</div>
+          </div>
+          <Button variant="danger" disabled={disconnect.isPending} onClick={() => disconnect.mutate()}>
+            Disconnect
+          </Button>
+        </div>
+      ) : (
+        <Button onClick={() => location.assign("/api/github/connect")}>Connect GitHub</Button>
+      )}
+    </>
+  );
+}
+
 function ConnectedApps() {
   const utils = api.useUtils();
   const { data: apps } = api.me.apps.useQuery();
@@ -263,6 +300,7 @@ function ConnectedApps() {
   useEffect(() => setUrl(`${location.origin}/api/mcp`), []);
   return (
     <>
+      <GitHubAccount />
       <h2 className="mt-8 mb-2 font-semibold">Connected apps</h2>
       <p className="mb-2 text-sm text-[var(--color-text-subtle)]">
         Add this URL as an MCP server (a custom connector) in Claude, Cursor or any MCP client to let it work with your boards.
