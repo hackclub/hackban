@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { env } from "~/env";
+
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 export const meRouter = createTRPCRouter({
@@ -76,5 +78,15 @@ export const meRouter = createTRPCRouter({
 
   revokeApp: protectedProcedure.input(z.object({ id: z.string() })).mutation(({ ctx, input }) =>
     ctx.db.oAuthToken.deleteMany({ where: { userId: ctx.session.user.id, clientId: input.id } }),
+  ),
+
+  /** The user's connected GitHub account, if any, and whether connecting is possible on this server. */
+  github: protectedProcedure.query(async ({ ctx }) => {
+    const conn = await ctx.db.gitHubConnection.findUnique({ where: { userId: ctx.session.user.id }, select: { login: true, createdAt: true } });
+    return { available: !!(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET), connection: conn };
+  }),
+
+  disconnectGithub: protectedProcedure.mutation(({ ctx }) =>
+    ctx.db.gitHubConnection.deleteMany({ where: { userId: ctx.session.user.id } }),
   ),
 });

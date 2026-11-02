@@ -23,6 +23,7 @@ const cardFrontInclude = {
   members: { include: { user: { select: { id: true, name: true, image: true } } } },
   checklists: { include: { items: { select: { complete: true } } } },
   _count: { select: { comments: true, attachments: true } },
+  issues: { select: { id: true, owner: true, repo: true, number: true, state: true, title: true, fetchError: true } },
   // Only unfinished links: the card front shows "Blocked"/"Blocking" until they're done.
   blockedBy: { where: { blocker: { closed: false, dueComplete: false } }, select: { blocker: { select: { title: true } } } },
   blocking: { where: { blocked: { closed: false, dueComplete: false } }, select: { blocked: { select: { title: true } } } },

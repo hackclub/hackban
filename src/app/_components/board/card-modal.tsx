@@ -2,6 +2,7 @@
 
 import { format, formatDistanceToNow } from "date-fns";
 import { AnimatePresence, motion } from "framer-motion";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { api } from "~/trpc/react";
@@ -103,6 +104,7 @@ function CardBody({
   );
   const [dropping, setDropping] = useState(false);
   const inv = useCardInvalidate(cardId, board.id);
+  const trackIssue = api.card.trackIssue.useMutation({ onSettled: inv });
   const readOnly = board.myRole === "observer";
 
   if (error) {
@@ -149,6 +151,13 @@ function CardBody({
         if (files.length) {
           await uploadFiles(card.id, files);
           inv();
+          return;
+        }
+        // A pasted GitHub issue link starts tracking that issue.
+        const text = e.clipboardData.getData("text").trim();
+        if (/^https?:\/\/(www\.)?github\.com\/[^/\s]+\/[^/\s]+\/issues\/\d+/i.test(text)) {
+          e.preventDefault();
+          trackIssue.mutate({ id: card.id, url: text });
         }
       }}
     >
@@ -233,6 +242,9 @@ function CardBody({
               onOpenCard={onOpenCard}
               readOnly={readOnly}
             />
+          )}
+          {card.issues.length > 0 && (
+            <GitHubIssues card={card} boardId={board.id} readOnly={readOnly} />
           )}
           {card.attachments.length > 0 && (
             <Attachments
@@ -1009,6 +1021,76 @@ function Attachments({
             ? "Show fewer attachments."
             : `View all attachments (${card.attachments.length - 4} hidden)`}
         </Button>
+      )}
+    </section>
+  );
+}
+
+function GitHubIssues({ card, boardId, readOnly }: { card: CardDetail; boardId: string; readOnly: boolean }) {
+  const inv = useCardInvalidate(card.id, boardId);
+  const remove = api.card.untrackIssue.useMutation({ onSettled: inv });
+  const refresh = api.card.refreshIssue.useMutation({ onSettled: inv });
+  const { data: gh } = api.me.github.useQuery();
+  const unreadable = card.issues.some((i) => i.fetchError);
+  return (
+    <section className="mb-6">
+      <SectionHeader icon="issue" title="GitHub issues" />
+      <p className="mb-2 text-xs text-[var(--color-text-subtle)]">
+        {card.issues.length > 1 ? "This card is marked complete when all of these issues are closed." : "This card is marked complete when this issue is closed."}
+      </p>
+      {card.issues.map((i) => {
+        const closed = i.state === "closed";
+        const label = `${i.owner}/${i.repo}#${i.number}`;
+        const url = `https://github.com/${i.owner}/${i.repo}/issues/${i.number}`;
+        return (
+          <div key={i.id} className="mb-1 flex items-start gap-2 rounded-[3px] p-1 hover:bg-[var(--color-neutral)]">
+            <span
+              className={`mt-0.5 shrink-0 ${i.fetchError ? "text-[var(--color-text-subtlest)]" : closed ? "text-[var(--color-brand)]" : "text-[var(--color-success)]"}`}
+              title={i.fetchError ? "Couldn't read this issue" : closed ? `Closed${i.stateReason === "not_planned" ? " as not planned" : ""}` : "Open"}
+            >
+              <Icon name={closed ? "issueClosed" : "issue"} size={18} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <a href={url} target="_blank" rel="noreferrer" className="block truncate text-sm font-semibold hover:underline">
+                {i.title || label}
+              </a>
+              <div className="text-xs text-[var(--color-text-subtle)]">
+                {label}
+                {" · "}
+                {i.fetchError
+                  ? "Can't read this issue"
+                  : closed
+                    ? `Closed${i.closedBy ? ` by @${i.closedBy}` : ""}${i.closedAt ? ` ${formatDistanceToNow(i.closedAt, { addSuffix: true })}` : ""}`
+                    : "Open"}
+                {i.checkedAt && !i.fetchError && <> · Checked {formatDistanceToNow(i.checkedAt, { addSuffix: true })}</>}
+                {" · "}
+                <button className="underline" disabled={refresh.isPending} onClick={() => refresh.mutate({ issueId: i.id })}>
+                  Refresh
+                </button>
+                {!readOnly && (
+                  <>
+                    {" · "}
+                    <button className="underline" onClick={() => remove.mutate({ issueId: i.id })}>
+                      Remove
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+      {refresh.error && <p className="mt-1 text-xs text-[var(--color-danger)]">{refresh.error.message}</p>}
+      {unreadable && (
+        <p className="mt-1 text-xs text-[var(--color-text-subtle)]">
+          An issue here can&apos;t be read: it may be in a private repo, deleted, or a pull request.
+          {gh?.available && !gh.connection && (
+            <>
+              {" "}
+              <Link href="/me" className="underline">Connect your GitHub account</Link> to track issues in private repos you can see.
+            </>
+          )}
+        </p>
       )}
     </section>
   );

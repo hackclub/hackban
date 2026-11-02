@@ -138,6 +138,9 @@ export function hackbanMcp(user: User, base: string) {
           items: cl.items.map((i) => ({ id: i.id, name: i.name, complete: i.complete })),
         })),
         attachments: c.attachments.map((a) => ({ name: a.name, url: abs(a.url) })),
+        githubIssues: c.issues.length
+          ? c.issues.map((i) => ({ id: i.id, url: `https://github.com/${i.owner}/${i.repo}/issues/${i.number}`, title: i.title || undefined, state: i.state, closedBy: i.closedBy ?? undefined, unreadable: i.fetchError ? true : undefined }))
+          : undefined,
         comments: c.comments.map((m) => ({ id: m.id, author: m.author.name, text: m.text, at: m.createdAt })),
         blockedBy: c.blockedBy.length ? c.blockedBy : undefined,
         blocking: c.blocking.length ? c.blocking : undefined,
@@ -388,12 +391,32 @@ export function hackbanMcp(user: User, base: string) {
     "add_link",
     {
       title: "Attach link",
-      description: "Attach an http(s) link to a card.",
+      description: "Attach an http(s) link to a card. A GitHub issue link is tracked instead of attached: the card is marked complete when the issue is closed.",
       inputSchema: { cardId: z.string(), url: z.string().max(2048), name: z.string().max(256).optional() },
       annotations: write,
     },
     async ({ cardId, url, name }) => {
       await api.card.addLink({ id: cardId, url, name });
+      return text({ ok: true });
+    },
+  );
+
+  server.registerTool(
+    "track_github_issue",
+    {
+      title: "Track GitHub issue",
+      description: "Link a GitHub issue (https://github.com/owner/repo/issues/123) to a card. The card is marked complete when every tracked issue on it is closed, and reopened if one is reopened. Pass remove: true with the card's issue id (from get_card) to stop tracking.",
+      inputSchema: { cardId: z.string(), url: z.string().max(2048).optional(), issueId: z.string().optional(), remove: z.boolean().optional() },
+      annotations: write,
+    },
+    async ({ cardId, url, issueId, remove }) => {
+      if (remove) {
+        if (!issueId) throw new Error("issueId is required to stop tracking");
+        await api.card.untrackIssue({ issueId });
+      } else {
+        if (!url) throw new Error("url is required");
+        await api.card.trackIssue({ id: cardId, url });
+      }
       return text({ ok: true });
     },
   );

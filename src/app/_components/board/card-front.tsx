@@ -187,6 +187,22 @@ export const CardFront = memo(function CardFront({
               Blocking {card.blocking.length}
             </span>
           )}
+          {card.issues.map((i) => {
+            const closed = i.state === "closed";
+            return (
+              <a
+                key={i.id}
+                href={`https://github.com/${i.owner}/${i.repo}/issues/${i.number}`}
+                target="_blank"
+                rel="noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className={`flex h-6 items-center gap-1 rounded-[3px] px-1 hover:underline ${i.fetchError ? "text-[var(--color-text-subtlest)]" : closed ? "text-[var(--color-brand)]" : "text-[var(--color-success)]"}`}
+                title={`${i.owner}/${i.repo}#${i.number}${i.title ? `: ${i.title}` : ""} (${i.fetchError ? "can't read" : closed ? "closed" : "open"})`}
+              >
+                <Icon name={closed ? "issueClosed" : "issue"} size={14} />#{i.number}
+              </a>
+            );
+          })}
           {card.watching && (
             <span className="flex h-6 items-center px-1" title="You are watching this card.">
               <Icon name="eye" size={16} />

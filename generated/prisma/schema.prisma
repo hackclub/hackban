@@ -88,6 +88,8 @@ model User {
   watches          Watch[]
   autoJoinsCreated WorkspaceAutoJoin[] @relation("autoJoinCreator")
   oauthTokens      OAuthToken[]
+  githubIssues     GitHubIssue[]
+  github           GitHubConnection?
 }
 
 // ---------- Workspaces & boards ----------
@@ -221,10 +223,52 @@ model Card {
   comments    Comment[]
   activities  Activity[]
   watches     Watch[]
-  blocking    CardBlock[]  @relation("blocker")
-  blockedBy   CardBlock[]  @relation("blocked")
+  blocking    CardBlock[]   @relation("blocker")
+  blockedBy   CardBlock[]   @relation("blocked")
+  issues      GitHubIssue[]
 
   @@index([listId, pos])
+}
+
+/// A GitHub issue a card tracks. Polled (and optionally pushed by webhook);
+/// when every issue on a card is closed the card is marked complete.
+model GitHubIssue {
+  id              String    @id @default(cuid())
+  cardId          String
+  owner           String
+  repo            String
+  number          Int
+  title           String    @default("")
+  state           String    @default("open") // open | closed
+  stateReason     String? // completed | not_planned | reopened | duplicate
+  closedBy        String? // GitHub login
+  closedAt        DateTime?
+  // ETag from the last fetch: unchanged issues come back as 304 and don't count against the rate limit.
+  etag            String?
+  checkedAt       DateTime?
+  // Why the last fetch failed (not_found = missing, private, or a pull request); null when it worked.
+  fetchError      String?
+  // Set when closing this issue completed its card, so reopening can undo exactly that.
+  completedCardAt DateTime?
+  addedById       String?
+  createdAt       DateTime  @default(now())
+  card            Card      @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  addedBy         User?     @relation(fields: [addedById], references: [id], onDelete: SetNull)
+
+  @@unique([cardId, owner, repo, number])
+  @@index([state, checkedAt])
+}
+
+/// A user's own GitHub account, connected from their settings so issues in
+/// private repos they can see can be tracked. Issues they add are fetched
+/// with this token.
+model GitHubConnection {
+  userId      String   @id
+  login       String
+  accessToken String
+  scope       String   @default("")
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 /// `blocker` has to be completed (or archived) before `blocked` can go ahead.

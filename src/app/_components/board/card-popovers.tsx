@@ -398,6 +398,7 @@ function AttachPane({ card, board }: { card: CardDetail; board: BoardData }) {
       <hr className="my-3 border-[var(--color-border)]" />
       <label className="mb-1 block text-xs font-bold text-[var(--color-text-subtle)]">Search or paste a link</label>
       <input className={inputCls} value={url} placeholder="https://…" onChange={(e) => setUrl(e.target.value)} />
+      <p className="mt-1 text-xs text-[var(--color-text-subtle)]">A GitHub issue link is tracked instead: the card completes when the issue closes.</p>
       <label className="mt-2 mb-1 block text-xs font-bold text-[var(--color-text-subtle)]">Display text (optional)</label>
       <input className={inputCls} value={name} onChange={(e) => setName(e.target.value)} />
       <Button

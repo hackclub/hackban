@@ -429,6 +429,9 @@ const PATHS: Record<string, string> = {
   collapseIn: "M2 11h7.2L6.6 8.4 8 7l5 5-5 5-1.4-1.4 2.6-2.6H2zm20 2h-7.2l2.6 2.6L16 17l-5-5 5-5 1.4 1.4-2.6 2.6H22z",
   collapse: "M8 5h2v14H8zm6 0h2v14h-2z",
   sort: "M7 3l4 4H8v11H6V7H3zm10 18-4-4h3V6h2v11h3z",
+  // Octicons-style issue markers: open (circle with a dot) and closed (circle with a check).
+  issue: "M12 3a9 9 0 1 1 0 18 9 9 0 0 1 0-18m0 2a7 7 0 1 0 0 14 7 7 0 0 0 0-14m0 4.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5",
+  issueClosed: "M12 3a9 9 0 1 1 0 18 9 9 0 0 1 0-18m0 2a7 7 0 1 0 0 14 7 7 0 0 0 0-14m3.8 4.3 1.4 1.4-6 6-3.4-3.4 1.4-1.4 2 2z",
   blocked: "M12 3a9 9 0 1 1 0 18 9 9 0 0 1 0-18m-5.2 4.2A7 7 0 0 0 16.8 17.2zm1.4-1.4 9.8 9.8A7 7 0 0 0 8.2 5.8",
 };
 

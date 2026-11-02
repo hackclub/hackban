@@ -52,6 +52,10 @@ function describe(a: Act, onCard: boolean) {
     case "addBlocker": return <>marked {card} as blocked by {s(d.name)}</>;
     case "removeBlocker": return <>marked {card} as no longer blocked by {s(d.name)}</>;
     case "addAttachment": return <>attached {s(d.name)} to {card}</>;
+    case "trackIssue": return <>linked GitHub issue {s(d.issue)} to {card}</>;
+    case "untrackIssue": return <>unlinked GitHub issue {s(d.issue)} from {card}</>;
+    case "githubIssueClosed": return <>completed {card} because GitHub issue {s(d.issue)} was closed{d.closedBy ? <> by @{s(d.closedBy)}</> : null}</>;
+    case "githubIssueReopened": return <>reopened {card} because GitHub issue {s(d.issue)} was reopened</>;
     case "addMemberToBoard": return <>added a member to this board</>;
     case "joinBoard": return <>joined this board via invite link</>;
     case "archiveAllCards": return <>archived all cards in a list</>;

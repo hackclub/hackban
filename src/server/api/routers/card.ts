@@ -6,6 +6,7 @@ import { posAfter, posAtEnd } from "~/server/api/pos";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { removeStored, storedKeys } from "~/server/storage";
 import { RECURRENCES, nextDue, type Recurrence } from "~/server/recurrence";
+import { issueLabel, parseIssueUrl, syncIssue, trackIssue } from "~/server/github";
 import { type db as Db } from "~/server/db";
 
 /** Assignees (card members, check item owners) must be on the board. */
@@ -34,6 +35,7 @@ export const cardRouter = createTRPCRouter({
             include: { items: { orderBy: { pos: "asc" }, include: { member: { select: userSelect } } } },
           },
           attachments: { orderBy: { createdAt: "desc" }, include: { uploader: { select: userSelect } } },
+          issues: { orderBy: { createdAt: "asc" }, omit: { etag: true } },
           comments: { orderBy: { createdAt: "desc" }, include: { author: { select: userSelect } } },
           activities: {
             orderBy: { createdAt: "desc" },
@@ -530,10 +532,18 @@ export const cardRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const boardId = await requireCard(ctx.db, ctx.session.user.id, input.id);
+      // GitHub issue links are tracked (the card completes when the issue closes) rather than attached.
+      const ref = parseIssueUrl(input.url);
+      if (ref) {
+        await trackIssue(ctx.db, input.id, ref, ctx.session.user.id);
+        logActivity(ctx.db, { boardId, cardId: input.id, actorId: ctx.session.user.id, type: "trackIssue", data: { issue: issueLabel(ref) }, origin: ctx.clientId });
+        return { tracked: true as const };
+      }
       await ctx.db.attachment.create({
         data: { cardId: input.id, uploaderId: ctx.session.user.id, url: input.url, name: input.name ?? input.url },
       });
       logActivity(ctx.db, { boardId, cardId: input.id, actorId: ctx.session.user.id, type: "addAttachment", data: { name: input.name ?? input.url }, origin: ctx.clientId });
+      return { tracked: false as const };
     }),
 
   updateAttachment: protectedProcedure
@@ -554,5 +564,41 @@ export const cardRouter = createTRPCRouter({
       void removeStored(a.storageKey);
       await ctx.db.card.updateMany({ where: { id: a.cardId, coverAttachmentId: a.id }, data: { coverAttachmentId: null } });
       touch(boardId, a.cardId, ctx.clientId);
+    }),
+
+  // ----- GitHub issues -----
+
+  /** Track a GitHub issue on a card: it completes when every tracked issue is closed. */
+  trackIssue: protectedProcedure
+    .input(z.object({ id: z.string(), url: z.string().max(2048) }))
+    .mutation(async ({ ctx, input }) => {
+      const ref = parseIssueUrl(input.url);
+      if (!ref) throw new TRPCError({ code: "BAD_REQUEST", message: "That isn't a GitHub issue link (https://github.com/owner/repo/issues/123)." });
+      const boardId = await requireCard(ctx.db, ctx.session.user.id, input.id);
+      await trackIssue(ctx.db, input.id, ref, ctx.session.user.id);
+      logActivity(ctx.db, { boardId, cardId: input.id, actorId: ctx.session.user.id, type: "trackIssue", data: { issue: issueLabel(ref) }, origin: ctx.clientId });
+    }),
+
+  untrackIssue: protectedProcedure
+    .input(z.object({ issueId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const issue = await ctx.db.gitHubIssue.findUniqueOrThrow({ where: { id: input.issueId } });
+      const boardId = await requireCard(ctx.db, ctx.session.user.id, issue.cardId);
+      await ctx.db.gitHubIssue.delete({ where: { id: issue.id } });
+      logActivity(ctx.db, { boardId, cardId: issue.cardId, actorId: ctx.session.user.id, type: "untrackIssue", data: { issue: issueLabel(issue) }, origin: ctx.clientId });
+    }),
+
+  /** Re-check an issue on GitHub now instead of waiting for the next poll. */
+  refreshIssue: protectedProcedure
+    .input(z.object({ issueId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const issue = await ctx.db.gitHubIssue.findUniqueOrThrow({ where: { id: input.issueId } });
+      const boardId = await requireCard(ctx.db, ctx.session.user.id, issue.cardId, false);
+      try {
+        await syncIssue(ctx.db, issue);
+      } catch (e) {
+        throw new TRPCError({ code: "BAD_GATEWAY", message: (e as Error).message });
+      }
+      touch(boardId, issue.cardId, ctx.clientId);
     }),
 });
