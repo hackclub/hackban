@@ -101,7 +101,8 @@ export function hackbanMcp(user: User, base: string) {
             id: c.id,
             title: c.title,
             due: c.due ?? undefined,
-            dueComplete: c.due ? c.dueComplete : undefined,
+            // Cards can be completed without a due date, so say so whenever it's true.
+            dueComplete: c.dueComplete || undefined,
             labels: c.labels.length ? c.labels.map(({ label }) => label.name || label.color) : undefined,
             members: c.members.length ? c.members.map(({ user }) => user.name) : undefined,
             checklist: c.checkTotal ? `${c.checkDone}/${c.checkTotal}` : undefined,
@@ -153,7 +154,7 @@ export function hackbanMcp(user: User, base: string) {
           id: c.id,
           title: c.title,
           due: c.due ?? undefined,
-          dueComplete: c.due ? c.dueComplete : undefined,
+          dueComplete: c.dueComplete || undefined,
           board: c.list.board.name,
           list: c.list.name,
           labels: c.labels.length ? c.labels.map(({ label }) => label.name || label.color) : undefined,
