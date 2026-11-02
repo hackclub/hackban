@@ -55,12 +55,13 @@ export function stateFromPayload(p: GitHubIssuePayload, closedBy?: string | null
  * revoked user token is forgotten and the fetch retried without it.
  *
  * `boardId` guards against a confused deputy: once the linker can no longer
- * read the card's board, their token stops feeding it private issue data.
+ * edit the card's board, their token stops feeding it private issue data.
  */
 export async function fetchIssueAs(db: DB, ref: IssueRef, userId: string | null, etag?: string | null, boardId?: string) {
   const conn = userId ? await db.gitHubConnection.findUnique({ where: { userId } }) : null;
   if (!conn) return fetchIssue(ref, etag);
-  if (boardId && !(await requireBoard(db, conn.userId, boardId, false).then(() => true, () => false))) return fetchIssue(ref, etag);
+  // Write access, not just read: a card moved onto a public board shouldn't keep drawing on their token.
+  if (boardId && !(await requireBoard(db, conn.userId, boardId, true).then(() => true, () => false))) return fetchIssue(ref, etag);
   try {
     return await fetchIssue(ref, etag, conn.accessToken);
   } catch (e) {
