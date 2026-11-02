@@ -74,11 +74,13 @@ const NATIVE_SCHEMES = ["hackban-desktop:"];
  * Redirects that can only land in a client we recognise. Anyone can register an
  * app named "Claude", so the consent page warns unless the code goes back to one of these.
  * Hostnames only count over http(s): web+x://claude.ai/ goes to whichever site handles web+x.
+ * Raycast's /redirect page only hands the code on to the Raycast app (hackban-raycast signs in through it).
  */
 export function knownRedirect(uri: string) {
   const url = new URL(uri);
   if (["cursor:", "vscode:", ...NATIVE_SCHEMES].includes(url.protocol)) return true;
   if (url.protocol === "http:") return LOOPBACK.includes(url.hostname);
+  if (url.protocol === "https:" && url.hostname === "raycast.com") return /^\/redirect(\/|$)/.test(url.pathname);
   return url.protocol === "https:" && [...LOOPBACK, "claude.ai", "claude.com", "vscode.dev"].includes(url.hostname);
 }
 

@@ -102,10 +102,25 @@ test("app scope is opt-in and only for native redirects", () => {
 });
 
 test("known redirects match hostnames only over http(s)", () => {
-  for (const ok of ["hackban-desktop://oauth/callback", "https://claude.ai/cb", "http://127.0.0.1:5000/cb", "vscode://cb"]) {
+  for (const ok of [
+    "hackban-desktop://oauth/callback",
+    "https://claude.ai/cb",
+    "http://127.0.0.1:5000/cb",
+    "vscode://cb",
+    "https://raycast.com/redirect?packageName=Extension",
+    "https://raycast.com/redirect/extension",
+  ]) {
     assert.equal(knownRedirect(ok), true, ok);
   }
-  for (const bad of ["web+hb://claude.ai/cb", "irc://claude.ai/cb", "http://claude.ai/cb", "x-safari-https://vscode.dev/cb"]) {
+  for (const bad of [
+    "web+hb://claude.ai/cb",
+    "irc://claude.ai/cb",
+    "http://claude.ai/cb",
+    "x-safari-https://vscode.dev/cb",
+    "https://raycast.com/store/cb",
+    "https://raycast.com/redirector",
+    "http://raycast.com/redirect",
+  ]) {
     assert.equal(knownRedirect(bad), false, bad);
   }
 });
