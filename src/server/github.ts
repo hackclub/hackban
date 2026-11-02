@@ -15,7 +15,8 @@ export function parseIssueUrl(url: string): IssueRef | null {
   if (!m) return null;
   const number = Number(m[3]);
   if (!Number.isSafeInteger(number) || number < 1) return null;
-  return { owner: m[1]!, repo: m[2]!, number };
+  // GitHub treats owner and repo names case-insensitively; normalise so one issue is one row.
+  return { owner: m[1]!.toLowerCase(), repo: m[2]!.toLowerCase(), number };
 }
 
 export const issueUrl = (i: IssueRef) => `https://github.com/${i.owner}/${i.repo}/issues/${i.number}`;
@@ -81,11 +82,13 @@ const rl = globalThis as unknown as { githubPausedUntil?: number };
  * an issue (pull requests share the endpoint), and throws on other failures.
  */
 export class GitHubAuthError extends Error {}
+/** Shared-token rate limit hit: nothing else will succeed this pass. */
+export class GitHubRateLimitError extends Error {}
 
 export async function fetchIssue(ref: IssueRef, etag?: string | null, token: string | null = env.GITHUB_TOKEN ?? null): Promise<{ state: IssueState; etag: string | null } | "unchanged" | null> {
   // User tokens have their own rate limit; only the shared one pauses.
   const shared = token === (env.GITHUB_TOKEN ?? null);
-  if (shared && rl.githubPausedUntil && Date.now() < rl.githubPausedUntil) throw new Error("GitHub rate limit reached; waiting");
+  if (shared && rl.githubPausedUntil && Date.now() < rl.githubPausedUntil) throw new GitHubRateLimitError("GitHub rate limit reached; waiting");
   const headers: Record<string, string> = { Accept: "application/vnd.github+json", "User-Agent": "hackban" };
   if (token) headers.Authorization = `Bearer ${token}`;
   if (etag) headers["If-None-Match"] = etag;
@@ -96,7 +99,7 @@ export async function fetchIssue(ref: IssueRef, etag?: string | null, token: str
   if (shared && (res.status === 403 || res.status === 429) && res.headers.get("x-ratelimit-remaining") === "0") {
     const reset = Number(res.headers.get("x-ratelimit-reset")) * 1000;
     rl.githubPausedUntil = Number.isFinite(reset) && reset > Date.now() ? reset : Date.now() + 10 * 60_000;
-    throw new Error("GitHub rate limit reached");
+    throw new GitHubRateLimitError("GitHub rate limit reached");
   }
   if (!res.ok) throw new Error(`GitHub responded ${res.status}`);
   const body = (await res.json()) as GitHubIssuePayload;
@@ -110,10 +113,11 @@ export async function fetchIssue(ref: IssueRef, etag?: string | null, token: str
  * a tracked issue is open again; one completed by hand is left alone.
  */
 export function cardTransition(
-  card: { dueComplete: boolean; closed: boolean },
+  card: { dueComplete: boolean; closed: boolean; recurrence?: string | null },
   issues: { state: string; completedCardAt: Date | null }[],
 ): "complete" | "reopen" | null {
-  if (card.closed || issues.length === 0) return null;
+  // Archived cards and repeating cards (completing those rolls them forward, which is a person's call) are left alone.
+  if (card.closed || card.recurrence || issues.length === 0) return null;
   const allClosed = issues.every((i) => i.state === "closed");
   if (allClosed && !card.dueComplete) return "complete";
   if (!allClosed && card.dueComplete && issues.some((i) => i.completedCardAt)) return "reopen";
@@ -141,8 +145,12 @@ export async function applyIssueState(db: DB, issueId: string, next: IssueState,
     },
     include: { card: { include: { issues: true, list: { select: { boardId: true } } } } },
   });
-  if (prev.state === next.state) return false;
   const { card } = issue;
+  if (prev.state === next.state) {
+    const changed = prev.title !== next.title || prev.stateReason !== next.stateReason || prev.closedBy !== next.closedBy || prev.fetchError !== null;
+    if (changed) touch(card.list.boardId, card.id);
+    return false;
+  }
   const action = cardTransition(card, card.issues);
   if (!action) {
     touch(card.list.boardId, card.id);
@@ -188,7 +196,11 @@ export async function syncIssue(db: DB, issue: { id: string; owner: string; repo
   await applyIssueState(db, issue.id, res.state, res.etag);
 }
 
-/** Start tracking an issue on a card. Fetches its title and state right away (best effort). */
+/**
+ * Start tracking an issue on a card. Fetches its title and state right away
+ * (best effort). An issue that's already closed is recorded as closed but
+ * doesn't complete the card: only a closing the card witnesses does.
+ */
 export async function trackIssue(db: DB, cardId: string, ref: IssueRef, userId: string | null) {
   const issue = await db.gitHubIssue.upsert({
     where: { cardId_owner_repo_number: { cardId, ...ref } },
@@ -234,9 +246,11 @@ export async function syncDueIssues(db: DB) {
     try {
       await syncIssue(db, issue);
     } catch (e) {
-      // Rate limited or GitHub is down: stop this pass and try again next tick.
       console.error("[github] sync failed", issueLabel(issue), (e as Error).message);
-      break;
+      // Out of shared requests: nothing else will work this pass either.
+      if (e instanceof GitHubRateLimitError) break;
+      // Anything else is this issue's problem: note it and move on so it can't hog the queue.
+      await db.gitHubIssue.updateMany({ where: { id: issue.id }, data: { checkedAt: new Date(), fetchError: "error" } }).catch((e2: unknown) => console.error("[github] could not mark failure", e2));
     }
   }
 }

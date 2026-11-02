@@ -24,8 +24,9 @@ export async function POST(req: Request) {
     repository: { name: string; owner: { login: string } };
     sender?: { login?: string };
   };
+  // Only rows whose last fetch succeeded: a webhook mustn't reveal an issue the linker couldn't read.
   const tracked = await db.gitHubIssue.findMany({
-    where: { owner: { equals: event.repository.owner.login, mode: "insensitive" }, repo: { equals: event.repository.name, mode: "insensitive" }, number: event.issue.number },
+    where: { owner: event.repository.owner.login.toLowerCase(), repo: event.repository.name.toLowerCase(), number: event.issue.number, fetchError: null },
     select: { id: true },
   });
   if (event.action === "deleted" || event.action === "transferred") {

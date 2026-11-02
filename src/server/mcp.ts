@@ -405,18 +405,12 @@ export function hackbanMcp(user: User, base: string) {
     "track_github_issue",
     {
       title: "Track GitHub issue",
-      description: "Link a GitHub issue (https://github.com/owner/repo/issues/123) to a card. The card is marked complete when every tracked issue on it is closed, and reopened if one is reopened. Pass remove: true with the card's issue id (from get_card) to stop tracking.",
-      inputSchema: { cardId: z.string(), url: z.string().max(2048).optional(), issueId: z.string().optional(), remove: z.boolean().optional() },
+      description: "Link a GitHub issue (https://github.com/owner/repo/issues/123) to a card. The card is marked complete when every tracked issue on it is closed, and reopened if one is reopened. Untracking is done in the app.",
+      inputSchema: { cardId: z.string(), url: z.string().max(2048) },
       annotations: write,
     },
-    async ({ cardId, url, issueId, remove }) => {
-      if (remove) {
-        if (!issueId) throw new Error("issueId is required to stop tracking");
-        await api.card.untrackIssue({ issueId });
-      } else {
-        if (!url) throw new Error("url is required");
-        await api.card.trackIssue({ id: cardId, url });
-      }
+    async ({ cardId, url }) => {
+      await api.card.trackIssue({ id: cardId, url });
       return text({ ok: true });
     },
   );

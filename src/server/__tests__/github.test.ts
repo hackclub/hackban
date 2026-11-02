@@ -5,6 +5,7 @@ import { cardTransition, parseIssueUrl, stateFromPayload } from "~/server/github
 
 test("parses GitHub issue links and nothing else", () => {
   assert.deepEqual(parseIssueUrl("https://github.com/hackclub/hackban/issues/42"), { owner: "hackclub", repo: "hackban", number: 42 });
+  assert.deepEqual(parseIssueUrl("https://github.com/HackClub/HackBan/issues/42"), { owner: "hackclub", repo: "hackban", number: 42 }, "case folded");
   assert.deepEqual(parseIssueUrl("http://www.github.com/a-b/c.d/issues/7/"), { owner: "a-b", repo: "c.d", number: 7 });
   assert.deepEqual(parseIssueUrl(" https://github.com/o/r/issues/3#issuecomment-99 "), { owner: "o", repo: "r", number: 3 });
   assert.deepEqual(parseIssueUrl("https://github.com/o/r/issues/3?x=1"), { owner: "o", repo: "r", number: 3 });
@@ -41,4 +42,5 @@ test("a card completes when its last open issue closes, and reopens only if an i
   assert.equal(cardTransition(done, [{ state: "open", completedCardAt: new Date() }]), "reopen");
   assert.equal(cardTransition({ dueComplete: false, closed: true }, [closed]), null, "archived cards are left alone");
   assert.equal(cardTransition(todo, []), null);
+  assert.equal(cardTransition({ ...todo, recurrence: "weekly" }, [closed]), null, "repeating cards are left alone");
 });

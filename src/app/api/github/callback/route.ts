@@ -7,7 +7,9 @@ import { baseUrl } from "~/server/oauth";
 /** GitHub sends the user back here; swap the code for a token and remember it on their account. */
 export async function GET(req: Request) {
   const base = baseUrl(req.headers);
-  const back = (q: string) => Response.redirect(`${base}/me?github=${q}`, 302);
+  // Built by hand: Response.redirect() has immutable headers on Node, so the cookie couldn't be cleared.
+  const back = (q: string) =>
+    new Response(null, { status: 302, headers: { Location: `${base}/me?github=${q}`, "Set-Cookie": `${STATE_COOKIE}=; Path=/api/github; HttpOnly; Max-Age=0` } });
   if (!env.GITHUB_CLIENT_ID || !env.GITHUB_CLIENT_SECRET) return new Response("GitHub sign-in isn't configured", { status: 404 });
   const session = await auth();
   if (!session?.user) return Response.redirect(`${base}/api/auth/signin`, 302);
@@ -16,21 +18,25 @@ export async function GET(req: Request) {
   const code = url.searchParams.get("code");
   if (!code || !cookieState || url.searchParams.get("state") !== cookieState) return back("error");
 
-  const tokenRes = await fetch("https://github.com/login/oauth/access_token", {
-    method: "POST",
-    headers: { Accept: "application/json", "Content-Type": "application/json" },
-    body: JSON.stringify({ client_id: env.GITHUB_CLIENT_ID, client_secret: env.GITHUB_CLIENT_SECRET, code, redirect_uri: `${base}/api/github/callback` }),
-  });
-  const token = (await tokenRes.json()) as { access_token?: string; scope?: string; error?: string };
-  if (!token.access_token) {
-    console.error("[github] token exchange failed", token.error);
+  let token: { access_token?: string; scope?: string; error?: string };
+  let gh: { login?: string };
+  try {
+    const tokenRes = await fetch("https://github.com/login/oauth/access_token", {
+      method: "POST",
+      headers: { Accept: "application/json", "Content-Type": "application/json" },
+      body: JSON.stringify({ client_id: env.GITHUB_CLIENT_ID, client_secret: env.GITHUB_CLIENT_SECRET, code, redirect_uri: `${base}/api/github/callback` }),
+    });
+    token = (await tokenRes.json()) as typeof token;
+    if (!token.access_token) throw new Error(token.error ?? `token endpoint responded ${tokenRes.status}`);
+    const userRes = await fetch("https://api.github.com/user", {
+      headers: { Authorization: `Bearer ${token.access_token}`, Accept: "application/vnd.github+json", "User-Agent": "hackban" },
+    });
+    gh = (await userRes.json()) as typeof gh;
+    if (!gh.login) throw new Error(`user endpoint responded ${userRes.status}`);
+  } catch (e) {
+    console.error("[github] connect failed:", (e as Error).message);
     return back("error");
   }
-  const userRes = await fetch("https://api.github.com/user", {
-    headers: { Authorization: `Bearer ${token.access_token}`, Accept: "application/vnd.github+json", "User-Agent": "hackban" },
-  });
-  const gh = (await userRes.json()) as { login?: string };
-  if (!gh.login) return back("error");
 
   await db.gitHubConnection.upsert({
     where: { userId: session.user.id },
@@ -39,7 +45,5 @@ export async function GET(req: Request) {
   });
   // Re-check issues this user added that couldn't be read before.
   await db.gitHubIssue.updateMany({ where: { addedById: session.user.id, fetchError: { not: null } }, data: { checkedAt: null } });
-  const res = back("connected");
-  res.headers.append("Set-Cookie", `${STATE_COOKIE}=; Path=/api/github; HttpOnly; Max-Age=0`);
-  return res;
+  return back("connected");
 }

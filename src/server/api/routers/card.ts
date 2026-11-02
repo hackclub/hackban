@@ -105,6 +105,8 @@ export const cardRouter = createTRPCRouter({
       if (data.coverColor) data.coverAttachmentId = null;
       if (data.coverAttachmentId) data.coverColor = null;
       let card = await ctx.db.card.update({ where: { id }, data });
+      // Completing or reopening by hand is the person's call: a tracked issue reopening later mustn't undo it.
+      if (input.dueComplete !== undefined) await ctx.db.gitHubIssue.updateMany({ where: { cardId: id }, data: { completedCardAt: null } });
 
       // Repeating card marked complete: roll it to the next occurrence instead
       // of leaving it done (Trello's "Repeat"). Checklists reset for next time.
