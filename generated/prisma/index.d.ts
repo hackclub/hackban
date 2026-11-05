@@ -15143,6 +15143,7 @@ export namespace Prisma {
     name: string | null
     pos: string | null
     color: string | null
+    description: string | null
     closed: boolean | null
     trelloId: string | null
     createdAt: Date | null
@@ -15154,6 +15155,7 @@ export namespace Prisma {
     name: string | null
     pos: string | null
     color: string | null
+    description: string | null
     closed: boolean | null
     trelloId: string | null
     createdAt: Date | null
@@ -15165,6 +15167,7 @@ export namespace Prisma {
     name: number
     pos: number
     color: number
+    description: number
     closed: number
     trelloId: number
     createdAt: number
@@ -15178,6 +15181,7 @@ export namespace Prisma {
     name?: true
     pos?: true
     color?: true
+    description?: true
     closed?: true
     trelloId?: true
     createdAt?: true
@@ -15189,6 +15193,7 @@ export namespace Prisma {
     name?: true
     pos?: true
     color?: true
+    description?: true
     closed?: true
     trelloId?: true
     createdAt?: true
@@ -15200,6 +15205,7 @@ export namespace Prisma {
     name?: true
     pos?: true
     color?: true
+    description?: true
     closed?: true
     trelloId?: true
     createdAt?: true
@@ -15284,6 +15290,7 @@ export namespace Prisma {
     name: string
     pos: string
     color: string | null
+    description: string
     closed: boolean
     trelloId: string | null
     createdAt: Date
@@ -15312,6 +15319,7 @@ export namespace Prisma {
     name?: boolean
     pos?: boolean
     color?: boolean
+    description?: boolean
     closed?: boolean
     trelloId?: boolean
     createdAt?: boolean
@@ -15326,6 +15334,7 @@ export namespace Prisma {
     name?: boolean
     pos?: boolean
     color?: boolean
+    description?: boolean
     closed?: boolean
     trelloId?: boolean
     createdAt?: boolean
@@ -15338,6 +15347,7 @@ export namespace Prisma {
     name?: boolean
     pos?: boolean
     color?: boolean
+    description?: boolean
     closed?: boolean
     trelloId?: boolean
     createdAt?: boolean
@@ -15350,12 +15360,13 @@ export namespace Prisma {
     name?: boolean
     pos?: boolean
     color?: boolean
+    description?: boolean
     closed?: boolean
     trelloId?: boolean
     createdAt?: boolean
   }
 
-  export type ListOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "boardId" | "name" | "pos" | "color" | "closed" | "trelloId" | "createdAt", ExtArgs["result"]["list"]>
+  export type ListOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "boardId" | "name" | "pos" | "color" | "description" | "closed" | "trelloId" | "createdAt", ExtArgs["result"]["list"]>
   export type ListInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     board?: boolean | BoardDefaultArgs<ExtArgs>
     cards?: boolean | List$cardsArgs<ExtArgs>
@@ -15380,6 +15391,7 @@ export namespace Prisma {
       name: string
       pos: string
       color: string | null
+      description: string
       closed: boolean
       trelloId: string | null
       createdAt: Date
@@ -15813,6 +15825,7 @@ export namespace Prisma {
     readonly name: FieldRef<"List", 'String'>
     readonly pos: FieldRef<"List", 'String'>
     readonly color: FieldRef<"List", 'String'>
+    readonly description: FieldRef<"List", 'String'>
     readonly closed: FieldRef<"List", 'Boolean'>
     readonly trelloId: FieldRef<"List", 'String'>
     readonly createdAt: FieldRef<"List", 'DateTime'>
@@ -30827,6 +30840,7 @@ export namespace Prisma {
     name: string | null
     secretHash: string | null
     createdAt: Date | null
+    connectedAt: Date | null
   }
 
   export type OAuthClientMaxAggregateOutputType = {
@@ -30834,6 +30848,7 @@ export namespace Prisma {
     name: string | null
     secretHash: string | null
     createdAt: Date | null
+    connectedAt: Date | null
   }
 
   export type OAuthClientCountAggregateOutputType = {
@@ -30842,6 +30857,7 @@ export namespace Prisma {
     redirectUris: number
     secretHash: number
     createdAt: number
+    connectedAt: number
     _all: number
   }
 
@@ -30851,6 +30867,7 @@ export namespace Prisma {
     name?: true
     secretHash?: true
     createdAt?: true
+    connectedAt?: true
   }
 
   export type OAuthClientMaxAggregateInputType = {
@@ -30858,6 +30875,7 @@ export namespace Prisma {
     name?: true
     secretHash?: true
     createdAt?: true
+    connectedAt?: true
   }
 
   export type OAuthClientCountAggregateInputType = {
@@ -30866,6 +30884,7 @@ export namespace Prisma {
     redirectUris?: true
     secretHash?: true
     createdAt?: true
+    connectedAt?: true
     _all?: true
   }
 
@@ -30947,6 +30966,7 @@ export namespace Prisma {
     redirectUris: string[]
     secretHash: string | null
     createdAt: Date
+    connectedAt: Date | null
     _count: OAuthClientCountAggregateOutputType | null
     _min: OAuthClientMinAggregateOutputType | null
     _max: OAuthClientMaxAggregateOutputType | null
@@ -30972,6 +30992,7 @@ export namespace Prisma {
     redirectUris?: boolean
     secretHash?: boolean
     createdAt?: boolean
+    connectedAt?: boolean
     tokens?: boolean | OAuthClient$tokensArgs<ExtArgs>
     _count?: boolean | OAuthClientCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["oAuthClient"]>
@@ -30982,6 +31003,7 @@ export namespace Prisma {
     redirectUris?: boolean
     secretHash?: boolean
     createdAt?: boolean
+    connectedAt?: boolean
   }, ExtArgs["result"]["oAuthClient"]>
 
   export type OAuthClientSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -30990,6 +31012,7 @@ export namespace Prisma {
     redirectUris?: boolean
     secretHash?: boolean
     createdAt?: boolean
+    connectedAt?: boolean
   }, ExtArgs["result"]["oAuthClient"]>
 
   export type OAuthClientSelectScalar = {
@@ -30998,9 +31021,10 @@ export namespace Prisma {
     redirectUris?: boolean
     secretHash?: boolean
     createdAt?: boolean
+    connectedAt?: boolean
   }
 
-  export type OAuthClientOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "redirectUris" | "secretHash" | "createdAt", ExtArgs["result"]["oAuthClient"]>
+  export type OAuthClientOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "redirectUris" | "secretHash" | "createdAt" | "connectedAt", ExtArgs["result"]["oAuthClient"]>
   export type OAuthClientInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     tokens?: boolean | OAuthClient$tokensArgs<ExtArgs>
     _count?: boolean | OAuthClientCountOutputTypeDefaultArgs<ExtArgs>
@@ -31019,6 +31043,7 @@ export namespace Prisma {
       redirectUris: string[]
       secretHash: string | null
       createdAt: Date
+      connectedAt: Date | null
     }, ExtArgs["result"]["oAuthClient"]>
     composites: {}
   }
@@ -31448,6 +31473,7 @@ export namespace Prisma {
     readonly redirectUris: FieldRef<"OAuthClient", 'String[]'>
     readonly secretHash: FieldRef<"OAuthClient", 'String'>
     readonly createdAt: FieldRef<"OAuthClient", 'DateTime'>
+    readonly connectedAt: FieldRef<"OAuthClient", 'DateTime'>
   }
     
 
@@ -33157,6 +33183,7 @@ export namespace Prisma {
     name: 'name',
     pos: 'pos',
     color: 'color',
+    description: 'description',
     closed: 'closed',
     trelloId: 'trelloId',
     createdAt: 'createdAt'
@@ -33332,7 +33359,8 @@ export namespace Prisma {
     name: 'name',
     redirectUris: 'redirectUris',
     secretHash: 'secretHash',
-    createdAt: 'createdAt'
+    createdAt: 'createdAt',
+    connectedAt: 'connectedAt'
   };
 
   export type OAuthClientScalarFieldEnum = (typeof OAuthClientScalarFieldEnum)[keyof typeof OAuthClientScalarFieldEnum]
@@ -34181,6 +34209,7 @@ export namespace Prisma {
     name?: StringFilter<"List"> | string
     pos?: StringFilter<"List"> | string
     color?: StringNullableFilter<"List"> | string | null
+    description?: StringFilter<"List"> | string
     closed?: BoolFilter<"List"> | boolean
     trelloId?: StringNullableFilter<"List"> | string | null
     createdAt?: DateTimeFilter<"List"> | Date | string
@@ -34194,6 +34223,7 @@ export namespace Prisma {
     name?: SortOrder
     pos?: SortOrder
     color?: SortOrderInput | SortOrder
+    description?: SortOrder
     closed?: SortOrder
     trelloId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -34211,6 +34241,7 @@ export namespace Prisma {
     name?: StringFilter<"List"> | string
     pos?: StringFilter<"List"> | string
     color?: StringNullableFilter<"List"> | string | null
+    description?: StringFilter<"List"> | string
     closed?: BoolFilter<"List"> | boolean
     createdAt?: DateTimeFilter<"List"> | Date | string
     board?: XOR<BoardScalarRelationFilter, BoardWhereInput>
@@ -34223,6 +34254,7 @@ export namespace Prisma {
     name?: SortOrder
     pos?: SortOrder
     color?: SortOrderInput | SortOrder
+    description?: SortOrder
     closed?: SortOrder
     trelloId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -34240,6 +34272,7 @@ export namespace Prisma {
     name?: StringWithAggregatesFilter<"List"> | string
     pos?: StringWithAggregatesFilter<"List"> | string
     color?: StringNullableWithAggregatesFilter<"List"> | string | null
+    description?: StringWithAggregatesFilter<"List"> | string
     closed?: BoolWithAggregatesFilter<"List"> | boolean
     trelloId?: StringNullableWithAggregatesFilter<"List"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"List"> | Date | string
@@ -35135,6 +35168,7 @@ export namespace Prisma {
     redirectUris?: StringNullableListFilter<"OAuthClient">
     secretHash?: StringNullableFilter<"OAuthClient"> | string | null
     createdAt?: DateTimeFilter<"OAuthClient"> | Date | string
+    connectedAt?: DateTimeNullableFilter<"OAuthClient"> | Date | string | null
     tokens?: OAuthTokenListRelationFilter
   }
 
@@ -35144,6 +35178,7 @@ export namespace Prisma {
     redirectUris?: SortOrder
     secretHash?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    connectedAt?: SortOrderInput | SortOrder
     tokens?: OAuthTokenOrderByRelationAggregateInput
   }
 
@@ -35156,6 +35191,7 @@ export namespace Prisma {
     redirectUris?: StringNullableListFilter<"OAuthClient">
     secretHash?: StringNullableFilter<"OAuthClient"> | string | null
     createdAt?: DateTimeFilter<"OAuthClient"> | Date | string
+    connectedAt?: DateTimeNullableFilter<"OAuthClient"> | Date | string | null
     tokens?: OAuthTokenListRelationFilter
   }, "id">
 
@@ -35165,6 +35201,7 @@ export namespace Prisma {
     redirectUris?: SortOrder
     secretHash?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    connectedAt?: SortOrderInput | SortOrder
     _count?: OAuthClientCountOrderByAggregateInput
     _max?: OAuthClientMaxOrderByAggregateInput
     _min?: OAuthClientMinOrderByAggregateInput
@@ -35179,6 +35216,7 @@ export namespace Prisma {
     redirectUris?: StringNullableListFilter<"OAuthClient">
     secretHash?: StringNullableWithAggregatesFilter<"OAuthClient"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"OAuthClient"> | Date | string
+    connectedAt?: DateTimeNullableWithAggregatesFilter<"OAuthClient"> | Date | string | null
   }
 
   export type OAuthTokenWhereInput = {
@@ -36041,6 +36079,7 @@ export namespace Prisma {
     name: string
     pos: string
     color?: string | null
+    description?: string
     closed?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -36054,6 +36093,7 @@ export namespace Prisma {
     name: string
     pos: string
     color?: string | null
+    description?: string
     closed?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -36065,6 +36105,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     pos?: StringFieldUpdateOperationsInput | string
     color?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -36078,6 +36119,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     pos?: StringFieldUpdateOperationsInput | string
     color?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -36090,6 +36132,7 @@ export namespace Prisma {
     name: string
     pos: string
     color?: string | null
+    description?: string
     closed?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -36100,6 +36143,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     pos?: StringFieldUpdateOperationsInput | string
     color?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -36111,6 +36155,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     pos?: StringFieldUpdateOperationsInput | string
     color?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -37007,6 +37052,7 @@ export namespace Prisma {
     redirectUris?: OAuthClientCreateredirectUrisInput | string[]
     secretHash?: string | null
     createdAt?: Date | string
+    connectedAt?: Date | string | null
     tokens?: OAuthTokenCreateNestedManyWithoutClientInput
   }
 
@@ -37016,6 +37062,7 @@ export namespace Prisma {
     redirectUris?: OAuthClientCreateredirectUrisInput | string[]
     secretHash?: string | null
     createdAt?: Date | string
+    connectedAt?: Date | string | null
     tokens?: OAuthTokenUncheckedCreateNestedManyWithoutClientInput
   }
 
@@ -37025,6 +37072,7 @@ export namespace Prisma {
     redirectUris?: OAuthClientUpdateredirectUrisInput | string[]
     secretHash?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    connectedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tokens?: OAuthTokenUpdateManyWithoutClientNestedInput
   }
 
@@ -37034,6 +37082,7 @@ export namespace Prisma {
     redirectUris?: OAuthClientUpdateredirectUrisInput | string[]
     secretHash?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    connectedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tokens?: OAuthTokenUncheckedUpdateManyWithoutClientNestedInput
   }
 
@@ -37043,6 +37092,7 @@ export namespace Prisma {
     redirectUris?: OAuthClientCreateredirectUrisInput | string[]
     secretHash?: string | null
     createdAt?: Date | string
+    connectedAt?: Date | string | null
   }
 
   export type OAuthClientUpdateManyMutationInput = {
@@ -37051,6 +37101,7 @@ export namespace Prisma {
     redirectUris?: OAuthClientUpdateredirectUrisInput | string[]
     secretHash?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    connectedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type OAuthClientUncheckedUpdateManyInput = {
@@ -37059,6 +37110,7 @@ export namespace Prisma {
     redirectUris?: OAuthClientUpdateredirectUrisInput | string[]
     secretHash?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    connectedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type OAuthTokenCreateInput = {
@@ -37861,6 +37913,7 @@ export namespace Prisma {
     name?: SortOrder
     pos?: SortOrder
     color?: SortOrder
+    description?: SortOrder
     closed?: SortOrder
     trelloId?: SortOrder
     createdAt?: SortOrder
@@ -37872,6 +37925,7 @@ export namespace Prisma {
     name?: SortOrder
     pos?: SortOrder
     color?: SortOrder
+    description?: SortOrder
     closed?: SortOrder
     trelloId?: SortOrder
     createdAt?: SortOrder
@@ -37883,6 +37937,7 @@ export namespace Prisma {
     name?: SortOrder
     pos?: SortOrder
     color?: SortOrder
+    description?: SortOrder
     closed?: SortOrder
     trelloId?: SortOrder
     createdAt?: SortOrder
@@ -38395,6 +38450,7 @@ export namespace Prisma {
     redirectUris?: SortOrder
     secretHash?: SortOrder
     createdAt?: SortOrder
+    connectedAt?: SortOrder
   }
 
   export type OAuthClientMaxOrderByAggregateInput = {
@@ -38402,6 +38458,7 @@ export namespace Prisma {
     name?: SortOrder
     secretHash?: SortOrder
     createdAt?: SortOrder
+    connectedAt?: SortOrder
   }
 
   export type OAuthClientMinOrderByAggregateInput = {
@@ -38409,6 +38466,7 @@ export namespace Prisma {
     name?: SortOrder
     secretHash?: SortOrder
     createdAt?: SortOrder
+    connectedAt?: SortOrder
   }
 
   export type OAuthClientScalarRelationFilter = {
@@ -42527,6 +42585,7 @@ export namespace Prisma {
     name: string
     pos: string
     color?: string | null
+    description?: string
     closed?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -42538,6 +42597,7 @@ export namespace Prisma {
     name: string
     pos: string
     color?: string | null
+    description?: string
     closed?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -42720,6 +42780,7 @@ export namespace Prisma {
     name?: StringFilter<"List"> | string
     pos?: StringFilter<"List"> | string
     color?: StringNullableFilter<"List"> | string | null
+    description?: StringFilter<"List"> | string
     closed?: BoolFilter<"List"> | boolean
     trelloId?: StringNullableFilter<"List"> | string | null
     createdAt?: DateTimeFilter<"List"> | Date | string
@@ -43474,6 +43535,7 @@ export namespace Prisma {
     name: string
     pos: string
     color?: string | null
+    description?: string
     closed?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -43486,6 +43548,7 @@ export namespace Prisma {
     name: string
     pos: string
     color?: string | null
+    description?: string
     closed?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -43724,6 +43787,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     pos?: StringFieldUpdateOperationsInput | string
     color?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -43736,6 +43800,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     pos?: StringFieldUpdateOperationsInput | string
     color?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -46716,6 +46781,7 @@ export namespace Prisma {
     redirectUris?: OAuthClientCreateredirectUrisInput | string[]
     secretHash?: string | null
     createdAt?: Date | string
+    connectedAt?: Date | string | null
   }
 
   export type OAuthClientUncheckedCreateWithoutTokensInput = {
@@ -46724,6 +46790,7 @@ export namespace Prisma {
     redirectUris?: OAuthClientCreateredirectUrisInput | string[]
     secretHash?: string | null
     createdAt?: Date | string
+    connectedAt?: Date | string | null
   }
 
   export type OAuthClientCreateOrConnectWithoutTokensInput = {
@@ -46815,6 +46882,7 @@ export namespace Prisma {
     redirectUris?: OAuthClientUpdateredirectUrisInput | string[]
     secretHash?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    connectedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type OAuthClientUncheckedUpdateWithoutTokensInput = {
@@ -46823,6 +46891,7 @@ export namespace Prisma {
     redirectUris?: OAuthClientUpdateredirectUrisInput | string[]
     secretHash?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    connectedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type UserUpsertWithoutOauthTokensInput = {
@@ -47537,6 +47606,7 @@ export namespace Prisma {
     name: string
     pos: string
     color?: string | null
+    description?: string
     closed?: boolean
     trelloId?: string | null
     createdAt?: Date | string
@@ -47599,6 +47669,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     pos?: StringFieldUpdateOperationsInput | string
     color?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -47610,6 +47681,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     pos?: StringFieldUpdateOperationsInput | string
     color?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -47621,6 +47693,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     pos?: StringFieldUpdateOperationsInput | string
     color?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
     trelloId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string

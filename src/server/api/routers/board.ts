@@ -8,7 +8,7 @@ import { logActivity, requireBoard, touch } from "~/server/api/access";
 import { DEFAULT_LABEL_COLORS, httpsUrl } from "~/server/api/defaults";
 import { sequentialKeys } from "~/server/api/pos";
 import { memberInput, userForInvite } from "~/server/invite";
-import { removeStored, storedKeys } from "~/server/storage";
+import { boardBgKey, boardBgPath, removeBoardBg, removeStored, storedKeys } from "~/server/storage";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { type db as Db } from "~/server/db";
 import { boardBus, type BoardEvent } from "~/server/realtime";
@@ -155,7 +155,9 @@ export const boardRouter = createTRPCRouter({
       if ((input.visibility !== undefined || input.closed !== undefined) && access.members[0]?.role !== "admin" && !ctx.session.user.isAdmin) {
         throw new TRPCError({ code: "FORBIDDEN", message: "Only board admins can change visibility or close the board." });
       }
+      const old = input.bgImage !== undefined ? access.bgImage : null;
       const board = await ctx.db.board.update({ where: { id }, data });
+      if (old !== board.bgImage) await removeBoardBg(old);
       const type = input.closed === true ? "closeBoard" : input.closed === false ? "reopenBoard" : input.name ? "renameBoard" : "updateBoard";
       logActivity(ctx.db, { boardId: id, actorId: ctx.session.user.id, type, data: { name: board.name }, origin: ctx.clientId });
       return board;
@@ -229,6 +231,9 @@ export const boardRouter = createTRPCRouter({
             members: { create: { userId, role: "admin" } },
           },
         });
+        // An uploaded background is served through its board, so point the copy at its own URL.
+        const bgKey = boardBgKey(src.bgImage);
+        if (bgKey) await tx.board.update({ where: { id: b.id }, data: { bgImage: boardBgPath(b.id, bgKey) } });
         const labelMap = new Map<string, string>();
         for (const l of src.labels) {
           const nl = await tx.label.create({ data: { boardId: b.id, name: l.name, color: l.color } });
@@ -239,6 +244,7 @@ export const boardRouter = createTRPCRouter({
             data: {
               boardId: b.id,
               name: l.name,
+              description: l.description,
               pos: l.pos,
               cards: input.keepCards
                 ? {
@@ -276,8 +282,9 @@ export const boardRouter = createTRPCRouter({
       const board = await requireBoard(ctx.db, ctx.session.user.id, input.id);
       if (board.members[0]?.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
       const keys = await storedKeys({ card: { list: { boardId: input.id } } });
-      await ctx.db.board.delete({ where: { id: input.id } });
+      const gone = await ctx.db.board.delete({ where: { id: input.id } });
       keys.forEach((k) => void removeStored(k));
+      void removeBoardBg(gone.bgImage);
       touch(input.id);
     }),
 

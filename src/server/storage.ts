@@ -56,3 +56,14 @@ export async function storedKeys(where: Prisma.AttachmentWhereInput) {
   const rows = await db.attachment.findMany({ where: { ...where, storageKey: { not: null } }, select: { storageKey: true } });
   return rows.map((r) => r.storageKey);
 }
+
+/** An uploaded board background is stored in Board.bgImage as this path, ending in its file key. */
+export const boardBgPath = (boardId: string, key: string) => `/api/boards/${boardId}/background/${key}`;
+export const boardBgKey = (bgImage: string | null | undefined) => bgImage?.match(/^\/api\/boards\/[\w-]+\/background\/([\w-]+)$/)?.[1];
+
+/** Delete an uploaded background's file once no board shows it (copied boards share the file). */
+export async function removeBoardBg(bgImage: string | null | undefined) {
+  const key = boardBgKey(bgImage);
+  if (!key || (await db.board.count({ where: { bgImage: { endsWith: `/background/${key}` } } }))) return;
+  await removeStored(key);
+}

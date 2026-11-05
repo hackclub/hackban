@@ -180,8 +180,35 @@ function Background({ board }: { board: BoardData }) {
     onMutate: (d) => utils.board.get.setData({ id: board.id }, (b) => b && { ...b, background: d.background ?? b.background, bgImage: d.bgImage === undefined ? b.bgImage : d.bgImage }),
     onSettled: () => utils.board.get.invalidate({ id: board.id }),
   });
+  const [uploading, setUploading] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const upload = async (file: File) => {
+    setUploading(true);
+    setErr(null);
+    const body = new FormData();
+    body.append("file", file);
+    const res = await fetch(`/api/boards/${board.id}/background`, { method: "POST", body }).catch(() => null);
+    if (!res?.ok) setErr(res ? await res.text() : "Upload failed. Check your connection.");
+    await utils.board.get.invalidate({ id: board.id });
+    setUploading(false);
+  };
   return (
     <div>
+      <label className={`mb-4 flex h-16 cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[var(--color-border)] text-sm font-medium text-[var(--color-text-subtle)] hover:bg-[var(--color-neutral)] ${uploading ? "pointer-events-none opacity-50" : ""}`}>
+        <Icon name="plus" /> {uploading ? "Uploading…" : "Upload an image"}
+        <input
+          type="file"
+          accept="image/png,image/jpeg,image/gif,image/webp"
+          hidden
+          disabled={uploading}
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            e.target.value = "";
+            if (f) void upload(f);
+          }}
+        />
+      </label>
+      {err && <p className="-mt-2 mb-3 text-xs text-[var(--color-danger)]">{err}</p>}
       <h3 className="mb-2 text-sm font-semibold">Gradients</h3>
       <div className="grid grid-cols-3 gap-2">
         {BOARD_GRADIENTS.map((g) => (

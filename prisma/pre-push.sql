@@ -11,3 +11,8 @@ CREATE UNIQUE INDEX IF NOT EXISTS "Board_inviteToken_key" ON "Board"("inviteToke
 -- Email invites (unique index on a new, all-NULL column).
 ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "invitedEmail" TEXT;
 CREATE UNIQUE INDEX IF NOT EXISTS "User_invitedEmail_key" ON "User"("invitedEmail");
+
+-- OAuth clients that already connected must survive the registration sweep (it skips connectedAt).
+ALTER TABLE "OAuthClient" ADD COLUMN IF NOT EXISTS "connectedAt" TIMESTAMP(3);
+UPDATE "OAuthClient" c SET "connectedAt" = c."createdAt"
+  WHERE "connectedAt" IS NULL AND EXISTS (SELECT 1 FROM "OAuthToken" t WHERE t."clientId" = c."id");

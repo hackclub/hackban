@@ -21,6 +21,7 @@ async function decide(form: FormData) {
     challenge: p.code_challenge!,
     scope: check.scope,
   });
+  if (!check.client.connectedAt) await db.oAuthClient.update({ where: { id: check.client.id }, data: { connectedAt: new Date() } });
   redirect(withParams(check.redirectUri, { code, state: p.state }));
 }
 

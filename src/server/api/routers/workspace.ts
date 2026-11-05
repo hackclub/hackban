@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { removeStored, storedKeys } from "~/server/storage";
+import { removeBoardBg, removeStored, storedKeys } from "~/server/storage";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { type db as Db } from "~/server/db";
 import { emailDomain, normalizeDomain, upsertAutoJoin } from "~/server/autojoin";
@@ -242,7 +242,9 @@ export const workspaceRouter = createTRPCRouter({
       const ws = await ctx.db.workspace.findUniqueOrThrow({ where: { id: input.id } });
       if (ws.name !== input.confirmName) throw new TRPCError({ code: "BAD_REQUEST", message: "Workspace name doesn't match." });
       const keys = await storedKeys({ card: { list: { board: { workspaceId: input.id } } } });
+      const bgs = await ctx.db.board.findMany({ where: { workspaceId: input.id }, select: { bgImage: true } });
       await ctx.db.workspace.delete({ where: { id: input.id } });
+      bgs.forEach((b) => void removeBoardBg(b.bgImage));
       [...keys, ws.logoKey?.split(":")[0]].forEach((k) => void removeStored(k));
     }),
 });

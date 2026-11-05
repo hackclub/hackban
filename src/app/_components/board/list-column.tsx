@@ -152,6 +152,11 @@ export const ListColumn = memo(function ListColumn({
         </IconButton>
         {!readOnly && <ListMenu list={list} board={board} onAddCard={() => setComposerAt("top")} />}
       </div>
+      {list.description && (
+        <p className="line-clamp-4 px-4 pb-1.5 text-xs break-words whitespace-pre-wrap text-[var(--color-text-subtle)]" title={list.description}>
+          {list.description}
+        </p>
+      )}
 
       <div className="list-scroll flex min-h-0 flex-1 flex-col gap-2 overflow-x-hidden overflow-y-auto px-2 pt-0.5 pb-0.5">
         {composerAt === "top" && <CardComposer listId={list.id} boardId={board.id} where="top" onClose={() => setComposerAt(null)} onCreated={setSuggest} />}
@@ -291,7 +296,7 @@ function ListSort({ list, boardId, cards }: { list: ListData; boardId: string; c
 
 function ListMenu({ list, board, onAddCard }: { list: ListData; board: BoardData; onAddCard: () => void }) {
   const p = usePopoverState();
-  const [pane, setPane] = useState<"main" | "color" | "copy" | "move" | "moveCards" | "archiveCards">("main");
+  const [pane, setPane] = useState<"main" | "description" | "color" | "copy" | "move" | "moveCards" | "archiveCards">("main");
   const utils = api.useUtils();
   const inv = () => utils.board.get.invalidate({ id: board.id });
   const update = api.list.update.useMutation({
@@ -306,6 +311,7 @@ function ListMenu({ list, board, onAddCard }: { list: ListData; board: BoardData
   const archiveAll = api.list.archiveAllCards.useMutation({ onSettled: inv });
   const { data: workspaces } = api.workspace.list.useQuery(undefined, { enabled: pane === "move" });
   const [copyName, setCopyName] = useState(list.name);
+  const [desc, setDesc] = useState(list.description);
   const [moveBoard, setMoveBoard] = useState(board.id);
   const [movePos, setMovePos] = useState(board.lists.findIndex((l) => l.id === list.id));
   const { data: targetBoard } = api.board.get.useQuery({ id: moveBoard }, { enabled: pane === "move" });
@@ -318,7 +324,13 @@ function ListMenu({ list, board, onAddCard }: { list: ListData; board: BoardData
     utils.board.get.setData({ id: board.id }, (b) => b && { ...b, lists: b.lists.map((l) => (l.id === list.id ? { ...l, color } : l)) });
     update.mutate({ id: list.id, color });
   };
-  const titles = { main: "List actions", color: "Change list color", copy: "Copy list", move: "Move list", moveCards: "Move all cards in list", archiveCards: "Archive all cards in this list?" };
+  const saveDesc = () => {
+    const description = desc.trim();
+    utils.board.get.setData({ id: board.id }, (b) => b && { ...b, lists: b.lists.map((l) => (l.id === list.id ? { ...l, description } : l)) });
+    update.mutate({ id: list.id, description });
+    close();
+  };
+  const titles = { main: "List actions", description: "List description", color: "Change list color", copy: "Copy list", move: "Move list", moveCards: "Move all cards in list", archiveCards: "Archive all cards in this list?" };
 
   return (
     <>
@@ -329,6 +341,7 @@ function ListMenu({ list, board, onAddCard }: { list: ListData; board: BoardData
         {pane === "main" && (
           <>
             <MenuItem onClick={() => { onAddCard(); close(); }}>Add card</MenuItem>
+            <MenuItem onClick={() => { setDesc(list.description); setPane("description"); }}>{list.description ? "Edit description" : "Add description"}</MenuItem>
             <MenuItem onClick={() => setPane("color")}>Change list color</MenuItem>
             <MenuItem onClick={() => setPane("copy")}>Copy list</MenuItem>
             <MenuItem onClick={() => setPane("move")}>Move list</MenuItem>
@@ -336,6 +349,21 @@ function ListMenu({ list, board, onAddCard }: { list: ListData; board: BoardData
             <MenuSep />
             <MenuItem onClick={() => setPane("archiveCards")}>Archive all cards in this list</MenuItem>
             <MenuItem onClick={() => { update.mutate({ id: list.id, closed: true }); close(); }}>Archive this list</MenuItem>
+          </>
+        )}
+        {pane === "description" && (
+          <>
+            <AutoTextarea
+              autoFocus
+              minRows={3}
+              maxLength={4096}
+              className={inputCls}
+              placeholder="What goes in this list?"
+              value={desc}
+              onChange={(e) => setDesc(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && (e.metaKey || e.ctrlKey) && saveDesc()}
+            />
+            <Button variant="primary" className="mt-3" onClick={saveDesc}>Save</Button>
           </>
         )}
         {pane === "color" && (
@@ -530,7 +558,7 @@ export function ListComposer({ boardId }: { boardId: string }) {
       rememberLocal(name);
       await utils.board.get.cancel({ id: boardId });
       utils.board.get.setData({ id: boardId }, (b) =>
-        b && { ...b, lists: [...b.lists, { id: `temp-${Math.random()}`, boardId, name, pos: "", color: null, closed: false, trelloId: null, createdAt: new Date(), cards: [] }] },
+        b && { ...b, lists: [...b.lists, { id: `temp-${Math.random()}`, boardId, name, description: "", pos: "", color: null, closed: false, trelloId: null, createdAt: new Date(), cards: [] }] },
       );
     },
     onSettled: () => utils.board.get.invalidate({ id: boardId }),

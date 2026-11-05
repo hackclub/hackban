@@ -96,6 +96,7 @@ export function hackbanMcp(user: User, base: string) {
         lists: b.lists.map((l) => ({
           id: l.id,
           name: l.name,
+          description: l.description || undefined,
           color: l.color ?? undefined,
           cards: l.cards.map((c) => ({
             id: c.id,
@@ -192,13 +193,19 @@ export function hackbanMcp(user: User, base: string) {
     "update_list",
     {
       title: "Update list",
-      description: "Rename a list, set its color (green, yellow, orange, red, purple, blue, sky, lime, pink, black; null clears it), or archive/restore it.",
-      inputSchema: { listId: z.string(), name: z.string().min(1).max(512).optional(), color: z.string().max(32).nullable().optional(), archived: z.boolean().optional() },
+      description: "Rename a list, set its description (shown under its name), set its color (green, yellow, orange, red, purple, blue, sky, lime, pink, black; null clears it), or archive/restore it.",
+      inputSchema: {
+        listId: z.string(),
+        name: z.string().min(1).max(512).optional(),
+        description: z.string().max(4096).optional(),
+        color: z.string().max(32).nullable().optional(),
+        archived: z.boolean().optional(),
+      },
       annotations: write,
     },
-    async ({ listId, name, color, archived }) => {
-      const l = await api.list.update({ id: listId, name, color, closed: archived });
-      return text({ id: l.id, name: l.name, color: l.color, archived: l.closed });
+    async ({ listId, name, description, color, archived }) => {
+      const l = await api.list.update({ id: listId, name, description, color, closed: archived });
+      return text({ id: l.id, name: l.name, description: l.description, color: l.color, archived: l.closed });
     },
   );
 

@@ -178,16 +178,17 @@ model BoardStar {
 }
 
 model List {
-    id        String   @id @default(cuid())
-    boardId   String
-    name      String
-    pos       String // fractional index
-    color     String? // label color name, null = no color
-    closed    Boolean  @default(false)
-    trelloId  String?  @unique
-    createdAt DateTime @default(now())
-    board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
-    cards     Card[]
+    id          String   @id @default(cuid())
+    boardId     String
+    name        String
+    pos         String // fractional index
+    color       String? // label color name, null = no color
+    description String   @default("")
+    closed      Boolean  @default(false)
+    trelloId    String?  @unique
+    createdAt   DateTime @default(now())
+    board       Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+    cards       Card[]
 
     @@index([boardId, pos])
 }
@@ -379,6 +380,8 @@ model OAuthClient {
     redirectUris String[]
     secretHash   String? // null = public client (PKCE only)
     createdAt    DateTime     @default(now())
+    // First time a user allowed this client. Connected clients are never swept: MCP clients cache their client_id.
+    connectedAt  DateTime?
     tokens       OAuthToken[]
 }
 

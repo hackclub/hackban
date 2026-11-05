@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { touch } from "~/server/api/access";
-import { removeStored, storedKeys } from "~/server/storage";
+import { removeBoardBg, removeStored, storedKeys } from "~/server/storage";
 import { adminProcedure, createTRPCRouter } from "~/server/api/trpc";
 import { adminEmails } from "~/server/auth/config";
 import { upsertAutoJoin } from "~/server/autojoin";
@@ -126,8 +126,9 @@ export const adminRouter = createTRPCRouter({
 
   deleteBoard: adminProcedure.input(z.object({ boardId: z.string() })).mutation(async ({ ctx, input }) => {
     const keys = await storedKeys({ card: { list: { boardId: input.boardId } } });
-    await ctx.db.board.delete({ where: { id: input.boardId } });
+    const gone = await ctx.db.board.delete({ where: { id: input.boardId } });
     keys.forEach((k) => void removeStored(k));
+    void removeBoardBg(gone.bgImage);
     touch(input.boardId);
   }),
 

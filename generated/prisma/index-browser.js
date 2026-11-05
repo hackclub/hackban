@@ -225,6 +225,7 @@ exports.Prisma.ListScalarFieldEnum = {
   name: 'name',
   pos: 'pos',
   color: 'color',
+  description: 'description',
   closed: 'closed',
   trelloId: 'trelloId',
   createdAt: 'createdAt'
@@ -358,7 +359,8 @@ exports.Prisma.OAuthClientScalarFieldEnum = {
   name: 'name',
   redirectUris: 'redirectUris',
   secretHash: 'secretHash',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  connectedAt: 'connectedAt'
 };
 
 exports.Prisma.OAuthTokenScalarFieldEnum = {

@@ -7,9 +7,10 @@ import { json, newToken, preflight, sha256, validRedirectUri } from "~/server/oa
 export async function POST(req: Request) {
   const body = await req.text();
   if (body.length > 16_384) return json({ error: "invalid_client_metadata", error_description: "Too large" }, 413);
-  // Registration is open, so sweep apps nobody ever finished connecting (or whose grants all expired).
+  // Registration is open, so sweep apps nobody ever finished connecting. Connected ones stay even with no
+  // live grant: MCP clients cache their client_id and can't recover if it disappears.
   void db.oAuthClient
-    .deleteMany({ where: { createdAt: { lt: new Date(Date.now() - 86_400_000) }, tokens: { none: {} } } })
+    .deleteMany({ where: { createdAt: { lt: new Date(Date.now() - 86_400_000) }, connectedAt: null, tokens: { none: {} } } })
     .catch(() => undefined);
   let input: unknown = null;
   try {

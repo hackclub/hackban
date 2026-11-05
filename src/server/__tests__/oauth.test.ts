@@ -10,6 +10,7 @@ import {
   nativeRedirect,
   parseScope,
   redirectMatches,
+  REFRESH_RACE_MS,
   sha256,
   verifyPkce,
   validRedirectUri,
@@ -47,7 +48,7 @@ test("loopback redirects match on any port; others exactly", () => {
   assert.equal(knownRedirect("https://claude.ai.evil.com/cb"), false);
 });
 
-test("a replayed refresh token revokes the whole grant", async () => {
+test("a replayed refresh token revokes the whole grant, unless it lost a refresh race", async () => {
   const rows = new Map<string, { hash: string; kind: string; userId: string; clientId: string; usedAt: Date | null; expiresAt: Date }>();
   const fake = {
     oAuthToken: {
@@ -68,6 +69,10 @@ test("a replayed refresh token revokes the whole grant", async () => {
   rows.set(sha256("rt"), { hash: sha256("rt"), kind: "refresh", userId: "u", clientId: "c", usedAt: null, expiresAt: later });
   rows.set(sha256("at"), { hash: sha256("at"), kind: "access", userId: "u", clientId: "c", usedAt: null, expiresAt: later });
   assert.ok(await consume(fake, "rt", "refresh"));
+  // Two Claude Code sessions refreshing at once: the second fails, the grant survives.
+  assert.equal(await consume(fake, "rt", "refresh"), null);
+  assert.equal(rows.size, 2);
+  rows.get(sha256("rt"))!.usedAt = new Date(Date.now() - REFRESH_RACE_MS - 1000);
   assert.equal(await consume(fake, "rt", "refresh"), null);
   assert.equal(rows.size, 0);
 });

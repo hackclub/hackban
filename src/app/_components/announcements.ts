@@ -1,6 +1,9 @@
 // What's new in Hackban, newest first. Add an entry for every user-facing update or change.
 // `id` must be unique; the header shows a dot until the viewer has seen the newest one.
 export const ANNOUNCEMENTS: { id: string; date: string; title: string; body: string }[] = [
+  { id: "upload-board-backgrounds", date: "2026-11-05", title: "Upload board backgrounds", body: "Upload your own image (PNG, JPEG, GIF or WebP, up to 10 MB) as a board background from Change background in the board menu." },
+  { id: "list-descriptions", date: "2026-11-05", title: "List descriptions", body: "Add a description to a list from its ⋯ menu; it shows under the list's name, and MCP clients can read and set it too." },
+  { id: "mcp-stays-connected", date: "2026-11-05", title: "MCP stays connected", body: "Running several Claude Code sessions at once no longer signs them all out of Hackban when they refresh their access together." },
   { id: "native-apps", date: "2026-11-01", title: "Sign in from native apps", body: "Desktop apps like Hackban for Mac can now sign in with full access to your boards after you approve them on a consent page, and you can revoke them any time under Connected apps." },
   { id: "sort-group-assignee", date: "2026-11-01", title: "Group sorted cards by assignee", body: "Tick Group by assignee in a list's sort menu to keep cards the sort ranks equal (like ones due the same day) together by who is assigned." },
   { id: "card-dependencies", date: "2026-10-28", title: "Blocked cards", body: "Mark a card as blocked by another card from its Dependencies button: it gets a red Blocked badge and the blocker a yellow Blocking badge until the blocker is complete, which you can do right from the list." },

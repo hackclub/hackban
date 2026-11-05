@@ -149,6 +149,12 @@ export async function issueTokens(db: DB, clientId: string, userId: string, scop
   return { access_token, refresh_token, token_type: "Bearer", expires_in: TTL.access, scope: scope ?? "mcp" };
 }
 
+/**
+ * A refresh token replayed this soon after its first use is a race, not theft: Claude Code
+ * runs one process per session, and they can all refresh the same stored token at once.
+ */
+export const REFRESH_RACE_MS = 2 * 60 * 1000;
+
 /** Single-use tokens (codes, refresh tokens): spent on first presentation, valid or not. */
 export async function consume(db: DB, token: string, kind: "code" | "refresh") {
   const hash = sha256(token);
@@ -157,6 +163,8 @@ export async function consume(db: DB, token: string, kind: "code" | "refresh") {
   // updateMany's count is the atomic claim: of two concurrent exchanges, only one wins.
   const { count } = await db.oAuthToken.updateMany({ where: { hash, usedAt: null }, data: { usedAt: new Date() } });
   if (count === 0) {
+    // The loser of a refresh race just fails; the winner's new tokens stay valid.
+    if (row.kind === "refresh" && row.usedAt && Date.now() - row.usedAt.getTime() < REFRESH_RACE_MS) return null;
     // A spent token came back, so someone else holds a copy: revoke the whole grant (OAuth 2.1 §4.3.1).
     await db.oAuthToken.deleteMany({ where: { userId: row.userId, clientId: row.clientId } });
     return null;

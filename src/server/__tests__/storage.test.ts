@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "bun:test";
 
-import { bodyTooBig, imageType } from "~/server/storage";
+import { boardBgKey, boardBgPath, bodyTooBig, imageType } from "~/server/storage";
 
 const bytes = (...parts: (string | number[])[]) =>
   new Uint8Array(parts.flatMap((p) => (typeof p === "string" ? [...p].map((c) => c.charCodeAt(0)) : p)));
@@ -21,4 +21,12 @@ test("bodyTooBig rejects oversized and length-less uploads", () => {
   assert.equal(bodyTooBig(req(1000), 2000), false);
   assert.equal(bodyTooBig(req(2000 + 64 * 1024 + 1), 2000), true);
   assert.equal(bodyTooBig(req(), 2000), true);
+});
+
+test("boardBgKey only recognises uploaded background paths", () => {
+  assert.equal(boardBgKey(boardBgPath("b1", "abc_DEF-123")), "abc_DEF-123");
+  assert.equal(boardBgKey("https://images.unsplash.com/photo"), undefined);
+  assert.equal(boardBgKey("/api/boards/b1/background/../../etc"), undefined);
+  assert.equal(boardBgKey("https://evil.com/api/boards/b1/background/abc"), undefined);
+  assert.equal(boardBgKey(null), undefined);
 });

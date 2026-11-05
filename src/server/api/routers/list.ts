@@ -23,13 +23,21 @@ export const listRouter = createTRPCRouter({
     }),
 
   update: protectedProcedure
-    .input(z.object({ id: z.string(), name: z.string().min(1).max(512).optional(), color: z.string().max(32).nullable().optional(), closed: z.boolean().optional() }))
+    .input(
+      z.object({
+        id: z.string(),
+        name: z.string().min(1).max(512).optional(),
+        description: z.string().max(4096).optional(),
+        color: z.string().max(32).nullable().optional(),
+        closed: z.boolean().optional(),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
       const boardId = await boardIdForList(ctx.db, input.id);
       await requireBoard(ctx.db, ctx.session.user.id, boardId);
       const { id, ...data } = input;
       const list = await ctx.db.list.update({ where: { id }, data });
-      // A color-only change has no activity entry.
+      // Color and description changes have no activity entry.
       if (input.name === undefined && input.closed === undefined) {
         touch(boardId, undefined, ctx.clientId);
         return list;
@@ -87,6 +95,7 @@ export const listRouter = createTRPCRouter({
         data: {
           boardId: src.boardId,
           name: input.name,
+          description: src.description,
           color: src.color,
           pos: posAfter(siblings, src.id),
           cards: {
