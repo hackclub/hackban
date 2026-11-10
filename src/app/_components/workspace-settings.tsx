@@ -8,13 +8,14 @@ import { api, type RouterOutputs } from "~/trpc/react";
 import { CreateBoardPopover } from "./create-board";
 import { BoardTile } from "./home";
 import { PageTitle } from "./settings-shell";
-import { AutoTextarea, Avatar, Button, Icon, MenuItem, Popover, boardBg, inputCls, looksLikeEmail, usePopoverState, WorkspaceLogo } from "./ui";
+import { AutoTextarea, Avatar, Button, Icon, MenuItem, Popover, boardBg, inputCls, looksLikeEmail, useFavicon, usePopoverState, WorkspaceLogo } from "./ui";
 
 type Page = "boards" | "members" | "settings" | "export";
 
 /** One page of the workspace settings surface (rendered inside SettingsShell). */
 export function WorkspacePage({ id, meId, page }: { id: string; meId: string; page: Page }) {
   const { data: ws, error } = api.workspace.get.useQuery({ id });
+  useFavicon(ws?.logo);
   if (error) return <p className="mt-24 text-center text-[var(--color-text-subtle)]">Workspace not found, or you&apos;re not a member.</p>;
   if (!ws) return <div className="h-40 w-full animate-pulse rounded bg-[var(--color-neutral)]" />;
   const isAdmin = ws.myRole === "admin";

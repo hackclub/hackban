@@ -140,6 +140,7 @@ model Board {
     workspaceId String
     background  String    @default("#0079bf") // css color or gradient
     bgImage     String?
+    iconColor   String? // tab icon hex color; null = from the background
     visibility  String    @default("workspace") // private | workspace | public
     closed      Boolean   @default(false)
     // "Join this board" link: anyone with it can join as a board-only guest.

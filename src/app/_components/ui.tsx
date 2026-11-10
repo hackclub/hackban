@@ -90,6 +90,96 @@ export function boardBg(b: { background: string; bgImage?: string | null }) {
   return { background: b.background };
 }
 
+/** The Hackban mark as a data URI, filled with one color or a diagonal gradient. */
+function hackbanIcon(colors: string[]) {
+  const stops = colors.map((c, i) => `<stop offset="${i / Math.max(1, colors.length - 1)}" stop-color="${c}"/>`).join("");
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><defs><linearGradient id="g" x2="1" y2="1">${stops}</linearGradient></defs><rect width="32" height="32" rx="7" fill="url(#g)"/><rect x="6" y="6" width="8.5" height="18" rx="2" fill="#fff"/><rect x="17.5" y="6" width="8.5" height="11" rx="2" fill="#fff"/></svg>`;
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+}
+
+const imageColors = new Map<string, Promise<string | null>>();
+/** Most common color of an image, read from a 16×16 downscale once per URL; null if unreadable (e.g. no CORS). */
+export function imageColor(src: string) {
+  let p = imageColors.get(src);
+  if (!p) {
+    p = new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onerror = () => resolve(null);
+      img.onload = () => {
+        try {
+          const canvas = document.createElement("canvas");
+          canvas.width = canvas.height = 16;
+          const ctx = canvas.getContext("2d")!;
+          ctx.drawImage(img, 0, 0, 16, 16);
+          resolve(majorityColor(ctx.getImageData(0, 0, 16, 16).data));
+        } catch {
+          resolve(null);
+        }
+      };
+      img.src = src;
+    });
+    imageColors.set(src, p);
+  }
+  return p;
+}
+
+/** Buckets RGBA pixels by 3 bits per channel and returns the biggest bucket's average as hex. */
+export function majorityColor(d: ArrayLike<number>) {
+  const buckets = new Map<number, [number, number, number, number]>();
+  for (let i = 0; i + 3 < d.length; i += 4) {
+    const [r, g, b, a] = [d[i]!, d[i + 1]!, d[i + 2]!, d[i + 3]!];
+    if (a < 128) continue;
+    const k = ((r >> 5) << 6) | ((g >> 5) << 3) | (b >> 5);
+    const t = buckets.get(k) ?? [0, 0, 0, 0];
+    t[0] += r;
+    t[1] += g;
+    t[2] += b;
+    t[3]++;
+    buckets.set(k, t);
+  }
+  let top: [number, number, number, number] | undefined;
+  for (const t of buckets.values()) if (!top || t[3] > top[3]) top = t;
+  return top ? `#${top.slice(0, 3).map((v) => Math.round(v / top[3]).toString(16).padStart(2, "0")).join("")}` : null;
+}
+
+/**
+ * Tints the tab icon for a board: its chosen icon color, else its background
+ * image's main color, else its background color(s).
+ */
+export function useBoardIcon(b: { background: string; bgImage?: string | null; iconColor?: string | null } | null | undefined) {
+  const [img, setImg] = useState<{ src: string; color: string | null }>();
+  const src = !b?.iconColor ? b?.bgImage : null;
+  useEffect(() => {
+    if (!src) return;
+    let live = true;
+    void imageColor(src).then((color) => live && setImg({ src, color }));
+    return () => {
+      live = false;
+    };
+  }, [src]);
+  let colors: string[] | null = null;
+  if (b?.iconColor) colors = [b.iconColor];
+  else if (src) colors = img?.src === src ? (img.color ? [img.color] : null) : []; // [] = still reading the image
+  if (b && !colors) colors = b.background.match(/#[0-9a-f]{3,8}/gi) ?? ["#ec3750"];
+  useFavicon(colors?.length ? hackbanIcon(colors) : null);
+}
+
+/** Swaps the tab icon while mounted; a falsy href keeps the default. */
+export function useFavicon(href: string | null | undefined) {
+  useEffect(() => {
+    if (!href) return;
+    const links = [...document.querySelectorAll<HTMLLinkElement>('link[rel~="icon"]')];
+    const old = links.map((l) => [l.href, l.type] as const);
+    // Drop type: the default is image/svg+xml, which would hide PNG/JPEG logos.
+    links.forEach((l) => {
+      l.href = href;
+      l.removeAttribute("type");
+    });
+    return () => links.forEach((l, i) => ([l.href, l.type] = old[i]!));
+  }, [href]);
+}
+
 // ---------- Avatar ----------
 
 export const looksLikeEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.trim());

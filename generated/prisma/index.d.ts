@@ -11745,6 +11745,7 @@ export namespace Prisma {
     workspaceId: string | null
     background: string | null
     bgImage: string | null
+    iconColor: string | null
     visibility: string | null
     closed: boolean | null
     inviteToken: string | null
@@ -11761,6 +11762,7 @@ export namespace Prisma {
     workspaceId: string | null
     background: string | null
     bgImage: string | null
+    iconColor: string | null
     visibility: string | null
     closed: boolean | null
     inviteToken: string | null
@@ -11777,6 +11779,7 @@ export namespace Prisma {
     workspaceId: number
     background: number
     bgImage: number
+    iconColor: number
     visibility: number
     closed: number
     inviteToken: number
@@ -11795,6 +11798,7 @@ export namespace Prisma {
     workspaceId?: true
     background?: true
     bgImage?: true
+    iconColor?: true
     visibility?: true
     closed?: true
     inviteToken?: true
@@ -11811,6 +11815,7 @@ export namespace Prisma {
     workspaceId?: true
     background?: true
     bgImage?: true
+    iconColor?: true
     visibility?: true
     closed?: true
     inviteToken?: true
@@ -11827,6 +11832,7 @@ export namespace Prisma {
     workspaceId?: true
     background?: true
     bgImage?: true
+    iconColor?: true
     visibility?: true
     closed?: true
     inviteToken?: true
@@ -11916,6 +11922,7 @@ export namespace Prisma {
     workspaceId: string
     background: string
     bgImage: string | null
+    iconColor: string | null
     visibility: string
     closed: boolean
     inviteToken: string | null
@@ -11949,6 +11956,7 @@ export namespace Prisma {
     workspaceId?: boolean
     background?: boolean
     bgImage?: boolean
+    iconColor?: boolean
     visibility?: boolean
     closed?: boolean
     inviteToken?: boolean
@@ -11973,6 +11981,7 @@ export namespace Prisma {
     workspaceId?: boolean
     background?: boolean
     bgImage?: boolean
+    iconColor?: boolean
     visibility?: boolean
     closed?: boolean
     inviteToken?: boolean
@@ -11990,6 +11999,7 @@ export namespace Prisma {
     workspaceId?: boolean
     background?: boolean
     bgImage?: boolean
+    iconColor?: boolean
     visibility?: boolean
     closed?: boolean
     inviteToken?: boolean
@@ -12007,6 +12017,7 @@ export namespace Prisma {
     workspaceId?: boolean
     background?: boolean
     bgImage?: boolean
+    iconColor?: boolean
     visibility?: boolean
     closed?: boolean
     inviteToken?: boolean
@@ -12016,7 +12027,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type BoardOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "workspaceId" | "background" | "bgImage" | "visibility" | "closed" | "inviteToken" | "inviteRole" | "trelloId" | "createdAt" | "updatedAt", ExtArgs["result"]["board"]>
+  export type BoardOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "workspaceId" | "background" | "bgImage" | "iconColor" | "visibility" | "closed" | "inviteToken" | "inviteRole" | "trelloId" | "createdAt" | "updatedAt", ExtArgs["result"]["board"]>
   export type BoardInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
     members?: boolean | Board$membersArgs<ExtArgs>
@@ -12052,6 +12063,7 @@ export namespace Prisma {
       workspaceId: string
       background: string
       bgImage: string | null
+      iconColor: string | null
       visibility: string
       closed: boolean
       inviteToken: string | null
@@ -12495,6 +12507,7 @@ export namespace Prisma {
     readonly workspaceId: FieldRef<"Board", 'String'>
     readonly background: FieldRef<"Board", 'String'>
     readonly bgImage: FieldRef<"Board", 'String'>
+    readonly iconColor: FieldRef<"Board", 'String'>
     readonly visibility: FieldRef<"Board", 'String'>
     readonly closed: FieldRef<"Board", 'Boolean'>
     readonly inviteToken: FieldRef<"Board", 'String'>
@@ -33161,6 +33174,7 @@ export namespace Prisma {
     workspaceId: 'workspaceId',
     background: 'background',
     bgImage: 'bgImage',
+    iconColor: 'iconColor',
     visibility: 'visibility',
     closed: 'closed',
     inviteToken: 'inviteToken',
@@ -34018,6 +34032,7 @@ export namespace Prisma {
     workspaceId?: StringFilter<"Board"> | string
     background?: StringFilter<"Board"> | string
     bgImage?: StringNullableFilter<"Board"> | string | null
+    iconColor?: StringNullableFilter<"Board"> | string | null
     visibility?: StringFilter<"Board"> | string
     closed?: BoolFilter<"Board"> | boolean
     inviteToken?: StringNullableFilter<"Board"> | string | null
@@ -34041,6 +34056,7 @@ export namespace Prisma {
     workspaceId?: SortOrder
     background?: SortOrder
     bgImage?: SortOrderInput | SortOrder
+    iconColor?: SortOrderInput | SortOrder
     visibility?: SortOrder
     closed?: SortOrder
     inviteToken?: SortOrderInput | SortOrder
@@ -34069,6 +34085,7 @@ export namespace Prisma {
     workspaceId?: StringFilter<"Board"> | string
     background?: StringFilter<"Board"> | string
     bgImage?: StringNullableFilter<"Board"> | string | null
+    iconColor?: StringNullableFilter<"Board"> | string | null
     visibility?: StringFilter<"Board"> | string
     closed?: BoolFilter<"Board"> | boolean
     inviteRole?: StringFilter<"Board"> | string
@@ -34090,6 +34107,7 @@ export namespace Prisma {
     workspaceId?: SortOrder
     background?: SortOrder
     bgImage?: SortOrderInput | SortOrder
+    iconColor?: SortOrderInput | SortOrder
     visibility?: SortOrder
     closed?: SortOrder
     inviteToken?: SortOrderInput | SortOrder
@@ -34112,6 +34130,7 @@ export namespace Prisma {
     workspaceId?: StringWithAggregatesFilter<"Board"> | string
     background?: StringWithAggregatesFilter<"Board"> | string
     bgImage?: StringNullableWithAggregatesFilter<"Board"> | string | null
+    iconColor?: StringNullableWithAggregatesFilter<"Board"> | string | null
     visibility?: StringWithAggregatesFilter<"Board"> | string
     closed?: BoolWithAggregatesFilter<"Board"> | boolean
     inviteToken?: StringNullableWithAggregatesFilter<"Board"> | string | null
@@ -35890,6 +35909,7 @@ export namespace Prisma {
     description?: string | null
     background?: string
     bgImage?: string | null
+    iconColor?: string | null
     visibility?: string
     closed?: boolean
     inviteToken?: string | null
@@ -35913,6 +35933,7 @@ export namespace Prisma {
     workspaceId: string
     background?: string
     bgImage?: string | null
+    iconColor?: string | null
     visibility?: string
     closed?: boolean
     inviteToken?: string | null
@@ -35934,6 +35955,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     background?: StringFieldUpdateOperationsInput | string
     bgImage?: NullableStringFieldUpdateOperationsInput | string | null
+    iconColor?: NullableStringFieldUpdateOperationsInput | string | null
     visibility?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
     inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35957,6 +35979,7 @@ export namespace Prisma {
     workspaceId?: StringFieldUpdateOperationsInput | string
     background?: StringFieldUpdateOperationsInput | string
     bgImage?: NullableStringFieldUpdateOperationsInput | string | null
+    iconColor?: NullableStringFieldUpdateOperationsInput | string | null
     visibility?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
     inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35979,6 +36002,7 @@ export namespace Prisma {
     workspaceId: string
     background?: string
     bgImage?: string | null
+    iconColor?: string | null
     visibility?: string
     closed?: boolean
     inviteToken?: string | null
@@ -35994,6 +36018,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     background?: StringFieldUpdateOperationsInput | string
     bgImage?: NullableStringFieldUpdateOperationsInput | string | null
+    iconColor?: NullableStringFieldUpdateOperationsInput | string | null
     visibility?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
     inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36010,6 +36035,7 @@ export namespace Prisma {
     workspaceId?: StringFieldUpdateOperationsInput | string
     background?: StringFieldUpdateOperationsInput | string
     bgImage?: NullableStringFieldUpdateOperationsInput | string | null
+    iconColor?: NullableStringFieldUpdateOperationsInput | string | null
     visibility?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
     inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37834,6 +37860,7 @@ export namespace Prisma {
     workspaceId?: SortOrder
     background?: SortOrder
     bgImage?: SortOrder
+    iconColor?: SortOrder
     visibility?: SortOrder
     closed?: SortOrder
     inviteToken?: SortOrder
@@ -37850,6 +37877,7 @@ export namespace Prisma {
     workspaceId?: SortOrder
     background?: SortOrder
     bgImage?: SortOrder
+    iconColor?: SortOrder
     visibility?: SortOrder
     closed?: SortOrder
     inviteToken?: SortOrder
@@ -37866,6 +37894,7 @@ export namespace Prisma {
     workspaceId?: SortOrder
     background?: SortOrder
     bgImage?: SortOrder
+    iconColor?: SortOrder
     visibility?: SortOrder
     closed?: SortOrder
     inviteToken?: SortOrder
@@ -42011,6 +42040,7 @@ export namespace Prisma {
     description?: string | null
     background?: string
     bgImage?: string | null
+    iconColor?: string | null
     visibility?: string
     closed?: boolean
     inviteToken?: string | null
@@ -42032,6 +42062,7 @@ export namespace Prisma {
     description?: string | null
     background?: string
     bgImage?: string | null
+    iconColor?: string | null
     visibility?: string
     closed?: boolean
     inviteToken?: string | null
@@ -42125,6 +42156,7 @@ export namespace Prisma {
     workspaceId?: StringFilter<"Board"> | string
     background?: StringFilter<"Board"> | string
     bgImage?: StringNullableFilter<"Board"> | string | null
+    iconColor?: StringNullableFilter<"Board"> | string | null
     visibility?: StringFilter<"Board"> | string
     closed?: BoolFilter<"Board"> | boolean
     inviteToken?: StringNullableFilter<"Board"> | string | null
@@ -42896,6 +42928,7 @@ export namespace Prisma {
     description?: string | null
     background?: string
     bgImage?: string | null
+    iconColor?: string | null
     visibility?: string
     closed?: boolean
     inviteToken?: string | null
@@ -42918,6 +42951,7 @@ export namespace Prisma {
     workspaceId: string
     background?: string
     bgImage?: string | null
+    iconColor?: string | null
     visibility?: string
     closed?: boolean
     inviteToken?: string | null
@@ -43023,6 +43057,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     background?: StringFieldUpdateOperationsInput | string
     bgImage?: NullableStringFieldUpdateOperationsInput | string | null
+    iconColor?: NullableStringFieldUpdateOperationsInput | string | null
     visibility?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
     inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -43045,6 +43080,7 @@ export namespace Prisma {
     workspaceId?: StringFieldUpdateOperationsInput | string
     background?: StringFieldUpdateOperationsInput | string
     bgImage?: NullableStringFieldUpdateOperationsInput | string | null
+    iconColor?: NullableStringFieldUpdateOperationsInput | string | null
     visibility?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
     inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -43140,6 +43176,7 @@ export namespace Prisma {
     description?: string | null
     background?: string
     bgImage?: string | null
+    iconColor?: string | null
     visibility?: string
     closed?: boolean
     inviteToken?: string | null
@@ -43162,6 +43199,7 @@ export namespace Prisma {
     workspaceId: string
     background?: string
     bgImage?: string | null
+    iconColor?: string | null
     visibility?: string
     closed?: boolean
     inviteToken?: string | null
@@ -43267,6 +43305,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     background?: StringFieldUpdateOperationsInput | string
     bgImage?: NullableStringFieldUpdateOperationsInput | string | null
+    iconColor?: NullableStringFieldUpdateOperationsInput | string | null
     visibility?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
     inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -43289,6 +43328,7 @@ export namespace Prisma {
     workspaceId?: StringFieldUpdateOperationsInput | string
     background?: StringFieldUpdateOperationsInput | string
     bgImage?: NullableStringFieldUpdateOperationsInput | string | null
+    iconColor?: NullableStringFieldUpdateOperationsInput | string | null
     visibility?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
     inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -43384,6 +43424,7 @@ export namespace Prisma {
     description?: string | null
     background?: string
     bgImage?: string | null
+    iconColor?: string | null
     visibility?: string
     closed?: boolean
     inviteToken?: string | null
@@ -43406,6 +43447,7 @@ export namespace Prisma {
     workspaceId: string
     background?: string
     bgImage?: string | null
+    iconColor?: string | null
     visibility?: string
     closed?: boolean
     inviteToken?: string | null
@@ -43508,6 +43550,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     background?: StringFieldUpdateOperationsInput | string
     bgImage?: NullableStringFieldUpdateOperationsInput | string | null
+    iconColor?: NullableStringFieldUpdateOperationsInput | string | null
     visibility?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
     inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -43530,6 +43573,7 @@ export namespace Prisma {
     workspaceId?: StringFieldUpdateOperationsInput | string
     background?: StringFieldUpdateOperationsInput | string
     bgImage?: NullableStringFieldUpdateOperationsInput | string | null
+    iconColor?: NullableStringFieldUpdateOperationsInput | string | null
     visibility?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
     inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -44292,6 +44336,7 @@ export namespace Prisma {
     description?: string | null
     background?: string
     bgImage?: string | null
+    iconColor?: string | null
     visibility?: string
     closed?: boolean
     inviteToken?: string | null
@@ -44314,6 +44359,7 @@ export namespace Prisma {
     workspaceId: string
     background?: string
     bgImage?: string | null
+    iconColor?: string | null
     visibility?: string
     closed?: boolean
     inviteToken?: string | null
@@ -44368,6 +44414,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     background?: StringFieldUpdateOperationsInput | string
     bgImage?: NullableStringFieldUpdateOperationsInput | string | null
+    iconColor?: NullableStringFieldUpdateOperationsInput | string | null
     visibility?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
     inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -44390,6 +44437,7 @@ export namespace Prisma {
     workspaceId?: StringFieldUpdateOperationsInput | string
     background?: StringFieldUpdateOperationsInput | string
     bgImage?: NullableStringFieldUpdateOperationsInput | string | null
+    iconColor?: NullableStringFieldUpdateOperationsInput | string | null
     visibility?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
     inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -45784,6 +45832,7 @@ export namespace Prisma {
     description?: string | null
     background?: string
     bgImage?: string | null
+    iconColor?: string | null
     visibility?: string
     closed?: boolean
     inviteToken?: string | null
@@ -45806,6 +45855,7 @@ export namespace Prisma {
     workspaceId: string
     background?: string
     bgImage?: string | null
+    iconColor?: string | null
     visibility?: string
     closed?: boolean
     inviteToken?: string | null
@@ -45972,6 +46022,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     background?: StringFieldUpdateOperationsInput | string
     bgImage?: NullableStringFieldUpdateOperationsInput | string | null
+    iconColor?: NullableStringFieldUpdateOperationsInput | string | null
     visibility?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
     inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -45994,6 +46045,7 @@ export namespace Prisma {
     workspaceId?: StringFieldUpdateOperationsInput | string
     background?: StringFieldUpdateOperationsInput | string
     bgImage?: NullableStringFieldUpdateOperationsInput | string | null
+    iconColor?: NullableStringFieldUpdateOperationsInput | string | null
     visibility?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
     inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -46225,6 +46277,7 @@ export namespace Prisma {
     description?: string | null
     background?: string
     bgImage?: string | null
+    iconColor?: string | null
     visibility?: string
     closed?: boolean
     inviteToken?: string | null
@@ -46247,6 +46300,7 @@ export namespace Prisma {
     workspaceId: string
     background?: string
     bgImage?: string | null
+    iconColor?: string | null
     visibility?: string
     closed?: boolean
     inviteToken?: string | null
@@ -46419,6 +46473,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     background?: StringFieldUpdateOperationsInput | string
     bgImage?: NullableStringFieldUpdateOperationsInput | string | null
+    iconColor?: NullableStringFieldUpdateOperationsInput | string | null
     visibility?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
     inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -46441,6 +46496,7 @@ export namespace Prisma {
     workspaceId?: StringFieldUpdateOperationsInput | string
     background?: StringFieldUpdateOperationsInput | string
     bgImage?: NullableStringFieldUpdateOperationsInput | string | null
+    iconColor?: NullableStringFieldUpdateOperationsInput | string | null
     visibility?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
     inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -47567,6 +47623,7 @@ export namespace Prisma {
     description?: string | null
     background?: string
     bgImage?: string | null
+    iconColor?: string | null
     visibility?: string
     closed?: boolean
     inviteToken?: string | null
@@ -47605,6 +47662,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     background?: StringFieldUpdateOperationsInput | string
     bgImage?: NullableStringFieldUpdateOperationsInput | string | null
+    iconColor?: NullableStringFieldUpdateOperationsInput | string | null
     visibility?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
     inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -47626,6 +47684,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     background?: StringFieldUpdateOperationsInput | string
     bgImage?: NullableStringFieldUpdateOperationsInput | string | null
+    iconColor?: NullableStringFieldUpdateOperationsInput | string | null
     visibility?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
     inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -47647,6 +47706,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     background?: StringFieldUpdateOperationsInput | string
     bgImage?: NullableStringFieldUpdateOperationsInput | string | null
+    iconColor?: NullableStringFieldUpdateOperationsInput | string | null
     visibility?: StringFieldUpdateOperationsInput | string
     closed?: BoolFieldUpdateOperationsInput | boolean
     inviteToken?: NullableStringFieldUpdateOperationsInput | string | null

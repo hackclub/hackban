@@ -31,7 +31,7 @@ import { type AppQueryClient } from "~/trpc/query-client";
 import { api, clientId } from "~/trpc/react";
 
 import { Header } from "../header";
-import { boardBg } from "../ui";
+import { boardBg, useBoardIcon } from "../ui";
 import { BoardHeader } from "./board-header";
 import { BoardMenu } from "./board-menu";
 import { BoardCtx } from "./members";
@@ -162,6 +162,7 @@ export function BoardView({
   useEffect(() => {
     if (board) document.title = `${board.name} | Hackban`;
   }, [board]);
+  useBoardIcon(board);
 
   // ----- filters, menu, quick edit, composers -----
   // Filters stick across card opens/reloads on this board; switching boards

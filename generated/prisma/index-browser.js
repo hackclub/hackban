@@ -199,6 +199,7 @@ exports.Prisma.BoardScalarFieldEnum = {
   workspaceId: 'workspaceId',
   background: 'background',
   bgImage: 'bgImage',
+  iconColor: 'iconColor',
   visibility: 'visibility',
   closed: 'closed',
   inviteToken: 'inviteToken',
