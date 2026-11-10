@@ -1,6 +1,9 @@
 // What's new in Hackban, newest first. Add an entry for every user-facing update or change.
 // `id` must be unique; the header shows a dot until the viewer has seen the newest one.
 export const ANNOUNCEMENTS: { id: string; date: string; title: string; body: string }[] = [
+  { id: "import-access", date: "2026-11-10", title: "Import access", body: "Hackban admins can now let you run your own Trello imports with Allow import in the admin panel; Import from Trello in your profile menu then opens the importer." },
+  { id: "join-board", date: "2026-11-09", title: "Join boards", body: "On a board you can see through its workspace but aren't on, click Join board in the header to become a member so you can be added to its cards." },
+  { id: "reorder-workspaces", date: "2026-11-09", title: "Reorder workspaces", body: "Use the arrows next to each workspace on the home page to change their order; it's saved in this browser." },
   { id: "upload-board-backgrounds", date: "2026-11-05", title: "Upload board backgrounds", body: "Upload your own image (PNG, JPEG, GIF or WebP, up to 10 MB) as a board background from Change background in the board menu." },
   { id: "list-descriptions", date: "2026-11-05", title: "List descriptions", body: "Add a description to a list from its ⋯ menu; it shows under the list's name, and MCP clients can read and set it too." },
   { id: "mcp-stays-connected", date: "2026-11-05", title: "MCP stays connected", body: "Running several Claude Code sessions at once no longer signs them all out of Hackban when they refresh their access together." },

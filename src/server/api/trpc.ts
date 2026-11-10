@@ -131,6 +131,12 @@ export const protectedProcedure = t.procedure
     });
   });
 
+/** Trello imports: site admins, plus users an admin granted import access in /admin. */
+export const importProcedure = protectedProcedure.use(({ ctx, next }) => {
+  if (!ctx.session.user.isAdmin && !ctx.session.user.canImport) throw new TRPCError({ code: "FORBIDDEN" });
+  return next();
+});
+
 /** Site-wide admin only (the /admin panel). */
 export const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
   if (!ctx.session.user.isAdmin) throw new TRPCError({ code: "FORBIDDEN" });

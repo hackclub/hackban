@@ -11,6 +11,7 @@ declare module "next-auth" {
     user: {
       id: string;
       isAdmin: boolean;
+      canImport: boolean;
     } & DefaultSession["user"];
   }
 }
@@ -87,7 +88,7 @@ export const authConfig = {
   callbacks: {
     session: ({ session, user }) => ({
       ...session,
-      user: { ...session.user, id: user.id, isAdmin: (user as { isAdmin?: boolean }).isAdmin ?? false },
+      user: { ...session.user, id: user.id, isAdmin: (user as { isAdmin?: boolean }).isAdmin ?? false, canImport: (user as { canImport?: boolean }).canImport ?? false },
     }),
   },
 } satisfies NextAuthConfig;

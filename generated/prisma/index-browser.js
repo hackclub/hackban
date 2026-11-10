@@ -162,6 +162,7 @@ exports.Prisma.UserScalarFieldEnum = {
   isGhost: 'isGhost',
   invitedEmail: 'invitedEmail',
   isAdmin: 'isAdmin',
+  canImport: 'canImport',
   slackJoined: 'slackJoined',
   trelloId: 'trelloId',
   createdAt: 'createdAt'

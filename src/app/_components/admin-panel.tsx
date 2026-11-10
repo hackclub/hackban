@@ -87,10 +87,11 @@ function Users({ meId }: { meId: string }) {
   const { data } = api.admin.users.useQuery({ q: dq });
   const inv = () => utils.admin.users.invalidate();
   const setAdmin = api.admin.setAdmin.useMutation({ onSuccess: inv });
+  const setCanImport = api.admin.setCanImport.useMutation({ onSuccess: inv });
   const revoke = api.admin.revokeSessions.useMutation();
   const del = api.admin.deleteUser.useMutation({ onSuccess: inv });
   const [confirm, setConfirm] = useState<string | null>(null);
-  const err = setAdmin.error ?? del.error;
+  const err = setAdmin.error ?? setCanImport.error ?? del.error;
   return (
     <div>
       <Search value={q} onChange={setQ} placeholder="Search by name or email" />
@@ -103,6 +104,7 @@ function Users({ meId }: { meId: string }) {
             <div className="flex items-center gap-1.5 truncate text-sm font-medium">
               {u.name ?? "(no name)"}
               {u.isAdmin && <span className="rounded bg-[var(--color-brand)] px-1.5 text-[11px] text-[var(--color-on-brand)]">ADMIN</span>}
+              {u.canImport && !u.isAdmin && <span className="rounded bg-[var(--color-neutral-bold)] px-1.5 text-[11px]">IMPORTER</span>}
               {u.isGhost && <span className="rounded bg-[var(--color-neutral-bold)] px-1.5 text-[11px]">{u.invitedEmail ? "INVITED" : "IMPORTED"}</span>}
               {u.id === meId && <span className="text-xs text-[var(--color-text-subtlest)]">(you)</span>}
             </div>
@@ -114,6 +116,11 @@ function Users({ meId }: { meId: string }) {
           {!u.isGhost && (
             <Button onClick={() => setAdmin.mutate({ userId: u.id, isAdmin: !u.isAdmin })} disabled={u.id === meId}>
               {u.isAdmin ? "Remove admin" : "Make admin"}
+            </Button>
+          )}
+          {!u.isGhost && !u.isAdmin && (
+            <Button onClick={() => setCanImport.mutate({ userId: u.id, canImport: !u.canImport })} title="Let this person import boards from Trello">
+              {u.canImport ? "Remove import" : "Allow import"}
             </Button>
           )}
           {!u.isGhost && u.id !== meId && <Button onClick={() => revoke.mutate({ userId: u.id })}>Sign out</Button>}

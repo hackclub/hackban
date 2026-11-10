@@ -45,6 +45,7 @@ export function BoardHeader({
     onMutate: ({ starred }) => utils.board.get.setData({ id: board.id }, (b) => b && { ...b, starred }),
     onSettled: () => utils.workspace.list.invalidate(),
   });
+  const join = api.board.join.useMutation({ onSettled: () => utils.board.get.invalidate({ id: board.id }) });
   const v = VIS[board.visibility as keyof typeof VIS] ?? VIS.workspace;
   const active = filterActive(filters);
   const count = filters.members.length + filters.labels.length + filters.due.length + (filters.q ? 1 : 0);
@@ -91,6 +92,16 @@ export function BoardHeader({
         meId={meId}
         onFilterMember={(id) => setFilters({ ...filters, members: filters.members.includes(id) ? filters.members : [...filters.members, id] })}
       />
+      {board.canJoin && (
+        <button
+          onClick={() => join.mutate({ id: board.id })}
+          disabled={join.isPending}
+          className="ml-2 flex h-8 items-center gap-1.5 rounded-[3px] bg-[var(--color-brand)] px-3 text-sm font-medium text-[var(--color-on-brand)] hover:opacity-90 disabled:opacity-60"
+          title="Become a member of this board so you can be added to cards"
+        >
+          <Icon name="plus" /> Join board
+        </button>
+      )}
       <button onClick={() => setShareOpen(true)} className="ml-2 flex h-8 items-center gap-1.5 rounded-[3px] bg-[var(--color-neutral-bold)] px-3 text-sm font-medium text-[var(--color-text)] hover:bg-[var(--color-surface)]">
         <Icon name="people" /> Share
       </button>

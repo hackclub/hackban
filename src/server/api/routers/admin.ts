@@ -48,6 +48,7 @@ export const adminRouter = createTRPCRouter({
         email: true,
         image: true,
         isAdmin: true,
+        canImport: true,
         isGhost: true,
         invitedEmail: true,
         createdAt: true,
@@ -69,6 +70,13 @@ export const adminRouter = createTRPCRouter({
         }
       }
       await ctx.db.user.update({ where: { id: input.userId }, data: { isAdmin: input.isAdmin } });
+    }),
+
+  /** Let a regular user run Trello imports. Takes effect on their next page load. */
+  setCanImport: adminProcedure
+    .input(z.object({ userId: z.string(), canImport: z.boolean() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.user.update({ where: { id: input.userId }, data: { canImport: input.canImport } });
     }),
 
   /** Signs a user out everywhere, including apps connected over MCP. */

@@ -91,6 +91,8 @@ export const boardRouter = createTRPCRouter({
         inviteToken: access.members[0] ? inviteToken : null,
         starred: stars.length > 0,
         myRole,
+        // Workspace members can see non-private boards without being on them; let them join.
+        canJoin: !access.members[0] && !!access.workspace.members[0],
         lists: rest.lists.map((l) => ({
           ...l,
           cards: l.cards.map(({ attachments, checklists, watches, ...c }) => ({
@@ -427,6 +429,20 @@ export const boardRouter = createTRPCRouter({
     });
     logActivity(ctx.db, { boardId: board.id, actorId: ctx.session.user.id, type: "joinBoard" });
     return { boardId: board.id };
+  }),
+
+  /** Join a board you can already see as a member of its workspace. */
+  join: protectedProcedure.input(z.object({ id: z.string() })).mutation(async ({ ctx, input }) => {
+    const userId = ctx.session.user.id;
+    const board = await requireBoard(ctx.db, userId, input.id, false);
+    if (!board.workspace.members[0]) throw new TRPCError({ code: "FORBIDDEN", message: "Only workspace members can join this board." });
+    if (board.members[0]) return;
+    await ctx.db.boardMember.upsert({
+      where: { boardId_userId: { boardId: input.id, userId } },
+      create: { boardId: input.id, userId, role: "normal" },
+      update: {},
+    });
+    logActivity(ctx.db, { boardId: input.id, actorId: userId, type: "joinBoard", data: { via: "workspace" }, origin: ctx.clientId });
   }),
 
   /** Boards I'm on whose workspace I'm not in, grouped for the home page. */

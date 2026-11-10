@@ -68,6 +68,8 @@ model User {
     invitedEmail  String?   @unique
     // Site-wide admin (the /admin panel). Seeded from ADMIN_EMAILS on login.
     isAdmin       Boolean   @default(false)
+    // Granted in /admin: may run Trello imports without being a site admin.
+    canImport     Boolean   @default(false)
     // Added to #hackban once on login; never again, so leaving the channel sticks.
     slackJoined   Boolean   @default(false)
     trelloId      String?   @unique

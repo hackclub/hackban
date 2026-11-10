@@ -25,7 +25,7 @@ function toDate(v: string | null | undefined) {
  */
 export function hackbanMcp(user: User, base: string) {
   // Site-admin powers stay in the browser; connected apps act as a regular member.
-  const api = createCaller({ db, session: { user: { ...user, isAdmin: false }, expires: "" }, headers: new Headers(), clientId: undefined, tzOffset: 0 });
+  const api = createCaller({ db, session: { user: { ...user, isAdmin: false, canImport: false }, expires: "" }, headers: new Headers(), clientId: undefined, tzOffset: 0 });
   const abs = (u: string) => (u.startsWith("/") ? base + u : u);
 
   const server = new McpServer(
@@ -570,6 +570,20 @@ export function hackbanMcp(user: User, base: string) {
     },
     async ({ boardId, ...rest }) => {
       await api.board.addMember({ id: boardId, ...rest });
+      return text({ ok: true });
+    },
+  );
+
+  server.registerTool(
+    "join_board",
+    {
+      title: "Join board",
+      description: "Join a board you can see through its workspace (as a normal member), so you can be assigned to its cards.",
+      inputSchema: { boardId: z.string() },
+      annotations: { ...write, idempotentHint: true },
+    },
+    async ({ boardId }) => {
+      await api.board.join({ id: boardId });
       return text({ ok: true });
     },
   );

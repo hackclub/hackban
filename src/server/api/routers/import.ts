@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { adminProcedure, createTRPCRouter } from "~/server/api/trpc";
+import { createTRPCRouter, importProcedure } from "~/server/api/trpc";
 import { db } from "~/server/db";
 import { applyBoard, type ImportStats } from "~/server/import/apply";
 import { fetchBoard, listBoards, me, type TrelloCreds } from "~/server/import/trello-api";
@@ -78,9 +78,9 @@ async function requireWorkspaceMember(userId: string, workspaceId: string | null
   if (!m) throw new TRPCError({ code: "FORBIDDEN", message: "You're not a member of that workspace." });
 }
 
-// Site admins only: imports create placeholder members and attribute history to Trello identities.
+// Site admins and granted importers only: imports create placeholder members and attribute history to Trello identities.
 export const importRouter = createTRPCRouter({
-  trelloBoards: adminProcedure.input(creds).mutation(async ({ input }) => {
+  trelloBoards: importProcedure.input(creds).mutation(async ({ input }) => {
     try {
       const [{ boards, orgs }, who] = await Promise.all([listBoards(input), me(input)]);
       return { boards, orgs, me: who };
@@ -89,7 +89,7 @@ export const importRouter = createTRPCRouter({
     }
   }),
 
-  startApi: adminProcedure
+  startApi: importProcedure
     .input(creds.extend({ boardIds: z.array(z.string().max(64)).min(1).max(200), workspaceId: z.string().nullable() }))
     .mutation(async ({ ctx, input }) => {
       await requireWorkspaceMember(ctx.session.user.id, input.workspaceId);
@@ -103,7 +103,7 @@ export const importRouter = createTRPCRouter({
       return job;
     }),
 
-  startJson: adminProcedure
+  startJson: importProcedure
     .input(
       z.object({
         files: z.array(z.string().max(50 * 1024 * 1024)).min(1).max(50),
@@ -129,7 +129,7 @@ export const importRouter = createTRPCRouter({
       return job;
     }),
 
-  job: adminProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
+  job: importProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
     const job = await ctx.db.trelloImport.findFirstOrThrow({ where: { id: input.id, userId: ctx.session.user.id } });
     return {
       ...job,
@@ -139,7 +139,7 @@ export const importRouter = createTRPCRouter({
   }),
 
   /** Placeholder members created by imports on boards the user can see. */
-  ghosts: adminProcedure.query(({ ctx }) =>
+  ghosts: importProcedure.query(({ ctx }) =>
     ctx.db.user.findMany({
       where: {
         isGhost: true,

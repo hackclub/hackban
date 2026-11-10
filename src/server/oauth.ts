@@ -207,11 +207,11 @@ export async function userForBearer(db: DB, authorization: string | null) {
 
 /**
  * Native apps: an "app"-scoped access token, as an Auth.js-shaped session.
- * Site-admin powers stay with the browser (as with MCP), so isAdmin is false.
+ * Site-admin powers stay with the browser (as with MCP), so isAdmin and canImport are false.
  */
 export async function appSessionForBearer(db: DB, authorization: string | null) {
   const row = await accessToken(db, authorization);
   if (row?.scope !== "app") return null;
   const { id, name, email, image } = row.user;
-  return { user: { id, name, email, image, isAdmin: false }, expires: row.expiresAt.toISOString() };
+  return { user: { id, name, email, image, isAdmin: false, canImport: false }, expires: row.expiresAt.toISOString() };
 }

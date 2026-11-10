@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { api } from "~/trpc/react";
 
@@ -216,8 +216,30 @@ export function BoardTile({ b, children }: { b: Tile; children?: React.ReactNode
   );
 }
 
+const ORDER_KEY = "hackban:workspaceOrder";
+
 export function Home() {
-  const { data: workspaces } = api.workspace.list.useQuery();
+  const { data: unsorted } = api.workspace.list.useQuery();
+  // Workspace order is a per-browser preference; ones not in it (new ones) go last in server order.
+  const [order, setOrder] = useState<string[]>([]);
+  useEffect(() => {
+    try {
+      const saved: unknown = JSON.parse(localStorage.getItem(ORDER_KEY) ?? "[]");
+      if (Array.isArray(saved)) setOrder(saved.filter((x): x is string => typeof x === "string"));
+    } catch {}
+  }, []);
+  const rank = (id: string) => (order.includes(id) ? order.indexOf(id) : Infinity);
+  const workspaces = unsorted && [...unsorted].sort((a, b) => rank(a.id) - rank(b.id));
+  const moveWs = (id: string, dir: -1 | 1) => {
+    if (!workspaces) return;
+    const ids = workspaces.map((w) => w.id);
+    const i = ids.indexOf(id);
+    [ids[i], ids[i + dir]] = [ids[i + dir]!, ids[i]!];
+    setOrder(ids);
+    try {
+      localStorage.setItem(ORDER_KEY, JSON.stringify(ids));
+    } catch {}
+  };
   const { data: recent } = api.board.recent.useQuery();
   const { data: guestBoards } = api.board.guestBoards.useQuery();
   // Guest boards grouped by the workspace they live in.
@@ -284,11 +306,29 @@ export function Home() {
           </Section>
         )}
         <h2 className="mt-2 mb-4 text-base font-bold text-[var(--color-text-subtle)] uppercase">Your workspaces</h2>
-        {workspaces?.map((w) => (
-          <section key={w.id} id={`ws-${w.id}`} className="mb-10">
+        {workspaces?.map((w, i) => (
+          <motion.section layout="position" key={w.id} id={`ws-${w.id}`} className="mb-10">
             <div className="mb-3 flex items-center gap-3">
               <WorkspaceLogo ws={w} size={32} />
               <h3 className="flex-1 text-base font-bold">{w.name}</h3>
+              <button
+                onClick={() => moveWs(w.id, -1)}
+                disabled={i === 0}
+                className="flex h-8 w-8 items-center justify-center rounded-[3px] text-[var(--color-text-subtle)] hover:bg-[var(--color-neutral)] disabled:opacity-30 disabled:hover:bg-transparent"
+                aria-label={`Move ${w.name} up`}
+                title="Move up"
+              >
+                <Icon name="chevronDown" className="rotate-180" />
+              </button>
+              <button
+                onClick={() => moveWs(w.id, 1)}
+                disabled={i === workspaces.length - 1}
+                className="flex h-8 w-8 items-center justify-center rounded-[3px] text-[var(--color-text-subtle)] hover:bg-[var(--color-neutral)] disabled:opacity-30 disabled:hover:bg-transparent"
+                aria-label={`Move ${w.name} down`}
+                title="Move down"
+              >
+                <Icon name="chevronDown" />
+              </button>
               <Link href={`/w/${w.id}/members`} className="flex h-8 items-center gap-1.5 rounded-[3px] bg-[var(--color-neutral)] px-3 text-sm font-medium hover:bg-[var(--color-neutral-hover)]">
                 <Icon name="people" size={14} /> Members
               </Link>
@@ -305,7 +345,7 @@ export function Home() {
                 Create new board
               </button>
             </motion.div>
-          </section>
+          </motion.section>
         ))}
         {!workspaces && <div className="h-40 animate-pulse rounded bg-[var(--color-neutral)]" />}
         {guestGroups.size > 0 && (

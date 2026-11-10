@@ -139,7 +139,7 @@ any board from **/admin → Boards**. Board members keep their access.
 
 ## Importing from Trello
 
-Imports are site-admin only (the account menu → **Import from Trello**, or **/import**). Everyone else is asked to request one in #hackban. Admins:
+Imports are for site admins and anyone an admin grants **Allow import** in **/admin → Users** (the account menu → **Import from Trello**, or **/import**). Everyone else is asked to request one in #hackban. Importers:
 
 1. **Connect your Trello account** (recommended): create a Power-Up at
    [trello.com/power-ups/admin](https://trello.com/power-ups/admin), paste its

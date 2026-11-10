@@ -53,7 +53,7 @@ function describe(a: Act, onCard: boolean) {
     case "removeBlocker": return <>marked {card} as no longer blocked by {s(d.name)}</>;
     case "addAttachment": return <>attached {s(d.name)} to {card}</>;
     case "addMemberToBoard": return <>added a member to this board</>;
-    case "joinBoard": return <>joined this board via invite link</>;
+    case "joinBoard": return d.via === "workspace" ? <>joined this board</> : <>joined this board via invite link</>;
     case "archiveAllCards": return <>archived all cards in a list</>;
     case "sortList": return <>sorted a list</>;
     case "moveAllCards": return <>moved {String(d.count)} cards</>;
