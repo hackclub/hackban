@@ -148,8 +148,15 @@ export function majorityColor(d: ArrayLike<number>) {
  * image's main color, else its background color(s).
  */
 export function useBoardIcon(b: { background: string; bgImage?: string | null; iconColor?: string | null } | null | undefined) {
+  const bg = useBoardColors(b);
+  const colors = b?.iconColor ? [b.iconColor] : bg;
+  useFavicon(colors?.length ? hackbanIcon(colors) : null);
+}
+
+/** [] while the background image is still being read. */
+export function useBoardColors(b: { background: string; bgImage?: string | null } | null | undefined) {
   const [img, setImg] = useState<{ src: string; color: string | null }>();
-  const src = !b?.iconColor ? b?.bgImage : null;
+  const src = b?.bgImage;
   useEffect(() => {
     if (!src) return;
     let live = true;
@@ -158,11 +165,42 @@ export function useBoardIcon(b: { background: string; bgImage?: string | null; i
       live = false;
     };
   }, [src]);
-  let colors: string[] | null = null;
-  if (b?.iconColor) colors = [b.iconColor];
-  else if (src) colors = img?.src === src ? (img.color ? [img.color] : null) : []; // [] = still reading the image
-  if (b && !colors) colors = b.background.match(/#[0-9a-f]{3,8}/gi) ?? ["#ec3750"];
-  useFavicon(colors?.length ? hackbanIcon(colors) : null);
+  if (!b) return null;
+  if (src && img?.src !== src) return [];
+  if (src && img?.color) return [img.color];
+  return b.background.match(/#[0-9a-f]{3,8}/gi) ?? ["#ec3750"];
+}
+
+export function blendHex(colors: string[], dark = 0) {
+  const rgb = colors.map((c) => {
+    let h = c.replace("#", "");
+    if (h.length <= 4) h = [...h].map((x) => x + x).join("");
+    return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16));
+  });
+  if (!rgb.length) return null;
+  return `#${[0, 1, 2].map((i) => Math.round((rgb.reduce((s, c) => s + c[i]!, 0) / rgb.length) * (1 - dark)).toString(16).padStart(2, "0")).join("")}`;
+}
+
+/** Null follows the theme's surface color. */
+export function useThemeColor(color: string | null) {
+  useEffect(() => {
+    let meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]:not([media])');
+    if (!meta) {
+      meta = document.createElement("meta");
+      meta.name = "theme-color";
+      // The first matching theme-color wins.
+      document.head.prepend(meta);
+    }
+    const m = meta;
+    const apply = () => {
+      m.content = color ?? getComputedStyle(document.documentElement).getPropertyValue("--t-surface").trim();
+    };
+    apply();
+    if (color) return;
+    const obs = new MutationObserver(apply);
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, [color]);
 }
 
 /** Swaps the tab icon while mounted; a falsy href keeps the default. */

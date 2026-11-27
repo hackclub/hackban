@@ -1,6 +1,7 @@
 // What's new in Hackban, newest first. Add an entry for every user-facing update or change.
 // `id` must be unique; the header shows a dot until the viewer has seen the newest one.
 export const ANNOUNCEMENTS: { id: string; date: string; title: string; body: string }[] = [
+  { id: "install-app", date: "2026-11-27", title: "Install as an app", body: "Install Hackban from your browser's install button to get its own window with back and forward buttons, a title bar tinted to the board's color, and a friendly page when you're offline." },
   { id: "roadmap-paused", date: "2026-11-24", title: "Roadmap view paused", body: "The Roadmap view is gone for now while we rework it; boards that were showing it open in Board view, and Table view stays." },
   { id: "edit-table-roadmap", date: "2026-11-24", title: "Edit from table and roadmap", body: "Edit titles, assignees, lists, labels and dates right in the table's cells and add cards with + Add item; on the roadmap, drag a bar to move a card's dates, drag its ends to change them, or click an empty row to schedule it." },
   { id: "mcp-full-coverage", date: "2026-11-24", title: "Even more MCP tools", body: "Connected apps can now copy boards and lists, move or archive every card in a list, reorder lists, set card covers and board backgrounds, manage invite links, create and edit workspaces, look people up, and read your own activity." },

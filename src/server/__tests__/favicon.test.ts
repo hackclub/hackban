@@ -1,7 +1,7 @@
 import { test } from "bun:test";
 import assert from "node:assert/strict";
 
-import { majorityColor } from "~/app/_components/ui";
+import { blendHex, majorityColor } from "~/app/_components/ui";
 
 const px = (...rgba: number[][]) => rgba.flat();
 
@@ -13,4 +13,10 @@ test("majorityColor averages the most common color bucket", () => {
 
 test("majorityColor gives null for a fully transparent image", () => {
   assert.equal(majorityColor(px([1, 2, 3, 0])), null);
+});
+
+test("blendHex averages colors, expands short hex and darkens", () => {
+  assert.equal(blendHex(["#ff0000", "#0000ff"]), "#800080");
+  assert.equal(blendHex(["#fff"], 0.4), "#999999");
+  assert.equal(blendHex([]), null);
 });

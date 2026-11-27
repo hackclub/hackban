@@ -11,13 +11,16 @@ import { api } from "~/trpc/react";
 import { ANNOUNCEMENTS } from "./announcements";
 import { CreateBoardPopover } from "./create-board";
 import { ThemePicker } from "./theme";
-import { Avatar, Icon, MenuItem, MenuSep, Popover, boardBg, usePopoverState } from "./ui";
+import { Avatar, Icon, MenuItem, MenuSep, Popover, blendHex, boardBg, usePopoverState, useThemeColor } from "./ui";
 
 const SEEN_KEY = "hackban:announcements-seen";
 
 type User = { id: string; name?: string | null; image?: string | null; email?: string | null; isAdmin?: boolean };
 
-export function Header({ user, translucent = false }: { user: User; translucent?: boolean }) {
+export function Header({ user, translucent = false, tint }: { user: User; translucent?: boolean; tint?: string[] | null }) {
+  // Matches bg-black/40 over the board.
+  const bar = translucent && tint?.length ? blendHex(tint, 0.4) : null;
+  useThemeColor(bar);
   const recent = usePopoverState();
   const starred = usePopoverState();
   const create = usePopoverState();
@@ -44,7 +47,9 @@ export function Header({ user, translucent = false }: { user: User; translucent?
 
   return (
     <header
-      className={`relative z-20 flex h-12 shrink-0 items-center gap-1 px-2 ${
+      data-bar={bar ? "" : undefined}
+      style={bar ? ({ "--titlebar-bg": bar } as React.CSSProperties) : undefined}
+      className={`app-titlebar relative z-20 flex h-12 shrink-0 items-center gap-1 px-2 ${
         translucent ? "bg-black/40" : "border-b border-[var(--color-border)] bg-[var(--color-surface)]"
       }`}
     >
@@ -57,6 +62,7 @@ export function Header({ user, translucent = false }: { user: User; translucent?
         </svg>
         Hackban
       </Link>
+      <HistoryButtons cls={btn} />
       <NavButton cls={btn} onClick={recent.toggle} active={recent.open}>Recent</NavButton>
       <NavButton cls={btn} onClick={starred.toggle} active={starred.open}>Starred</NavButton>
       <button
@@ -118,6 +124,29 @@ export function Header({ user, translucent = false }: { user: User; translucent?
         <MenuItem onClick={() => void signOut({ redirectTo: "/login" })}>Log out</MenuItem>
       </Popover>
     </header>
+  );
+}
+
+function HistoryButtons({ cls }: { cls: string }) {
+  const [can, setCan] = useState({ back: true, forward: false });
+  useEffect(() => {
+    const nav = (window as { navigation?: EventTarget & { canGoBack: boolean; canGoForward: boolean } }).navigation;
+    if (!nav) return;
+    const update = () => setCan({ back: nav.canGoBack, forward: nav.canGoForward });
+    update();
+    nav.addEventListener("currententrychange", update);
+    return () => nav.removeEventListener("currententrychange", update);
+  }, []);
+  const b = `flex h-8 w-8 items-center justify-center rounded-[3px] transition-colors disabled:pointer-events-none disabled:opacity-40 ${cls}`;
+  return (
+    <span className="installed-only items-center">
+      <button className={b} onClick={() => history.back()} disabled={!can.back} aria-label="Back" title="Back (Alt+←)">
+        <Icon name="chevronLeft" />
+      </button>
+      <button className={b} onClick={() => history.forward()} disabled={!can.forward} aria-label="Forward" title="Forward (Alt+→)">
+        <Icon name="chevronLeft" className="-scale-x-100" />
+      </button>
+    </span>
   );
 }
 

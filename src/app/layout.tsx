@@ -1,14 +1,25 @@
 import "~/styles/globals.css";
 
-import { type Metadata } from "next";
+import { type Metadata, type Viewport } from "next";
 import { Inter } from "next/font/google";
 
+import { ServiceWorker } from "~/app/_components/pwa";
 import { themeScript } from "~/app/_components/theme";
 import { TRPCReactProvider } from "~/trpc/react";
 
 export const metadata: Metadata = {
   title: "Hackban",
   description: "Boards for Hack Club",
+  applicationName: "Hackban",
+  appleWebApp: { capable: true, title: "Hackban", statusBarStyle: "default" },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#22272b" },
+  ],
+  viewportFit: "cover",
 };
 
 // Trello's UI font is Atlassian Sans (proprietary, derived from Inter). We
@@ -29,6 +40,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       </head>
       <body>
         <TRPCReactProvider>{children}</TRPCReactProvider>
+        <ServiceWorker />
       </body>
     </html>
   );

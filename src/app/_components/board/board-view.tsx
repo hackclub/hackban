@@ -31,7 +31,7 @@ import { type AppQueryClient } from "~/trpc/query-client";
 import { api, clientId } from "~/trpc/react";
 
 import { Header } from "../header";
-import { boardBg, useBoardIcon } from "../ui";
+import { boardBg, useBoardColors, useBoardIcon } from "../ui";
 import { BoardHeader } from "./board-header";
 import { BoardMenu } from "./board-menu";
 import { TableView } from "./board-views";
@@ -165,6 +165,7 @@ export function BoardView({
     if (board) document.title = `${board.name} | Hackban`;
   }, [board]);
   useBoardIcon(board);
+  const tint = useBoardColors(board);
 
   // ----- filters, menu, quick edit, composers -----
   // Filters stick across card opens/reloads on this board; switching boards
@@ -573,7 +574,7 @@ export function BoardView({
         className="flex h-full flex-col overflow-hidden transition-[background-color] duration-300"
         style={shown ? boardBg(shown) : { background: "var(--color-page)" }}
       >
-        <Header user={user} translucent />
+        <Header user={user} translucent tint={tint} />
         {shown && (
           <div className="flex min-h-0 flex-1 animate-[fade-in_200ms_ease-out] flex-col">
             <BoardHeader
