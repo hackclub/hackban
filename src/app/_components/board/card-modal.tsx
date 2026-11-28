@@ -4,6 +4,7 @@ import { format, formatDistanceToNow } from "date-fns";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 
+import { sortCardLabels } from "~/lib/labels";
 import { api } from "~/trpc/react";
 
 import {
@@ -605,7 +606,7 @@ function Badges({
             Labels
           </h3>
           <div className="flex flex-wrap gap-1">
-            {card.labels.map(({ label }) => (
+            {sortCardLabels(card.labels).map(({ label }) => (
               <button
                 key={label.id}
                 onClick={readOnly ? undefined : openPop("labels")}

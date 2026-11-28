@@ -1,6 +1,9 @@
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
+import { FLOW_ACTIONS, FLOW_TRIGGERS } from "~/lib/list-flow";
 import { boardIdForList, logActivity, requireBoard, touch } from "~/server/api/access";
+import { applyFlow, flowCardSelect, loadFlow } from "~/server/api/list-rules";
 import { posAfter, posAtEnd, sequentialKeys } from "~/server/api/pos";
 import { removeStored, storedKeys } from "~/server/storage";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
@@ -30,6 +33,7 @@ export const listRouter = createTRPCRouter({
         description: z.string().max(4096).optional(),
         color: z.string().max(32).nullable().optional(),
         closed: z.boolean().optional(),
+        doneOnEnter: z.boolean().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -37,7 +41,7 @@ export const listRouter = createTRPCRouter({
       await requireBoard(ctx.db, ctx.session.user.id, boardId);
       const { id, ...data } = input;
       const list = await ctx.db.list.update({ where: { id }, data });
-      // Color and description changes have no activity entry.
+      // Color, description and automation changes have no activity entry.
       if (input.name === undefined && input.closed === undefined) {
         touch(boardId, undefined, ctx.clientId);
         return list;
@@ -67,6 +71,7 @@ export const listRouter = createTRPCRouter({
       if (toBoard !== fromBoard) {
         // Labels are board-scoped, so drop links to the old board's labels.
         await ctx.db.cardLabel.deleteMany({ where: { card: { listId: input.id }, label: { boardId: fromBoard } } });
+        await ctx.db.listLabelRule.deleteMany({ where: { listId: input.id, label: { boardId: fromBoard } } });
         logActivity(ctx.db, { boardId: fromBoard, actorId: ctx.session.user.id, type: "moveListFromBoard", data: { name: list.name }, origin: ctx.clientId });
       }
       logActivity(ctx.db, { boardId: toBoard, actorId: ctx.session.user.id, type: "moveList", data: { name: list.name }, origin: ctx.clientId });
@@ -79,6 +84,7 @@ export const listRouter = createTRPCRouter({
       const src = await ctx.db.list.findUniqueOrThrow({
         where: { id: input.id },
         include: {
+          labelRules: true,
           cards: {
             where: { closed: false },
             include: { labels: true, members: true, checklists: { include: { items: true } } },
@@ -97,6 +103,8 @@ export const listRouter = createTRPCRouter({
           name: input.name,
           description: src.description,
           color: src.color,
+          doneOnEnter: src.doneOnEnter,
+          labelRules: { create: src.labelRules.map(({ labelId, trigger, action }) => ({ labelId, trigger, action })) },
           pos: posAfter(siblings, src.id),
           cards: {
             create: src.cards.map((c) => ({
@@ -132,9 +140,10 @@ export const listRouter = createTRPCRouter({
       await requireBoard(ctx.db, ctx.session.user.id, boardId);
       const toBoard = await boardIdForList(ctx.db, input.toListId);
       await requireBoard(ctx.db, ctx.session.user.id, toBoard);
-      const [cards, dest] = await Promise.all([
-        ctx.db.card.findMany({ where: { listId: input.id, closed: false }, orderBy: { pos: "asc" } }),
+      const [cards, dest, flow] = await Promise.all([
+        ctx.db.card.findMany({ where: { listId: input.id, closed: false }, orderBy: { pos: "asc" }, select: flowCardSelect }),
         ctx.db.card.findMany({ where: { listId: input.toListId, closed: false }, orderBy: { pos: "asc" }, select: { id: true, pos: true } }),
+        loadFlow(ctx.db, input.id, input.toListId),
       ]);
       let tail = dest;
       for (const c of cards) {
@@ -142,7 +151,55 @@ export const listRouter = createTRPCRouter({
         await ctx.db.card.update({ where: { id: c.id }, data: { listId: input.toListId, pos } });
         tail = [...tail, { id: c.id, pos }];
       }
+      if (toBoard !== boardId && cards.length) {
+        // Labels and dependencies are board-scoped, like a single card move.
+        const ids = cards.map((c) => c.id);
+        await ctx.db.cardLabel.deleteMany({ where: { cardId: { in: ids } } });
+        await ctx.db.cardBlock.deleteMany({ where: { OR: [{ blockerId: { in: ids } }, { blockedId: { in: ids } }] } });
+        touch(toBoard, undefined, ctx.clientId);
+      }
+      // List flow, once the cards are in place (labels they had on the old board are gone).
+      if (flow) {
+        for (const c of cards) await applyFlow(ctx.db, toBoard === boardId ? c : { ...c, labels: [] }, flow);
+      }
       logActivity(ctx.db, { boardId, actorId: ctx.session.user.id, type: "moveAllCards", data: { count: cards.length }, origin: ctx.clientId });
+    }),
+
+  /**
+   * Turn one list automation rule on or off: when a card moves into
+   * (`enter`) or out of (`leave`) this list, add or remove `labelId`.
+   */
+  setLabelRule: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        labelId: z.string(),
+        trigger: z.enum(FLOW_TRIGGERS),
+        action: z.enum(FLOW_ACTIONS),
+        on: z.boolean(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const boardId = await boardIdForList(ctx.db, input.id);
+      await requireBoard(ctx.db, ctx.session.user.id, boardId);
+      const label = await ctx.db.label.findUnique({ where: { id: input.labelId }, select: { boardId: true } });
+      if (label?.boardId !== boardId) throw new TRPCError({ code: "BAD_REQUEST", message: "That label isn't on this board." });
+      const key = { listId: input.id, labelId: input.labelId, trigger: input.trigger, action: input.action };
+      if (input.on) {
+        // A move can't both add and remove the same label, so picking one
+        // side takes the label off the other.
+        const opposite = { ...key, action: input.action === "add" ? "remove" : "add" };
+        await ctx.db.$transaction(async (tx) => {
+          // Lock the list so simultaneous toggles (two people, or an agent)
+          // can't leave both sides set or trip over each other's insert.
+          await tx.$executeRaw`SELECT 1 FROM "List" WHERE id = ${input.id} FOR UPDATE`;
+          await tx.listLabelRule.deleteMany({ where: opposite });
+          await tx.listLabelRule.createMany({ data: [key], skipDuplicates: true });
+        });
+      } else {
+        await ctx.db.listLabelRule.deleteMany({ where: key });
+      }
+      touch(boardId, undefined, ctx.clientId);
     }),
 
   /** Reorder a list's cards to match `ids` (the client computes the sort). */

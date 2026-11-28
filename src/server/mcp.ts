@@ -1,6 +1,8 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 
+import { sortCardLabels, sortLabels } from "~/lib/labels";
+import { FLOW_ACTIONS, FLOW_TRIGGERS } from "~/lib/list-flow";
 import { createCaller } from "~/server/api/root";
 import { RECURRENCES } from "~/server/recurrence";
 import { db } from "~/server/db";
@@ -90,7 +92,7 @@ export function hackbanMcp(user: User, base: string) {
         url: `${base}/b/${b.id}`,
         workspace: b.workspace,
         myRole: b.myRole,
-        labels: b.labels.map(({ id, name, color }) => ({ id, name, color })),
+        labels: sortLabels(b.labels).map(({ id, name, color }) => ({ id, name, color })),
         members: b.members.map((m) => ({
           id: m.user.id,
           name: m.user.name,
@@ -103,6 +105,13 @@ export function hackbanMcp(user: User, base: string) {
           name: l.name,
           description: l.description || undefined,
           color: l.color ?? undefined,
+          automation:
+            l.doneOnEnter || l.labelRules.length
+              ? {
+                  markDoneOnEnter: l.doneOnEnter || undefined,
+                  labelRules: l.labelRules.length ? l.labelRules : undefined,
+                }
+              : undefined,
           cards: l.cards.map((c) => ({
             id: c.id,
             title: c.title,
@@ -110,7 +119,7 @@ export function hackbanMcp(user: User, base: string) {
             due: c.due ?? undefined,
             // Cards can be completed without a due date, so say so whenever it's true.
             dueComplete: c.dueComplete || undefined,
-            labels: c.labels.length ? c.labels.map(({ label }) => label.name || label.color) : undefined,
+            labels: c.labels.length ? sortCardLabels(c.labels).map(({ label }) => label.name || label.color) : undefined,
             members: c.members.length ? c.members.map(({ user }) => user.name) : undefined,
             checklist: c.checkTotal ? `${c.checkDone}/${c.checkTotal}` : undefined,
             comments: c._count.comments || undefined,
@@ -137,7 +146,7 @@ export function hackbanMcp(user: User, base: string) {
         dueComplete: c.dueComplete,
         recurrence: c.recurrence,
         archived: c.closed,
-        labels: c.labels.map(({ label }) => ({ id: label.id, name: label.name, color: label.color })),
+        labels: sortCardLabels(c.labels).map(({ label }) => ({ id: label.id, name: label.name, color: label.color })),
         members: c.members.map(({ user }) => ({ id: user.id, name: user.name })),
         checklists: c.checklists.map((cl) => ({
           id: cl.id,
@@ -165,7 +174,7 @@ export function hackbanMcp(user: User, base: string) {
           dueComplete: c.dueComplete || undefined,
           board: c.list.board.name,
           list: c.list.name,
-          labels: c.labels.length ? c.labels.map(({ label }) => label.name || label.color) : undefined,
+          labels: c.labels.length ? sortCardLabels(c.labels).map(({ label }) => label.name || label.color) : undefined,
           url: `${base}/c/${c.id}`,
         })),
       ),
@@ -200,19 +209,41 @@ export function hackbanMcp(user: User, base: string) {
     "update_list",
     {
       title: "Update list",
-      description: "Rename a list, set its description (shown under its name), set its color (green, yellow, orange, red, purple, blue, sky, lime, pink, black; null clears it), or archive/restore it.",
+      description: "Rename a list, set its description (shown under its name), set its color (green, yellow, orange, red, purple, blue, sky, lime, pink, black; null clears it), archive/restore it, or set whether cards moved into it are marked complete.",
       inputSchema: {
         listId: z.string(),
         name: z.string().min(1).max(512).optional(),
         description: z.string().max(4096).optional(),
         color: z.string().max(32).nullable().optional(),
         archived: z.boolean().optional(),
+        markDoneOnEnter: z.boolean().optional().describe("Mark cards complete when they're moved into this list"),
       },
       annotations: write,
     },
-    async ({ listId, name, description, color, archived }) => {
-      const l = await api.list.update({ id: listId, name, description, color, closed: archived });
-      return text({ id: l.id, name: l.name, description: l.description, color: l.color, archived: l.closed });
+    async ({ listId, name, description, color, archived, markDoneOnEnter }) => {
+      const l = await api.list.update({ id: listId, name, description, color, closed: archived, doneOnEnter: markDoneOnEnter });
+      return text({ id: l.id, name: l.name, description: l.description, color: l.color, archived: l.closed, markDoneOnEnter: l.doneOnEnter });
+    },
+  );
+
+  server.registerTool(
+    "set_list_label_rule",
+    {
+      title: "Set list label automation",
+      description:
+        "Turn a list automation rule on or off: when a card is moved into (trigger enter) or out of (trigger leave) this list, add or remove one of the board's labels (IDs from get_board). Turning on add takes the same label off remove for that trigger, and vice versa. A card's old list's leave rules run before its new list's enter rules. get_board shows each list's rules.",
+      inputSchema: {
+        listId: z.string(),
+        labelId: z.string(),
+        trigger: z.enum(FLOW_TRIGGERS),
+        action: z.enum(FLOW_ACTIONS),
+        on: z.boolean(),
+      },
+      annotations: { ...write, idempotentHint: true },
+    },
+    async ({ listId, ...rest }) => {
+      await api.list.setLabelRule({ id: listId, ...rest });
+      return text({ ok: true });
     },
   );
 
@@ -226,7 +257,7 @@ export function hackbanMcp(user: User, base: string) {
     "move_all_cards",
     {
       title: "Move all cards in list",
-      description: "Move every open card in a list to the end of another list (on this board or another; moving boards drops their labels).",
+      description: "Move every open card in a list to the end of another list (on this board or another; moving boards drops their labels). The destination list's automation runs for each card; the source list's leave rules also run when both lists are on the same board.",
       inputSchema: { listId: z.string(), toListId: z.string() },
       annotations: write,
     },
@@ -310,7 +341,7 @@ export function hackbanMcp(user: User, base: string) {
     "move_card",
     {
       title: "Move card",
-      description: "Move a card to a list (on this board or another). Moving to another board drops its labels.",
+      description: "Move a card to a list (on this board or another). Moving to another board drops its labels. The destination list's automation (labels added/removed, marked complete) runs; the old list's leave rules also run when both lists are on the same board.",
       inputSchema: {
         cardId: z.string(),
         listId: z.string(),
@@ -523,7 +554,7 @@ export function hackbanMcp(user: User, base: string) {
     "move_list",
     {
       title: "Move list",
-      description: "Reorder a list on its board, or move it (with its cards) to another board. Moving boards drops the cards' labels.",
+      description: "Reorder a list on its board, or move it (with its cards) to another board. Moving boards drops the cards' labels and the list automation's label rules (labels are per board); its mark-complete setting stays.",
       inputSchema: {
         listId: z.string(),
         boardId: z.string().optional().describe("Target board; omit to stay on this board"),
@@ -547,7 +578,7 @@ export function hackbanMcp(user: User, base: string) {
     "save_label",
     {
       title: "Create or edit label",
-      description: "Create a board label, or rename/recolor one (pass labelId). Colors: green, yellow, orange, red, purple, blue, sky, lime, pink, black, each optionally with _light or _dark; null = no color.",
+      description: "Create a board label (it goes to the bottom of the board's label list), or rename/recolor one (pass labelId). Colors: green, yellow, orange, red, purple, blue, sky, lime, pink, black, each optionally with _light or _dark; null = no color.",
       inputSchema: { boardId: z.string(), labelId: z.string().optional(), name: z.string().max(100).default(""), color: z.string().max(32).nullable() },
       annotations: write,
     },
@@ -557,6 +588,21 @@ export function hackbanMcp(user: User, base: string) {
         return text({ id: labelId });
       }
       return text({ id: (await api.card.createLabel({ boardId, name, color })).id });
+    },
+  );
+
+  server.registerTool(
+    "reorder_labels",
+    {
+      title: "Reorder labels",
+      description:
+        "Set the order of a board's labels, top to bottom (label IDs from get_board). Every card shows its labels in this order. Labels you leave out keep their order after the ones you list.",
+      inputSchema: { boardId: z.string(), labelIds: z.array(z.string()).max(1000) },
+      annotations: { ...write, idempotentHint: true },
+    },
+    async ({ boardId, labelIds }) => {
+      await api.card.reorderLabels({ boardId, ids: labelIds });
+      return text({ ok: true });
     },
   );
 

@@ -10,6 +10,9 @@ with Hack Club Auth, and it runs at [hackban.hackclub.com](https://hackban.hackc
   checklists, attachments (upload, drag-drop, paste), covers, comments,
   activity, watching, archive/restore, copy/move, and a quick editor (right-click
   or `e`).
+- **Labels and list automation:** drag labels into the order every card shows
+  them in, and set lists to add or remove labels as cards move in or out, and
+  to mark cards complete as they move in (list ⋯ → Automation).
 - **Live updates:** changes appear for everyone viewing a board without
   refreshing.
 - **Workspaces:** members and roles, logos, settings, board export (JSON),
@@ -179,7 +182,7 @@ Tools: `whoami`, `update_profile`, `my_activity`, `list_workspaces`, `get_worksp
 `get_archived`, `board_activity`, `get_card`, `my_cards`, `notifications`,
 `create_board`, `update_board`, `copy_board`, `add_board_member`, `add_workspace_member`,
 `join_board`, `set_invite_link`, `join_by_invite`, `create_list`, `update_list`, `move_list`,
-`copy_list`, `move_all_cards`, `archive_all_cards`, `sort_list`, `save_label`, `create_card`,
+`copy_list`, `move_all_cards`, `archive_all_cards`, `sort_list`, `set_list_label_rule`, `save_label`, `reorder_labels`, `create_card`,
 `update_card`, `move_card`, `copy_card`, `watch_card`, `add_comment`, `edit_comment`,
 `add_link`, `rename_attachment`, `set_card_label`, `set_card_member`, `set_card_blocker`,
 `add_checklist`, `rename_checklist`, `add_check_item`, `update_check_item`, `move_check_item`. They call the same tRPC procedures as the web

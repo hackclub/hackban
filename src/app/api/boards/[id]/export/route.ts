@@ -15,11 +15,12 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   const board = await db.board.findUniqueOrThrow({
     where: { id },
     include: {
-      labels: true,
+      labels: { orderBy: [{ pos: "asc" }, { color: "asc" }, { name: "asc" }] },
       members: { include: { user: { select: { id: true, name: true, username: true } } } },
       lists: {
         orderBy: { pos: "asc" },
         include: {
+          labelRules: { select: { labelId: true, trigger: true, action: true } },
           cards: {
             orderBy: { pos: "asc" },
             include: {

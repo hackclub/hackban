@@ -1,6 +1,8 @@
 // What's new in Hackban, newest first. Add an entry for every user-facing update or change.
 // `id` must be unique; the header shows a dot until the viewer has seen the newest one.
 export const ANNOUNCEMENTS: { id: string; date: string; title: string; body: string }[] = [
+  { id: "label-order", date: "2026-11-28", title: "Label order", body: "Drag labels up and down by their grip in a board's label list to set the order, and every card shows its labels in that order no matter when they were added." },
+  { id: "list-automation", date: "2026-11-28", title: "List automation", body: "Open Automation in a list's ⋯ menu to add or remove labels when cards move into or out of that list, and to mark them complete when they move in." },
   { id: "install-app", date: "2026-11-27", title: "Install as an app", body: "Install Hackban from your browser's install button to get its own window with back and forward buttons, a title bar tinted to the board's color, and a friendly page when you're offline." },
   { id: "roadmap-paused", date: "2026-11-24", title: "Roadmap view paused", body: "The Roadmap view is gone for now while we rework it; boards that were showing it open in Board view, and Table view stays." },
   { id: "edit-table-roadmap", date: "2026-11-24", title: "Edit from table and roadmap", body: "Edit titles, assignees, lists, labels and dates right in the table's cells and add cards with + Add item; on the roadmap, drag a bar to move a card's dates, drag its ends to change them, or click an empty row to schedule it." },

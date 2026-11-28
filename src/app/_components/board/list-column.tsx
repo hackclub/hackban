@@ -5,14 +5,17 @@ import { CSS } from "@dnd-kit/utilities";
 import { AnimatePresence, motion } from "framer-motion";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 
+import { sortLabels } from "~/lib/labels";
+import { type FlowAction, type FlowTrigger } from "~/lib/list-flow";
 import { api } from "~/trpc/react";
 
 import { AutoTextarea, Button, IconButton, Icon, MenuItem, MenuSep, Popover, inputCls, labelStyle, usePopoverState } from "../ui";
 import { rememberLocal, shouldAppear } from "./appear";
 import { AssignSuggestion } from "./assign-suggestion";
+import { Labels } from "./board-menu";
 import { CardFront } from "./card-front";
-import { realIds } from "./optimistic";
 import { COVER_COLORS } from "./card-popovers";
+import { realIds } from "./optimistic";
 import { SORTS, sortCards, type BoardData, type CardData, type ListData } from "./types";
 
 export const SortableCard = memo(function SortableCard({
@@ -135,7 +138,7 @@ export const ListColumn = memo(function ListColumn({
         {...listeners}
         // Keys typed in the title or a list popover (portals bubble through React) must not start a keyboard drag.
         onKeyDown={(e) => {
-          if (!(e.target as HTMLElement).matches("input, textarea, select")) listeners?.onKeyDown?.(e);
+          if (e.currentTarget.contains(e.target as Node) && !(e.target as HTMLElement).matches("input, textarea, select")) listeners?.onKeyDown?.(e);
         }}
         className="flex cursor-pointer items-start gap-1 px-2 pt-0.5 pb-1 outline-none"
       >
@@ -296,7 +299,8 @@ function ListSort({ list, boardId, cards }: { list: ListData; boardId: string; c
 
 function ListMenu({ list, board, onAddCard }: { list: ListData; board: BoardData; onAddCard: () => void }) {
   const p = usePopoverState();
-  const [pane, setPane] = useState<"main" | "description" | "color" | "copy" | "move" | "moveCards" | "archiveCards">("main");
+  const [pane, setPane] = useState<"main" | "description" | "color" | "copy" | "move" | "moveCards" | "archiveCards" | "flow">("main");
+  const [flowRow, setFlowRow] = useState<FlowRow | null>(null);
   const utils = api.useUtils();
   const inv = () => utils.board.get.invalidate({ id: board.id });
   const update = api.list.update.useMutation({
@@ -307,7 +311,13 @@ function ListMenu({ list, board, onAddCard }: { list: ListData; board: BoardData
   });
   const copy = api.list.copy.useMutation({ onSettled: inv });
   const move = api.list.move.useMutation({ onSettled: () => utils.board.get.invalidate() });
-  const moveAll = api.list.moveAllCards.useMutation({ onSettled: inv });
+  const moveAll = api.list.moveAllCards.useMutation({
+    // List automation can change the moved cards' labels and due dates.
+    onSettled: () => {
+      void inv();
+      void utils.card.get.invalidate();
+    },
+  });
   const archiveAll = api.list.archiveAllCards.useMutation({ onSettled: inv });
   const { data: workspaces } = api.workspace.list.useQuery(undefined, { enabled: pane === "move" });
   const [copyName, setCopyName] = useState(list.name);
@@ -319,6 +329,7 @@ function ListMenu({ list, board, onAddCard }: { list: ListData; board: BoardData
   const close = () => {
     p.close();
     setPane("main");
+    setFlowRow(null);
   };
   const recolor = (color: string | null) => {
     utils.board.get.setData({ id: board.id }, (b) => b && { ...b, lists: b.lists.map((l) => (l.id === list.id ? { ...l, color } : l)) });
@@ -330,14 +341,20 @@ function ListMenu({ list, board, onAddCard }: { list: ListData; board: BoardData
     update.mutate({ id: list.id, description });
     close();
   };
-  const titles = { main: "List actions", description: "List description", color: "Change list color", copy: "Copy list", move: "Move list", moveCards: "Move all cards in list", archiveCards: "Archive all cards in this list?" };
+  const titles = { main: "List actions", description: "List description", color: "Change list color", copy: "Copy list", move: "Move list", moveCards: "Move all cards in list", archiveCards: "Archive all cards in this list?", flow: "Automation" };
 
   return (
     <>
       <IconButton onClick={p.toggle} className="text-[var(--color-text-subtle)]" aria-label="List actions">
         <Icon name="more" />
       </IconButton>
-      <Popover anchor={p.anchor} open={p.open} onClose={close} title={titles[pane]} onBack={pane !== "main" ? () => setPane("main") : undefined}>
+      <Popover
+        anchor={p.anchor}
+        open={p.open}
+        onClose={close}
+        title={pane === "flow" && flowRow ? flowRowTitle(flowRow) : titles[pane]}
+        onBack={flowRow ? () => setFlowRow(null) : pane !== "main" ? () => setPane("main") : undefined}
+      >
         {pane === "main" && (
           <>
             <MenuItem onClick={() => { onAddCard(); close(); }}>Add card</MenuItem>
@@ -346,6 +363,7 @@ function ListMenu({ list, board, onAddCard }: { list: ListData; board: BoardData
             <MenuItem onClick={() => setPane("copy")}>Copy list</MenuItem>
             <MenuItem onClick={() => setPane("move")}>Move list</MenuItem>
             <MenuItem onClick={() => setPane("moveCards")}>Move all cards in this list</MenuItem>
+            <MenuItem onClick={() => setPane("flow")}>Automation</MenuItem>
             <MenuSep />
             <MenuItem onClick={() => setPane("archiveCards")}>Archive all cards in this list</MenuItem>
             <MenuItem onClick={() => { update.mutate({ id: list.id, closed: true }); close(); }}>Archive this list</MenuItem>
@@ -426,6 +444,8 @@ function ListMenu({ list, board, onAddCard }: { list: ListData; board: BoardData
             ))}
           </>
         )}
+        {pane === "flow" && !flowRow && <ListFlow list={list} board={board} onPick={setFlowRow} />}
+        {pane === "flow" && flowRow && <FlowLabelPicker list={list} board={board} row={flowRow} />}
         {pane === "archiveCards" && (
           <>
             <p className="mb-3 text-sm">This will remove all the cards in this list from the board. To view archived cards and bring them back, click “Menu” &gt; “Archived items.”</p>
@@ -434,6 +454,112 @@ function ListMenu({ list, board, onAddCard }: { list: ListData; board: BoardData
         )}
       </Popover>
     </>
+  );
+}
+
+type FlowRow = { trigger: FlowTrigger; action: FlowAction };
+const FLOW_SECTIONS = [
+  { trigger: "enter", title: "When a card moves into this list" },
+  { trigger: "leave", title: "When a card moves out of this list" },
+] as const;
+const flowRowTitle = ({ trigger, action }: FlowRow) => `${action === "add" ? "Add" : "Remove"} labels when moved ${trigger === "enter" ? "in" : "out"}`;
+
+/** Optimistic edits to this list's flow, confirmed by a refetch. */
+function useFlowMutations(list: ListData, board: BoardData) {
+  const utils = api.useUtils();
+  const inv = () => utils.board.get.invalidate({ id: board.id });
+  const patchList = async (f: (l: ListData) => ListData) => {
+    await utils.board.get.cancel({ id: board.id });
+    utils.board.get.setData({ id: board.id }, (b) => b && { ...b, lists: b.lists.map((l) => (l.id === list.id ? f(l) : l)) });
+  };
+  const setRule = api.list.setLabelRule.useMutation({
+    // Mirrors the server: turning a label on for one side takes it off the other.
+    onMutate: ({ labelId, trigger, action, on }) =>
+      patchList((l) => ({
+        ...l,
+        labelRules: [
+          ...l.labelRules.filter((r) => !(r.labelId === labelId && r.trigger === trigger && (on || r.action === action))),
+          ...(on ? [{ labelId, trigger, action }] : []),
+        ],
+      })),
+    onSettled: inv,
+  });
+  const update = api.list.update.useMutation({
+    onMutate: ({ doneOnEnter }) => patchList((l) => ({ ...l, doneOnEnter: doneOnEnter ?? l.doneOnEnter })),
+    onSettled: inv,
+  });
+  return { setRule, update };
+}
+
+/** List automation: labels to add/remove when cards move in or out, and mark-complete on entry. */
+function ListFlow({ list, board, onPick }: { list: ListData; board: BoardData; onPick: (row: FlowRow) => void }) {
+  const { update } = useFlowMutations(list, board);
+  const row = (r: FlowRow) => {
+    const ids = new Set(list.labelRules.filter((x) => x.trigger === r.trigger && x.action === r.action).map((x) => x.labelId));
+    const picked = sortLabels(board.labels).filter((l) => ids.has(l.id));
+    return (
+      <div key={r.action} className="mt-2.5">
+        <h4 className="mb-1.5 text-xs font-semibold text-[var(--color-text-subtle)]">{r.action === "add" ? "Add labels" : "Remove labels"}</h4>
+        <div className="flex flex-wrap gap-1">
+          {picked.map((l) => (
+            <button
+              key={l.id}
+              onClick={() => onPick(r)}
+              title={l.name || undefined}
+              className="h-8 max-w-[200px] min-w-12 truncate rounded-[3px] px-3 text-sm font-medium hover:brightness-95"
+              style={labelStyle(l.color)}
+            >
+              {l.name}
+            </button>
+          ))}
+          <button
+            onClick={() => onPick(r)}
+            className="flex h-8 w-8 items-center justify-center rounded-[3px] bg-[var(--color-neutral)] text-[var(--color-text)] hover:bg-[var(--color-neutral-hover)]"
+            aria-label={flowRowTitle(r)}
+            title={flowRowTitle(r)}
+          >
+            <Icon name="plus" />
+          </button>
+        </div>
+      </div>
+    );
+  };
+  return (
+    <div>
+      <p className="text-sm text-[var(--color-text-subtle)]">Update cards automatically as they move between lists.</p>
+      {FLOW_SECTIONS.map(({ trigger, title }) => (
+        <section key={trigger}>
+          <hr className="my-3 border-[var(--color-border)]" />
+          <h3 className="text-sm font-semibold text-[var(--color-text)]">{title}</h3>
+          {trigger === "enter" && (
+            <label className="mt-2 flex cursor-pointer items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                className="h-4 w-4 accent-[var(--color-brand)]"
+                checked={list.doneOnEnter}
+                onChange={(e) => update.mutate({ id: list.id, doneOnEnter: e.target.checked })}
+              />
+              Mark the card complete
+            </label>
+          )}
+          {row({ trigger, action: "add" })}
+          {row({ trigger, action: "remove" })}
+        </section>
+      ))}
+    </div>
+  );
+}
+
+/** The label picker for one flow row: the board's usual label list, with checkboxes. */
+function FlowLabelPicker({ list, board, row }: { list: ListData; board: BoardData; row: FlowRow }) {
+  const { setRule } = useFlowMutations(list, board);
+  const selected = list.labelRules.filter((r) => r.trigger === row.trigger && r.action === row.action).map((r) => r.labelId);
+  return (
+    <Labels
+      board={board}
+      selected={selected}
+      onPick={(labelId, on) => setRule.mutate({ id: list.id, labelId, trigger: row.trigger, action: row.action, on })}
+    />
   );
 }
 
@@ -563,7 +689,7 @@ export function ListComposer({ boardId }: { boardId: string }) {
       rememberLocal(name);
       await utils.board.get.cancel({ id: boardId });
       utils.board.get.setData({ id: boardId }, (b) =>
-        b && { ...b, lists: [...b.lists, { id: `temp-${Math.random()}`, boardId, name, description: "", pos: "", color: null, closed: false, trelloId: null, createdAt: new Date(), cards: [] }] },
+        b && { ...b, lists: [...b.lists, { id: `temp-${Math.random()}`, boardId, name, description: "", pos: "", color: null, closed: false, doneOnEnter: false, trelloId: null, createdAt: new Date(), labelRules: [], cards: [] }] },
       );
     },
     onSettled: () => utils.board.get.invalidate({ id: boardId }),

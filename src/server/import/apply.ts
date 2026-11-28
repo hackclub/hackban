@@ -1,3 +1,6 @@
+import { generateKeyBetween } from "fractional-indexing";
+
+import { sortLabels } from "~/lib/labels";
 import { db } from "~/server/db";
 import { DEFAULT_LABEL_COLORS, httpsUrl } from "~/server/api/defaults";
 import { sequentialKeys } from "~/server/api/pos";
@@ -147,18 +150,21 @@ export async function applyBoard(opts: {
 
   // Labels
   const labelMap = new Map<string, string>();
+  // Labels new to this board go after any it already has, like createLabel.
+  let lastPos = sortLabels(await db.label.findMany({ where: { boardId: board.id } })).filter((l) => l.pos).at(-1)?.pos ?? null;
+  const nextPos = () => (lastPos = generateKeyBetween(lastPos, null));
   for (const l of tb.labels) {
     const row = await scopedUpsert({
       trelloId: l.id,
       findScoped: () => db.label.findFirst({ where: { trelloId: l.id, boardId: board.id } }),
       existsGlobally: () => db.label.count({ where: { trelloId: l.id } }),
-      create: (trelloId) => db.label.create({ data: { trelloId, boardId: board.id, name: l.name, color: l.color } }),
+      create: (trelloId) => db.label.create({ data: { trelloId, boardId: board.id, name: l.name, color: l.color, pos: nextPos() } }),
       update: (id) => db.label.update({ where: { id }, data: { name: l.name, color: l.color } }),
     });
     labelMap.set(l.id, row.id);
   }
   if (tb.labels.length === 0) {
-    await db.label.createMany({ data: DEFAULT_LABEL_COLORS.map((color) => ({ boardId: board.id, color })) });
+    await db.label.createMany({ data: DEFAULT_LABEL_COLORS.map((color) => ({ boardId: board.id, color, pos: nextPos() })) });
   }
 
   // Lists

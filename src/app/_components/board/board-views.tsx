@@ -3,6 +3,7 @@
 import { format } from "date-fns";
 import { useMemo, useState } from "react";
 
+import { sortCardLabels } from "~/lib/labels";
 import { api } from "~/trpc/react";
 
 import { Avatar, Icon, dueState, labelStyle } from "../ui";
@@ -214,7 +215,7 @@ export function TableView({ board, isVisible, onOpenCard, onHoverCard, readOnly 
                     </td>
                     <td className={cellCls}>
                       <button disabled={readOnly} onClick={openPop(c.id, "labels")} className={`${cellBtn} overflow-hidden`} aria-label="Edit labels">
-                        {c.labels.map(({ label }) => (
+                        {sortCardLabels(c.labels).map(({ label }) => (
                           <span key={label.id} title={label.name} className="h-5 max-w-[120px] min-w-6 shrink-0 truncate rounded-full px-2 text-xs leading-5 font-medium" style={labelStyle(label.color)}>
                             {label.name}
                           </span>
