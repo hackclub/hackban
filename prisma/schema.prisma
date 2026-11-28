@@ -188,12 +188,29 @@ model List {
     color       String? // label color name, null = no color
     description String   @default("")
     closed      Boolean  @default(false)
+    // Automation: mark a card complete when it's moved into this list.
+    doneOnEnter Boolean  @default(false)
     trelloId    String?  @unique
     createdAt   DateTime @default(now())
     board       Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
     cards       Card[]
+    labelRules  ListLabelRule[]
 
     @@index([boardId, pos])
+}
+
+/// Automation: add or remove a label when a card is moved into (`enter`) or
+/// out of (`leave`) a list. The label is on the list's board.
+model ListLabelRule {
+    listId  String
+    labelId String
+    trigger String // enter | leave
+    action  String // add | remove
+    list    List   @relation(fields: [listId], references: [id], onDelete: Cascade)
+    label   Label  @relation(fields: [labelId], references: [id], onDelete: Cascade)
+
+    @@id([listId, labelId, trigger, action])
+    @@index([labelId])
 }
 
 model Card {
@@ -248,9 +265,13 @@ model Label {
     boardId  String
     name     String      @default("")
     color    String? // trello color name, null = no color
+    // Fractional key for the board's label list order, which every card shows
+    // its labels in. "" = never placed (sorts first, then by color and name).
+    pos      String      @default("")
     trelloId String?     @unique
     board    Board       @relation(fields: [boardId], references: [id], onDelete: Cascade)
     cards    CardLabel[]
+    listRules ListLabelRule[]
 }
 
 model CardLabel {

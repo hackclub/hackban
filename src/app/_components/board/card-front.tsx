@@ -3,6 +3,7 @@
 import { format } from "date-fns";
 import { memo, useEffect, useState } from "react";
 
+import { sortCardLabels } from "~/lib/labels";
 import { api } from "~/trpc/react";
 
 import {
@@ -151,7 +152,7 @@ export const CardFront = memo(function CardFront({
       <div className="px-3 pt-1.5 pb-1">
         {card.labels.length > 0 && (
           <div className="mt-0.5 mb-1 flex flex-wrap gap-1">
-            {card.labels.map(({ label }) => (
+            {sortCardLabels(card.labels).map(({ label }) => (
               <button
                 key={label.id}
                 onClick={(e) => {

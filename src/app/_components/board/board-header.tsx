@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
+import { sortLabels } from "~/lib/labels";
 import { api } from "~/trpc/react";
 
 import { Avatar, Icon, Popover, inputCls, labelStyle, usePopoverState } from "../ui";
@@ -265,7 +266,7 @@ function FilterPane({ board, meId, filters, setFilters }: { board: BoardData; me
 
       <h3 className={heading}>Labels</h3>
       <div className="flex flex-wrap gap-1.5">
-        {board.labels.map((l) => {
+        {sortLabels(board.labels).map((l) => {
           const on = filters.labels.includes(l.id);
           return (
             <button

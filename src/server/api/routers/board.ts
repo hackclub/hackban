@@ -50,11 +50,12 @@ export const boardRouter = createTRPCRouter({
             include: { user: { select: { id: true, name: true, image: true, username: true, isGhost: true, invitedEmail: true } } },
           },
           stars: { where: { userId } },
-          labels: { orderBy: { color: "asc" } },
+          labels: { orderBy: [{ pos: "asc" }, { color: "asc" }, { name: "asc" }] },
           lists: {
             where: { closed: false },
             orderBy: { pos: "asc" },
             include: {
+              labelRules: { select: { labelId: true, trigger: true, action: true } },
               cards: {
                 where: { closed: false },
                 orderBy: { pos: "asc" },
@@ -131,7 +132,7 @@ export const boardRouter = createTRPCRouter({
           background: input.background,
           visibility: input.visibility,
           members: { create: { userId, role: "admin" } },
-          labels: { create: DEFAULT_LABEL_COLORS.map((color) => ({ color })) },
+          labels: { create: sequentialKeys(DEFAULT_LABEL_COLORS.length).map((pos, i) => ({ color: DEFAULT_LABEL_COLORS[i]!, pos })) },
           lists: { create: listNames.map((name, i) => ({ name, pos: keys[i]! })) },
         },
       });
@@ -241,6 +242,7 @@ export const boardRouter = createTRPCRouter({
           lists: {
             where: { closed: false },
             include: {
+              labelRules: true,
               cards: {
                 where: { closed: false },
                 include: { labels: true, checklists: { include: { items: true } } },
@@ -267,7 +269,7 @@ export const boardRouter = createTRPCRouter({
         if (bgKey) await tx.board.update({ where: { id: b.id }, data: { bgImage: boardBgPath(b.id, bgKey) } });
         const labelMap = new Map<string, string>();
         for (const l of src.labels) {
-          const nl = await tx.label.create({ data: { boardId: b.id, name: l.name, color: l.color } });
+          const nl = await tx.label.create({ data: { boardId: b.id, name: l.name, color: l.color, pos: l.pos } });
           labelMap.set(l.id, nl.id);
         }
         for (const l of src.lists) {
@@ -277,6 +279,10 @@ export const boardRouter = createTRPCRouter({
               name: l.name,
               description: l.description,
               pos: l.pos,
+              doneOnEnter: l.doneOnEnter,
+              labelRules: {
+                create: l.labelRules.map((r) => ({ labelId: labelMap.get(r.labelId)!, trigger: r.trigger, action: r.action })),
+              },
               cards: input.keepCards
                 ? {
                     create: l.cards.map((c) => ({

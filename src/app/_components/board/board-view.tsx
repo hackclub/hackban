@@ -28,6 +28,7 @@ import { createPortal } from "react-dom";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { type AppQueryClient } from "~/trpc/query-client";
+import { sortLabels } from "~/lib/labels";
 import { api, clientId } from "~/trpc/react";
 
 import { Header } from "../header";
@@ -40,7 +41,7 @@ import { confetti } from "../confetti";
 import { CardFront, REPEAT_SHOW_DONE_MS } from "./card-front";
 import { CardModal } from "./card-modal";
 import { ListColumn, ListComposer } from "./list-column";
-import { memberPatch, realIds, usePatchCard } from "./optimistic";
+import { flowPlan, memberPatch, realIds, usePatchCard, withFlow } from "./optimistic";
 import { QuickEdit } from "./quick-edit";
 import {
   cardMatches,
@@ -125,6 +126,9 @@ export function BoardView({
         if (ev.origin === clientId) return;
         void utils.board.get.invalidate({ id: boardId });
         if (ev.cardId) void utils.card.get.invalidate({ id: ev.cardId });
+        // Board-wide changes (e.g. label order) show on cards too: mark them all
+        // stale (only the open one refetches now; the rest when next opened).
+        else void utils.card.get.invalidate();
         void utils.board.activity.invalidate({ id: boardId });
       },
     },
@@ -225,7 +229,11 @@ export function BoardView({
     }),
   );
   const moveCard = api.card.move.useMutation({
-    onSettled: () => utils.board.get.invalidate({ id: boardId }),
+    // List flow can change the card's labels and due date, so refresh its detail too.
+    onSettled: (_d, _e, vars) => {
+      void utils.board.get.invalidate({ id: boardId });
+      void utils.card.get.invalidate({ id: vars.id });
+    },
   });
   const moveList = api.list.move.useMutation({
     onSettled: () => utils.board.get.invalidate({ id: boardId }),
@@ -273,8 +281,10 @@ export function BoardView({
     releaseHold.current = null;
   };
 
+  const [flowedDrop, setFlowedDrop] = useState(false);
   const onDragStart = ({ active }: DragStartEvent) => {
     if (!board) return;
+    setFlowedDrop(false);
     endHold();
     releaseHold.current = queryClient.hold();
     const data = active.data.current as
@@ -377,9 +387,23 @@ export function BoardView({
     const origList = findList(orig, cardId);
     if (origList === listId && orig.cards[listId]!.join() === arr.join())
       return;
+    // List automation (labels, complete) shows on drop; the server does the same.
+    const plan = origList && origList !== listId ? flowPlan(board, cardId, origList, listId) : null;
+    setFlowedDrop(!!plan);
+    // Completed by the list's automation: celebrate like any other completion, once it's landed.
+    if (plan?.complete) {
+      requestAnimationFrame(() => {
+        const el = document.querySelector<HTMLElement>(`[data-card-id="${cardId}"]`);
+        if (el) confetti(el);
+      });
+    }
     utils.board.get.setData(
       { id: boardId },
-      (b) => b && applyLayout(b, layout),
+      (b) =>
+        b &&
+        (origList && origList !== listId
+          ? withFlow(applyLayout(b, layout), [cardId], origList, listId)
+          : applyLayout(b, layout)),
     );
     moveCard.mutate({
       id: cardId,
@@ -414,6 +438,8 @@ export function BoardView({
   });
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      // Already handled, e.g. by a keyboard drag in a popover.
+      if (e.defaultPrevented) return;
       const t = e.target as HTMLElement;
       if (
         /INPUT|TEXTAREA|SELECT/.test(t.tagName) ||
@@ -505,7 +531,7 @@ export function BoardView({
         default:
           if (/^[0-9]$/.test(e.key) && board) {
             // 1..0 toggle the board's labels in order, like Trello
-            const label = board.labels[(Number(e.key) + 9) % 10];
+            const label = sortLabels(board.labels)[(Number(e.key) + 9) % 10];
             if (label) {
               const on = !card.labels.some((l) => l.labelId === label.id);
               const withLabel = <T extends { id: string; labels: { cardId: string; labelId: string; label: typeof label }[] }>(c: T): T => ({
@@ -639,10 +665,16 @@ export function BoardView({
                     <DragOverlay
                       // let wheel events reach the list under the cursor
                       style={{ pointerEvents: "none" }}
-                      dropAnimation={{
-                        duration: 180,
-                        easing: "cubic-bezier(.2,1,.1,1)",
-                      }}
+                      // A card list automation just changed lands without the
+                      // animation, which would replay its old labels.
+                      dropAnimation={
+                        flowedDrop
+                          ? null
+                          : {
+                              duration: 180,
+                              easing: "cubic-bezier(.2,1,.1,1)",
+                            }
+                      }
                     >
                       {drag?.active.type === "card" && (
                         <motion.div

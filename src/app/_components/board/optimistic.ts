@@ -1,5 +1,6 @@
 "use client";
 
+import { hasFlow, isNoop, planMove } from "~/lib/list-flow";
 import { api, type RouterOutputs } from "~/trpc/react";
 
 import { type BoardData, type CardData } from "./types";
@@ -76,4 +77,37 @@ export function fieldsPatch(fields: Partial<Pick<CardData, "title" | "start" | "
     front: (c: CardData): CardData => ({ ...c, ...fields }),
     detail: (c: CardDetail): CardDetail => ({ ...c, ...fields }),
   };
+}
+
+/**
+ * The board with list flow applied to cards that just moved from
+ * `fromListId` into `toListId` (they must already sit in `toListId`), so
+ * labels and the due checkmark change the moment a card is dropped.
+ */
+export function withFlow(b: BoardData, cardIds: string[], fromListId: string, toListId: string): BoardData {
+  const from = b.lists.find((l) => l.id === fromListId);
+  const to = b.lists.find((l) => l.id === toListId);
+  if (!to || from === to || (!hasFlow(to) && !from?.labelRules.length)) return b;
+  const ids = new Set(cardIds);
+  const flowCard = (c: CardData): CardData => {
+    if (!ids.has(c.id)) return c;
+    const plan = planMove({ labelIds: c.labels.map((x) => x.labelId), due: c.due, dueComplete: c.dueComplete }, from, to);
+    if (isNoop(plan)) return c;
+    const added = plan.add.flatMap((labelId) => {
+      const label = b.labels.find((l) => l.id === labelId);
+      return label ? [{ cardId: c.id, labelId, label }] : [];
+    });
+    return { ...c, labels: [...c.labels.filter((x) => !plan.remove.includes(x.labelId)), ...added], dueComplete: c.dueComplete || plan.complete };
+  };
+  return { ...b, lists: b.lists.map((l) => (l.id === toListId ? { ...l, cards: l.cards.map(flowCard) } : l)) };
+}
+
+/** What list automation does to `cardId` moving from `fromListId` to `toListId`, or null if nothing. */
+export function flowPlan(b: BoardData, cardId: string, fromListId: string, toListId: string) {
+  const from = b.lists.find((l) => l.id === fromListId);
+  const to = b.lists.find((l) => l.id === toListId);
+  const card = from?.cards.find((c) => c.id === cardId);
+  if (!to || !card) return null;
+  const plan = planMove({ labelIds: card.labels.map((x) => x.labelId), due: card.due, dueComplete: card.dueComplete }, from, to);
+  return isNoop(plan) ? null : plan;
 }

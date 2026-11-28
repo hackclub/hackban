@@ -1,9 +1,12 @@
 "use client";
 
+import { DndContext, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
+import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
+import { sortLabels } from "~/lib/labels";
 import { api } from "~/trpc/react";
 
 import { AutoTextarea, BOARD_COLORS, BOARD_GRADIENTS, Button, Icon, IconButton, LABEL_COLORS, Markdown, inputCls, labelStyle } from "../ui";
@@ -288,6 +291,52 @@ export function Labels({ board, onPick, selected }: { board: BoardData; onPick?:
   const create = api.card.createLabel.useMutation({ onSettled: inv });
   const update = api.card.updateLabel.useMutation({ onSettled: inv });
   const del = api.card.deleteLabel.useMutation({ onSettled: inv });
+  const move = api.card.moveLabel.useMutation({
+    onMutate: () => utils.board.get.cancel({ id: board.id }),
+    onSettled: () => {
+      void inv().then(() => setDropOrder(null));
+      void utils.card.get.invalidate();
+    },
+  });
+  // The order from the last drop, held in React state so it renders in the same
+  // pass as dnd-kit's drop (a cache write lands a frame later and the row jumps).
+  const [dropOrder, setDropOrder] = useState<string[] | null>(null);
+  /**
+   * Re-rank the board's labels and the copies on every card. Runs in the same
+   * tick as the drop, before the mutation, so the dropped row lands in place
+   * instead of rendering the old order for a frame. Temporary keys: the
+   * server's real ones arrive with the refetch, in the same order.
+   */
+  const applyOrder = (ids: string[]) => {
+    const pos = new Map(ids.map((id, i) => [id, `~${String(i).padStart(4, "0")}`]));
+    const rank = <T extends { id: string; pos: string }>(l: T): T => ({ ...l, pos: pos.get(l.id) ?? l.pos });
+    utils.board.get.setData({ id: board.id }, (b) =>
+      b && {
+        ...b,
+        labels: sortLabels(b.labels.map(rank)),
+        lists: b.lists.map((list) => ({ ...list, cards: list.cards.map((c) => ({ ...c, labels: c.labels.map((x) => ({ ...x, label: rank(x.label) })) })) })),
+      },
+    );
+    // An open card (e.g. reordering from its own label picker) re-sorts too.
+    for (const c of board.lists.flatMap((l) => l.cards)) {
+      utils.card.get.setData({ id: c.id }, (d) => d && { ...d, labels: d.labels.map((x) => ({ ...x, label: rank(x.label) })) });
+    }
+  };
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+  // While a label is being dragged, Escape only cancels the drag: claim it
+  // before anything else (the board's shortcuts, the menu) sees it.
+  const [dragging, setDragging] = useState(false);
+  useEffect(() => {
+    if (!dragging) return;
+    const claim = (e: KeyboardEvent) => {
+      if (e.key === "Escape") e.preventDefault();
+    };
+    window.addEventListener("keydown", claim, true);
+    return () => window.removeEventListener("keydown", claim, true);
+  }, [dragging]);
 
   if (editing) {
     return (
@@ -321,26 +370,78 @@ export function Labels({ board, onPick, selected }: { board: BoardData; onPick?:
       </div>
     );
   }
+  const ordered = dropOrder
+    ? sortLabels(board.labels).sort((a, b) => (dropOrder.indexOf(a.id) + 1 || Infinity) - (dropOrder.indexOf(b.id) + 1 || Infinity))
+    : sortLabels(board.labels);
+  const shown = ordered.filter((l) => l.name.toLowerCase().includes(q.toLowerCase()) || (l.color ?? "").includes(q.toLowerCase()));
+  const canReorder = board.myRole !== "observer";
+  const onDragEnd = ({ active, over }: DragEndEvent) => {
+    setDragging(false);
+    if (!over || active.id === over.id) return;
+    const ids = ordered.map((l) => l.id);
+    const next = arrayMove(ids, ids.indexOf(String(active.id)), ids.indexOf(String(over.id)));
+    setDropOrder(next);
+    applyOrder(next);
+    const at = next.indexOf(String(active.id));
+    // Dropped at either end means top or bottom, even if someone else moved labels meanwhile.
+    move.mutate({ id: String(active.id), afterId: at === 0 ? null : next[at - 1]!, toEnd: at === next.length - 1 });
+  };
   return (
     <div>
       <input className={inputCls} placeholder="Search labels…" value={q} onChange={(e) => setQ(e.target.value)} />
       <h3 className="mt-3 mb-1 text-xs font-semibold text-[var(--color-text-subtle)]">Labels</h3>
-      {board.labels.filter((l) => l.name.toLowerCase().includes(q.toLowerCase()) || (l.color ?? "").includes(q.toLowerCase())).map((l) => (
-        <div key={l.id} className="flex items-center gap-1 py-0.5">
-          {onPick && (
-            <input type="checkbox" className="mr-1 h-4 w-4 accent-[var(--color-brand)]" checked={selected?.includes(l.id) ?? false} onChange={(e) => onPick(l.id, e.target.checked)} />
-          )}
-          <button
-            onClick={() => (onPick ? onPick(l.id, !selected?.includes(l.id)) : setEditing({ id: l.id, name: l.name, color: l.color }))}
-            className="h-8 min-w-0 flex-1 truncate rounded-[3px] px-3 text-left text-sm font-medium transition hover:brightness-95"
-            style={labelStyle(l.color)}
-          >
-            {l.name}
-          </button>
-          <IconButton onClick={() => setEditing({ id: l.id, name: l.name, color: l.color })} aria-label="Edit label"><Icon name="edit" size={14} /></IconButton>
-        </div>
-      ))}
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={() => setDragging(true)} onDragCancel={() => setDragging(false)} onDragEnd={onDragEnd}>
+        <SortableContext items={shown.map((l) => l.id)} strategy={verticalListSortingStrategy}>
+          {shown.map((l) => (
+            <LabelRow key={l.id} label={l} reorderable={canReorder} paused={!!q}>
+              {onPick && (
+                <input type="checkbox" className="mr-1 h-4 w-4 accent-[var(--color-brand)]" checked={selected?.includes(l.id) ?? false} onChange={(e) => onPick(l.id, e.target.checked)} />
+              )}
+              <button
+                onClick={() => (onPick ? onPick(l.id, !selected?.includes(l.id)) : setEditing({ id: l.id, name: l.name, color: l.color }))}
+                className="h-8 min-w-0 flex-1 truncate rounded-[3px] px-3 text-left text-sm font-medium transition hover:brightness-95"
+                style={labelStyle(l.color)}
+              >
+                {l.name}
+              </button>
+              <IconButton onClick={() => setEditing({ id: l.id, name: l.name, color: l.color })} aria-label="Edit label"><Icon name="edit" size={14} /></IconButton>
+            </LabelRow>
+          ))}
+        </SortableContext>
+      </DndContext>
       <Button className="mt-2 w-full" onClick={() => setEditing({ name: q, color: "green" })}>Create a new label</Button>
+    </div>
+  );
+}
+
+/**
+ * One row of the label list; the grip on the left drags it up or down.
+ * Reordering works on the whole list, so it's `paused` while searching: the
+ * grip hides but keeps its space, so rows don't shift as you type.
+ */
+function LabelRow({ label, reorderable, paused, children }: { label: { id: string; name: string; color: string | null }; reorderable: boolean; paused: boolean; children: ReactNode }) {
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id: label.id, disabled: !reorderable || paused });
+  return (
+    <div
+      ref={setNodeRef}
+      style={{ transform: transform ? `translate3d(0, ${transform.y}px, 0)` : undefined, transition }}
+      className={`group relative flex items-center gap-1 rounded-[3px] py-0.5 ${isDragging ? "z-10 bg-[var(--color-surface)] shadow-[var(--shadow-raised)]" : ""}`}
+    >
+      {reorderable && (
+        <button
+          ref={setActivatorNodeRef}
+          disabled={paused}
+          aria-hidden={paused || undefined}
+          {...attributes}
+          {...listeners}
+          className={`-ml-1 flex h-8 w-4 shrink-0 cursor-grab touch-none ${paused ? "invisible" : ""} items-center justify-center text-[var(--color-text-subtle)] opacity-60 group-hover:opacity-100 focus-visible:opacity-100 active:cursor-grabbing`}
+          aria-label={`Drag to reorder ${label.name ? label.name : (label.color ?? "label")}`}
+          title="Drag to reorder"
+        >
+          <Icon name="grip" size={14} />
+        </button>
+      )}
+      {children}
     </div>
   );
 }

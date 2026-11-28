@@ -48,7 +48,7 @@ export function QuickEdit({ card, rect, board, onClose, onOpen }: { card: CardDa
       transition={{ duration: 0.1 }}
       className="fixed inset-0 z-40 bg-black/60"
       onMouseDown={(e) => e.target === e.currentTarget && save()}
-      onKeyDown={(e) => e.key === "Escape" && onClose()}
+      onKeyDown={(e) => e.key === "Escape" && !e.defaultPrevented && onClose()}
     >
       <div className="absolute" style={{ top: Math.min(rect.top, window.innerHeight - 260), left: rect.left, width: rect.width }}>
         <AutoTextarea

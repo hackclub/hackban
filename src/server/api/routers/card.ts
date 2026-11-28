@@ -1,12 +1,15 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
+import { sortLabels } from "~/lib/labels";
 import { boardIdForList, logActivity, requireBoard, requireCard, touch } from "~/server/api/access";
-import { posAfter, posAtEnd } from "~/server/api/pos";
+import { applyListRules } from "~/server/api/list-rules";
+import { posAfter, posAtEnd, sequentialKeys } from "~/server/api/pos";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { removeStored, storedKeys } from "~/server/storage";
 import { RECURRENCES, nextDue, type Recurrence } from "~/server/recurrence";
 import { type db as Db } from "~/server/db";
+import { type Prisma } from "../../../../generated/prisma";
 
 /** Assignees (card members, check item owners) must be on the board. */
 async function requireBoardMember(db: typeof Db, boardId: string, userId: string) {
@@ -16,6 +19,36 @@ async function requireBoardMember(db: typeof Db, boardId: string, userId: string
 
 const userSelect = { id: true, name: true, image: true, username: true } as const;
 const depSelect = { id: true, title: true, dueComplete: true } as const;
+
+/**
+ * Serialize writes to a board's label list (create, move, reorder, delete) by
+ * locking the board row, so concurrent ones can't deadlock or interleave.
+ */
+async function lockBoardLabels(tx: Prisma.TransactionClient, boardId: string) {
+  await tx.$executeRaw`SELECT 1 FROM "Board" WHERE id = ${boardId} FOR UPDATE`;
+}
+
+/** Give `order` (label ids) ascending keys, writing only the labels whose key changes. */
+async function setLabelKeys(tx: Prisma.TransactionClient, labels: { id: string; pos: string }[], order: string[]) {
+  const was = new Map(labels.map((l) => [l.id, l.pos]));
+  const keys = sequentialKeys(order.length);
+  for (const [i, id] of order.entries()) {
+    if (was.get(id) !== keys[i]) await tx.label.update({ where: { id }, data: { pos: keys[i] } });
+  }
+}
+
+/**
+ * The board's labels in order, all with real keys: a board whose labels were
+ * never placed (pos "") gets keys for its current order first, so a move has
+ * neighbours to go between.
+ */
+async function placeAllLabels(tx: Prisma.TransactionClient, boardId: string) {
+  const labels = sortLabels(await tx.label.findMany({ where: { boardId } }));
+  if (labels.every((l) => l.pos)) return labels;
+  const order = labels.map((l) => l.id);
+  await setLabelKeys(tx, labels, order);
+  return sortLabels(await tx.label.findMany({ where: { boardId } }));
+}
 
 export const cardRouter = createTRPCRouter({
   get: protectedProcedure
@@ -167,6 +200,9 @@ export const cardRouter = createTRPCRouter({
         await ctx.db.cardBlock.deleteMany({ where: { OR: [{ blockerId: card.id }, { blockedId: card.id }] } });
         touch(before.list.boardId, undefined, ctx.clientId);
       }
+      // List automation (add/remove labels, mark done). Runs after the
+      // cross-board cleanup so labels the new list adds aren't wiped.
+      await applyListRules(ctx.db, card.id, before.listId, input.listId);
       if (before.listId !== input.listId) {
         logActivity(ctx.db, {
           boardId: toBoard,
@@ -342,7 +378,13 @@ export const cardRouter = createTRPCRouter({
     .input(z.object({ boardId: z.string(), name: z.string().max(100), color: z.string().nullable() }))
     .mutation(async ({ ctx, input }) => {
       await requireBoard(ctx.db, ctx.session.user.id, input.boardId);
-      const label = await ctx.db.label.create({ data: input });
+      // New labels go to the bottom of the board's list. Under the board's
+      // label lock, so labels created at once (e.g. by an agent) stay in order.
+      const label = await ctx.db.$transaction(async (tx) => {
+        await lockBoardLabels(tx, input.boardId);
+        const placed = sortLabels(await tx.label.findMany({ where: { boardId: input.boardId } })).filter((l) => l.pos);
+        return tx.label.create({ data: { ...input, pos: posAtEnd(placed) } });
+      });
       touch(input.boardId, undefined, ctx.clientId);
       return label;
     }),
@@ -356,12 +398,52 @@ export const cardRouter = createTRPCRouter({
       touch(label.boardId, undefined, ctx.clientId);
     }),
 
+  /**
+   * Move one label in the board's label list: to the top (`afterId` null), to
+   * the bottom (`toEnd`), or just after `afterId`. Only that label changes, so
+   * two people's moves at once both stick.
+   */
+  moveLabel: protectedProcedure
+    .input(z.object({ id: z.string(), afterId: z.string().nullable(), toEnd: z.boolean().optional() }))
+    .mutation(async ({ ctx, input }) => {
+      const { boardId } = await ctx.db.label.findUniqueOrThrow({ where: { id: input.id }, select: { boardId: true } });
+      await requireBoard(ctx.db, ctx.session.user.id, boardId);
+      await ctx.db.$transaction(async (tx) => {
+        await lockBoardLabels(tx, boardId);
+        const labels = await placeAllLabels(tx, boardId);
+        const others = labels.filter((l) => l.id !== input.id);
+        if (others.length === labels.length) return; // deleted meanwhile
+        const pos = input.toEnd ? posAtEnd(others) : posAfter(others, input.afterId);
+        await tx.label.update({ where: { id: input.id }, data: { pos } });
+      });
+      touch(boardId, undefined, ctx.clientId);
+    }),
+
+  /** Set the board's whole label order to match `ids` (top to bottom); unlisted labels keep their place after them. */
+  reorderLabels: protectedProcedure
+    .input(z.object({ boardId: z.string(), ids: z.array(z.string()).max(1000) }))
+    .mutation(async ({ ctx, input }) => {
+      await requireBoard(ctx.db, ctx.session.user.id, input.boardId);
+      await ctx.db.$transaction(async (tx) => {
+        await lockBoardLabels(tx, input.boardId);
+        const labels = sortLabels(await tx.label.findMany({ where: { boardId: input.boardId } }));
+        const onBoard = new Set(labels.map((l) => l.id));
+        const ids = [...new Set(input.ids.filter((id) => onBoard.has(id)))];
+        const order = [...ids, ...labels.map((l) => l.id).filter((id) => !ids.includes(id))];
+        await setLabelKeys(tx, labels, order);
+      });
+      touch(input.boardId, undefined, ctx.clientId);
+    }),
+
   deleteLabel: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const label = await ctx.db.label.findUniqueOrThrow({ where: { id: input.id } });
       await requireBoard(ctx.db, ctx.session.user.id, label.boardId);
-      await ctx.db.label.delete({ where: { id: input.id } });
+      await ctx.db.$transaction(async (tx) => {
+        await lockBoardLabels(tx, label.boardId);
+        await tx.label.deleteMany({ where: { id: input.id } });
+      });
       touch(label.boardId, undefined, ctx.clientId);
     }),
 

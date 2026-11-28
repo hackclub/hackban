@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import { sortCardLabels } from "~/lib/labels";
 import { api, type RouterOutputs } from "~/trpc/react";
 
 import { ActivityItem } from "./board/activity";
@@ -198,7 +199,7 @@ function Cards() {
                   <Link key={c.id} href={`/c/${c.id}`} className="block rounded-lg bg-[var(--color-surface)] px-3 py-2 shadow-[var(--shadow-card)] hover:outline-2 hover:outline-[var(--color-focus)]">
                     {c.labels.length > 0 && (
                       <div className="mb-1 flex flex-wrap gap-1">
-                        {c.labels.map(({ label }) => <span key={label.id} className="h-2 w-10 rounded-full" style={labelStyle(label.color)} />)}
+                        {sortCardLabels(c.labels).map(({ label }) => <span key={label.id} className="h-2 w-10 rounded-full" style={labelStyle(label.color)} />)}
                       </div>
                     )}
                     <div className="text-sm">{c.title}</div>
